@@ -1,0 +1,45 @@
+﻿:root,
+[data-bs-theme="light"] {
+  --fn-primary: #fd5631 !important;
+  --fn-primary-rgb: 253, 86, 49 !important;
+  --fn-primary-text-emphasis: #cc4527 !important;
+  --fn-primary-bg-subtle: #fff0eb !important;
+  --fn-primary-border-subtle: #ffd8cc !important;
+  --fn-link-color: #fd5631 !important;
+  --fn-link-color-rgb: 253, 86, 49 !important;
+  --fn-link-hover-color: #fd5631 !important;
+  --fn-link-hover-color-rgb: 253, 86, 49 !important;
+}
+
+[data-bs-theme="dark"] {
+  --fn-primary: #fd5631 !important;
+  --fn-primary-rgb: 253, 86, 49 !important;
+  --fn-primary-text-emphasis: #f7775a !important;
+  --fn-primary-bg-subtle: #2b1c19 !important;
+  --fn-primary-border-subtle: #4a2720 !important;
+  --fn-link-color: #ff8b72 !important;
+  --fn-link-hover-color: #ff8b72 !important;
+  --fn-link-color-rgb: 255, 139, 114 !important;
+  --fn-link-hover-color-rgb: 255, 139, 114 !important;
+}
+
+body.monaclick-entry-shell[data-entry-ready="0"] main.content-wrapper > .container {
+  visibility: hidden;
+}
+
+body.monaclick-entry-shell[data-entry-ready="1"] main.content-wrapper > .container {
+  visibility: visible;
+}
+
+body.monaclick-entry-shell[data-entry-ready="0"]::before {
+  content: "Loading listing...";
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fn-body-bg, #fff);
+  color: var(--fn-body-color, #1f2633);
+  font-weight: 600;
+  z-index: 2000;
+}

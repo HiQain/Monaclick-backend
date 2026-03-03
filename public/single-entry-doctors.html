@@ -1,0 +1,1499 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" data-pwa="true">
+  <head>
+    <meta charset="utf-8">
+
+    <!-- Viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+
+    <!-- SEO Meta Tags -->
+    <title>Monaclick | Doctors - Doctor Details Page</title>
+    <meta name="description" content="Monaclick - Directory & Listings Bootstrap HTML Template">
+    <meta name="keywords" content="directory, listings, search, car dealer, real estate, city guide, business listings, medical directories, event listings, e-commerce, market, multipurpose, ui kit, light and dark mode, bootstrap, html5, css3, javascript, gallery, slider, mobile, pwa">
+    <meta name="author" content="Coderthemes">
+
+    <!-- Webmanifest + Favicon / App icons -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="manifest" href="/finder/manifest.json">
+    <link rel="icon" type="image/png" href="/finder/assets/app-icons/icon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/finder/assets/app-icons/icon-180x180.png">
+
+    <!-- Theme switcher (color modes) -->
+    <script src="/finder/assets/js/theme-switcher.js"></script>
+
+    <!-- Preloaded local web font (Inter) -->
+    <link rel="preload" href="/finder/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- Font icons -->
+    <link rel="preload" href="/finder/assets/icons/finder-icons.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/finder/assets/icons/finder-icons.min.css">
+
+    <!-- Vendor styles -->
+    <link rel="stylesheet" href="/finder/assets/vendor/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="/finder/assets/vendor/choices.js/public/assets/styles/choices.min.css">
+
+    <!-- Bootstrap + Theme styles -->
+    <link rel="preload" href="/finder/assets/css/theme.min.css" as="style">
+    <link rel="preload" href="/finder/assets/css/theme.rtl.min.css" as="style">
+    <link rel="stylesheet" href="/finder/assets/css/theme.min.css" id="theme-styles">
+
+    <!-- Customizer -->
+    <script src="/finder/assets/js/customizer.min.js"></script>
+  </head>
+
+
+  <!-- Body -->
+  <body class="bg-body-tertiary">
+
+    <!-- Customizer offcanvas -->
+    <div class="offcanvas offcanvas-end" id="customizer" tabindex="-1">
+      <div class="offcanvas-header border-bottom">
+        <h4 class="h5 offcanvas-title">Customize theme</h4>
+        <button class="btn-close" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+
+        <!-- Customizer settings -->
+        <div class="customizer-collapse collapse show" id="customizerSettings">
+
+          <!-- Colors -->
+          <div class="pb-4 mb-2">
+            <div class="d-flex align-items-center mb-3">
+              <i class="fi-swatches text-body-tertiary fs-5 me-2"></i>
+              <h5 class="fs-lg mb-0">Colors</h5>
+            </div>
+            <div class="row row-cols-2 g-3" id="theme-colors">
+              <div class="col">
+                <h6 class="fs-sm mb-2">Primary</h6>
+                <div class="color-swatch d-flex border rounded gap-3 p-2" id="theme-primary" data-color-labels='["theme-primary", "primary", "primary-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#d85151">
+                  <label for="primary" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #d85151"></label>
+                  <input type="color" class="visually-hidden" id="primary" value="#d85151">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Success</h6>
+                <div class="color-swatch d-flex border rounded gap-3 p-2" id="theme-success" data-color-labels='["theme-success", "success", "success-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#33b36b">
+                  <label for="success" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #33b36b"></label>
+                  <input type="color" class="visually-hidden" id="success" value="#33b36b">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Warning</h6>
+                <div class="color-swatch d-flex border rounded gap-3 p-2" id="theme-warning" data-color-labels='["theme-warning", "warning", "warning-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#fc9231">
+                  <label for="warning" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #fc9231"></label>
+                  <input type="color" class="visually-hidden" id="warning" value="#fc9231">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Danger</h6>
+                <div class="color-swatch d-flex border rounded gap-2 p-2" id="theme-danger" data-color-labels='["theme-danger", "danger", "danger-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#f03d3d">
+                  <label for="danger" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #f03d3d"></label>
+                  <input type="color" class="visually-hidden" id="danger" value="#f03d3d">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Info</h6>
+                <div class="color-swatch d-flex border rounded gap-2 p-2" id="theme-info" data-color-labels='["theme-info", "info", "info-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#3d7a81">
+                  <label for="info" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #3d7a81"></label>
+                  <input type="color" class="visually-hidden" id="info" value="#3d7a81">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direction -->
+          <div class="pb-4 mb-2">
+            <div class="d-flex align-items-center pb-1 mb-2">
+              <i class="fi-sort text-body-tertiary fs-lg me-2" style="transform: rotate(90deg)"></i>
+              <h5 class="fs-lg mb-0">Direction</h5>
+            </div>
+            <div class="d-flex align-items-center justify-content-between border rounded p-3">
+              <div class="me-3">
+                <h6 class="mb-1">RTL</h6>
+                <p class="fs-sm mb-0">Change text direction</p>
+              </div>
+              <div class="form-check form-switch m-0">
+                <input type="checkbox" class="form-check-input" role="switch" id="rtl-switch">
+              </div>
+            </div>
+            <div class="alert alert-info p-2 mt-2 mb-0">
+              <div class="d-flex text-body-emphasis fs-xs py-1 pe-1">
+                <i class="fi-info text-info fs-lg mb-2 mb-sm-0" style="margin-top: .125rem"></i>
+                <div class="ps-2">To switch the text direction of your webpage from LTR to RTL, please consult the detailed instructions provided in the relevant section of our documentation.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Border width -->
+          <div class="pb-4 mb-2">
+            <div class="d-flex align-items-center pb-1 mb-2">
+              <i class="fi-menu text-body-tertiary fs-lg me-2"></i>
+              <h5 class="fs-lg mb-0">Border width, px</h5>
+            </div>
+            <div class="slider-input d-flex align-items-center gap-3 border rounded p-3" id="border-input">
+              <input type="range" class="form-range" min="0" max="10" step="1" value="1">
+              <input type="number" class="form-control" id="border-width" min="0" max="10" value="1" style="max-width: 5.5rem">
+            </div>
+          </div>
+
+          <!-- Rounding -->
+          <div class="d-flex align-items-center pb-1 mb-2">
+            <i class="fi-maximize text-body-tertiary fs-lg me-2"></i>
+            <h5 class="fs-lg mb-0">Rounding, rem</h5>
+          </div>
+          <div class="slider-input d-flex align-items-center gap-3 border rounded p-3">
+            <input type="range" class="form-range" min="0" max="5" step=".05" value="0.5">
+            <input type="number" class="form-control" id="border-radius" min="0" max="5" step=".05" value="0.5" style="max-width: 5.5rem">
+          </div>
+        </div>
+
+        <!-- Customizer code -->
+        <div class="customizer-collapse collapse" id="customizerCode">
+          <div class="nav mb-3">
+            <a class="nav-link position-relative fs-base p-0" href=".customizer-collapse" data-bs-toggle="collapse" aria-expanded="true" aria-controls="customizerSettings customizerCode">
+              <i class="fi-chevron-left fs-lg ms-n1 me-1"></i>
+              <span class="hover-effect-underline stretched-link">Back to settings</span>
+            </a>
+          </div>
+          <p class="fs-sm pb-1">To apply the provided styles to your webpage, enclose them within a <code>&lt;style&gt;</code> tag and insert this tag into the <code>&lt;head&gt;</code> section of your HTML document after the following link to the main stylesheet:<br><code>&lt;link href=&quot;assets/css/theme.min.css&quot;&gt;</code></p>
+          <div class="position-relative bg-body-tertiary rounded overflow-hidden pt-3">
+            <div class="position-absolute top-0 start-0 w-100 p-3">
+              <button type="button" class="btn btn-sm btn-outline-dark w-100" data-copy-text-from="#generated-styles" data-done-label="Code copied">
+                <i class="fi-copy fs-sm me-1"></i>
+                Copy code
+              </button>
+            </div>
+            <pre class="text-wrap bg-transparent border-0 fs-xs text-body-emphasis p-4 pt-5" id="generated-styles"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offcanvas footer (Action buttons) -->
+      <div class="offcanvas-header border-top gap-3 d-none" id="customizer-btns">
+        <button type="button" class="btn btn-lg btn-secondary w-100 fs-sm" id="customizer-reset">
+          <i class="fi-trash fs-lg me-2 ms-n1"></i>
+          Reset
+        </button>
+        <button class="btn btn-lg btn-primary hiding-collapse-toggle w-100 fs-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target=".customizer-collapse" aria-expanded="false" aria-controls="customizerSettings customizerCode">
+          <i class="fi-code fs-lg me-2 ms-n1"></i>
+          Show code
+        </button>
+      </div>
+    </div>
+
+
+    <!-- Review form modal -->
+    <div class="modal fade" id="reviewForm" data-bs-backdrop="static" tabindex="-1" aria-labelledby="reviewFormLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <form class="modal-content needs-validation" novalidate>
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="reviewFormLabel">Leave a review</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body pb-3 pt-0">
+            <div class="mb-3">
+              <label for="review-name" class="form-label">Your name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="review-name" required>
+              <div class="invalid-feedback">Please enter your name!</div>
+              <small class="form-text">Will be displayed on the comment.</small>
+            </div>
+            <div class="mb-3">
+              <label for="review-email" class="form-label">Your email <span class="text-danger">*</span></label>
+              <input type="email" class="form-control" id="review-email" required>
+              <div class="invalid-feedback">Please provide valid email address!</div>
+              <small class="form-text">Authentication only - we won't spam you.</small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Rating <span class="text-danger">*</span></label>
+              <select class="form-select" data-select='{
+                "placeholderValue": "Select rating",
+                "choices": [
+                  {
+                    "value": "",
+                    "label": "Select rating",
+                    "placeholder": true
+                  },
+                  {
+                    "value": "1",
+                    "label": "<span class=\"visually-hidden\">1 star</span>",
+                    "customProperties": {
+                      "icon": "<span class=\"d-flex gap-1 py-1\"><i class=\"fi-star-filled text-warning\"></i></span>",
+                      "selected": "1 star"
+                    }
+                  },
+                  {
+                    "value": "2",
+                    "label": "<span class=\"visually-hidden\">2 stars</span>",
+                    "customProperties": {
+                      "icon": "<span class=\"d-flex gap-1 py-1\"><i class=\"fi-star-filled text-warning\"></i><i class=\"fi-star-filled text-warning\"></i></span>",
+                      "selected": "2 stars"
+                    }
+                  },
+                  {
+                    "value": "3",
+                    "label": "<span class=\"visually-hidden\">3 stars</span>",
+                    "customProperties": {
+                      "icon": "<span class=\"d-flex gap-1 py-1\"><i class=\"fi-star-filled text-warning\"></i><i class=\"fi-star-filled text-warning\"></i><i class=\"fi-star-filled text-warning\"></i></span>",
+                      "selected": "3 stars"
+                    }
+                  },
+                  {
+                    "value": "4",
+                    "label": "<span class=\"visually-hidden\">4 stars</span>",
+                    "customProperties": {
+                      "icon": "<span class=\"d-flex gap-1 py-1\"><i class=\"fi-star-filled text-warning\"></i><i class=\"fi-star-filled text-warning\"></i><i class=\"fi-star-filled text-warning\"></i><i class=\"ci-star-filled text-warning\"></i></span>",
+                      "selected": "4 stars"
+                    }
+                  },
+                  {
+                    "value": "5",
+                    "label": "<span class=\"visually-hidden\">5 stars</span>",
+                    "customProperties": {
+                      "icon": "<span class=\"d-flex gap-1 py-1\"><i class=\"fi-star-filled text-warning\"></i><i class=\"fi-star-filled text-warning\"></i><i class=\"fi-star-filled text-warning\"></i><i class=\"fi-star-filled text-warning\"></i><i class=\"ci-star-filled text-warning\"></i></span>",
+                      "selected": "5 stars"
+                    }
+                  }
+                ]
+              }' data-select-template="true" aria-label="Rating select" required></select>
+              <div class="invalid-feedback">Please select your rating!</div>
+            </div>
+            <div>
+              <label class="form-label" for="review-text">Review <span class="text-danger">*</span></label>
+              <textarea class="form-control" rows="4" id="review-text" required></textarea>
+              <div class="invalid-feedback">Please write a review!</div>
+              <small class="form-text">Your review must be at least 50 characters.</small>
+            </div>
+          </div>
+          <div class="modal-footer flex-nowrap gap-3 border-0 px-4">
+            <button type="reset" class="btn btn-secondary w-100 m-0" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary w-100 m-0">Submit review</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- Navigation bar (Page header) -->
+    <header class="navbar navbar-expand-lg navbar-sticky sticky-top z-fixed px-0" data-sticky-element>
+      <div class="container">
+
+        <!-- Mobile offcanvas menu toggler (Hamburger) -->
+        <button type="button" class="navbar-toggler me-3 me-lg-0" data-bs-toggle="offcanvas" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar brand (Logo) -->
+        <a class="navbar-brand py-1 py-md-2 py-xl-1 me-2 me-sm-n4 me-md-n5 me-lg-0" href="home-doctors.html">
+          <span class="d-none d-sm-flex flex-shrink-0 text-primary rtl-flip me-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="35" height="34"><path d="M34.5 16.894v10.731c0 3.506-2.869 6.375-6.375 6.375H17.5h-.85C7.725 33.575.5 26.138.5 17c0-9.35 7.65-17 17-17s17 7.544 17 16.894z" fill="currentColor"/><g fill-rule="evenodd"><path d="M17.5 13.258c-3.101 0-5.655 2.554-5.655 5.655s2.554 5.655 5.655 5.655 5.655-2.554 5.655-5.655-2.554-5.655-5.655-5.655zm-9.433 5.655c0-5.187 4.246-9.433 9.433-9.433s9.433 4.246 9.433 9.433a9.36 9.36 0 0 1-1.569 5.192l2.397 2.397a1.89 1.89 0 0 1 0 2.671 1.89 1.89 0 0 1-2.671 0l-2.397-2.397a9.36 9.36 0 0 1-5.192 1.569c-5.187 0-9.433-4.246-9.433-9.433z" fill="#000" fill-opacity=".05"/><g fill="#fff"><path d="M17.394 10.153c-3.723 0-6.741 3.018-6.741 6.741s3.018 6.741 6.741 6.741 6.741-3.018 6.741-6.741-3.018-6.741-6.741-6.741zM7.347 16.894A10.05 10.05 0 0 1 17.394 6.847 10.05 10.05 0 0 1 27.44 16.894 10.05 10.05 0 0 1 17.394 26.94 10.05 10.05 0 0 1 7.347 16.894z"/><path d="M23.025 22.525c.645-.645 1.692-.645 2.337 0l3.188 3.188c.645.645.645 1.692 0 2.337s-1.692.645-2.337 0l-3.187-3.187c-.645-.646-.645-1.692 0-2.337z"/></g></g><path d="M23.662 14.663c2.112 0 3.825-1.713 3.825-3.825s-1.713-3.825-3.825-3.825-3.825 1.713-3.825 3.825 1.713 3.825 3.825 3.825z" fill="#fff"/><path fill-rule="evenodd" d="M23.663 8.429a2.41 2.41 0 0 0-2.408 2.408 2.41 2.41 0 0 0 2.408 2.408 2.41 2.41 0 0 0 2.408-2.408 2.41 2.41 0 0 0-2.408-2.408zm-5.242 2.408c0-2.895 2.347-5.242 5.242-5.242s5.242 2.347 5.242 5.242-2.347 5.242-5.242 5.242-5.242-2.347-5.242-5.242z" fill="currentColor"/></svg>
+          </span>
+          Monaclick
+        </a>
+
+        <!-- Main navigation that turns into offcanvas on screens < 992px wide (lg breakpoint) -->
+        <nav class="offcanvas offcanvas-start" id="navbarNav" tabindex="-1" aria-labelledby="navbarNavLabel">
+          <div class="offcanvas-header py-3">
+            <h5 class="offcanvas-title" id="navbarNavLabel">Browse Monaclick</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body pt-2 pb-4 py-lg-0 mx-lg-auto">
+            <ul class="navbar-nav position-relative">
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Home</a>
+                <ul class="dropdown-menu">
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="/real-estate">
+                      <span class="fw-medium">Real Estate</span>
+                      <span class="d-block fs-xs text-body-secondary">Property listings directory</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/real-estate-light.jpg" alt="Real Estate Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/real-estate-dark.jpg" alt="Real Estate Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="/cars">
+                      <span class="fw-medium">Cars</span>
+                      <span class="d-block fs-xs text-body-secondary">Vehicle sales listings</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/cars-light.jpg" alt="Cars Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/cars-dark.jpg" alt="Cars Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="/contractors">
+                      <span class="fw-medium">Contractors</span>
+                      <span class="d-block fs-xs text-body-secondary">Professional services directory</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/contractors-light.jpg" alt="Contractors Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/contractors-dark.jpg" alt="Contractors Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="home-doctors.html">
+                      <span class="fw-medium">Doctors</span>
+                      <span class="d-block fs-xs text-body-secondary">Medical professionals listings</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/doctors-light.jpg" alt="Doctors Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/doctors-dark.jpg" alt="Doctors Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="/events">
+                      <span class="fw-medium">Events</span>
+                      <span class="d-block fs-xs text-body-secondary">Upcoming events listings</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/events-light.jpg" alt="Events Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/events-dark.jpg" alt="Events Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="home-city-guide.html">
+                      <span class="fw-medium">City Guide</span>
+                      <span class="d-block fs-xs text-body-secondary">Local places directory</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/city-guide-light.jpg" alt="City Guide Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/city-guide-dark.jpg" alt="City Guide Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown position-static py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle active" aria-current="page" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Listings</a>
+                <div class="dropdown-menu rounded-4 p-4">
+                  <div class="d-flex flex-column flex-lg-row gap-4">
+                    <div style="min-width: 190px">
+                      <div class="h6 mb-2">Real Estate</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/real-estate">Map/Listings Split View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/entry/real-estate">Property Details Page</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="vendor-real-estate.html">Vendor Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Cars</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/cars">Listings Grid View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/cars">Listings List View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/entry/cars">Car Details Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Contractors</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/contractors">Listings with Side Filters</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/entry/contractors">Contractor Details Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Doctors</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="listings-list-doctors.html">Listings List View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="listings-grid-doctors.html">Listings Grid View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="single-entry-doctors.html">Doctor Details Page</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div style="min-width: 190px">
+                      <div class="h6 mb-2">Events</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/events">Listings with Top Filters</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/entry/events">Event Details Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">City Guide</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="listings-side-filters-city-guide.html">Listings with Side Filters</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="listings-top-filters-city-guide.html">Listings with Top Filters</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="single-entry-city-guide.html">Place Details Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Add Property</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-type.html">Property type</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-location.html">Location</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-photos.html">Photos and Videos</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-details.html">Property Details</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-price.html">Price</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-contact-info.html">Contact Info</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-promotion.html">Ad Promotion</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div style="min-width: 190px">
+                      <div class="h6 mb-2">Add Contractor</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-location.html">Business Location</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-services.html">Choose Services</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-profile.html">Profile Details</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-price-hours.html">Price and Hours</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-project.html">Create First Project</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Add (Sell) Car</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-car.html">Add (Sell) Car Page</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" data-bs-auto-close="outside" aria-expanded="false">Account</a>
+                <ul class="dropdown-menu">
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Auth Pages</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="/login">Sign In</a></li>
+                      <li><a class="dropdown-item" href="/register">Sign Up</a></li>
+                      <li><a class="dropdown-item" href="account-password-recovery.html">Password Recovery</a></li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item" href="/dashboard">My Profile</a></li>
+                  <li><a class="dropdown-item" href="account-listings.html">My Listings</a></li>
+                  <li><a class="dropdown-item" href="account-reviews.html">Reviews</a></li>
+                  <li><a class="dropdown-item" href="account-favorites.html">Favorites</a></li>
+                  <li><a class="dropdown-item" href="account-payment.html">Payment Details</a></li>
+                  <li><a class="dropdown-item" href="/profile">Account Settings</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" data-bs-auto-close="outside" aria-expanded="false">Pages</a>
+                <ul class="dropdown-menu">
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#!" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">About</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="about-v1.html">About v.1</a></li>
+                      <li><a class="dropdown-item" href="about-v2.html">About v.2</a></li>
+                    </ul>
+                  </li>
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Blog</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="blog-layout-v1.html">Blog Layout v.1</a></li>
+                      <li><a class="dropdown-item" href="blog-layout-v2.html">Blog Layout v.2</a></li>
+                      <li><a class="dropdown-item" href="blog-layout-v3.html">Blog Layout v.3</a></li>
+                      <li><a class="dropdown-item" href="blog-layout-v4.html">Blog Layout v.4</a></li>
+                      <li><a class="dropdown-item" href="blog-single-v1.html">Single Post v.1</a></li>
+                      <li><a class="dropdown-item" href="blog-single-v2.html">Single Post v.2</a></li>
+                      <li><a class="dropdown-item" href="blog-single-v3.html">Single Post v.3</a></li>
+                    </ul>
+                  </li>
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Contact</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="contact-v1.html">Contact v.1</a></li>
+                      <li><a class="dropdown-item" href="contact-v2.html">Contact v.2</a></li>
+                      <li><a class="dropdown-item" href="contact-v3.html">Contact v.3</a></li>
+                    </ul>
+                  </li>
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Help Center</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="help-topics-v1.html">Help Topics v.1</a></li>
+                      <li><a class="dropdown-item" href="help-topics-v2.html">Help Topics v.2</a></li>
+                      <li><a class="dropdown-item" href="help-topics-v3.html">Help Topics v.3</a></li>
+                      <li><a class="dropdown-item" href="help-single-article-v1.html">Help Single Article v.1</a></li>
+                      <li><a class="dropdown-item" href="help-single-article-v2.html">Help Single Article v.2</a></li>
+                      <li><a class="dropdown-item" href="help-single-article-v3.html">Help Single Article v.3</a></li>
+                    </ul>
+                  </li>
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">404 Error</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="404-bg-image.html">Background Image (Real Estate)</a></li>
+                      <li><a class="dropdown-item" href="404-icon.html">Icon Image (Cars)</a></li>
+                      <li><a class="dropdown-item" href="404-split-screen.html">Split Screen (Contractors)</a></li>
+                      <li><a class="dropdown-item" href="404-illustration.html">Illustration (City Guide)</a></li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item" href="terms-and-conditions.html">Terms &amp; Conditions</a></li>
+                </ul>
+              </li>
+              <li class="nav-item py-lg-2 me-lg-n2 me-xl-0">
+                <a class="nav-link" href="docs/installation.html">Docs</a>
+              </li>
+              <li class="nav-item py-lg-2 me-lg-n2 me-xl-0">
+                <a class="nav-link" href="docs/typography.html">Components</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Button group -->
+        <div class="d-flex gap-sm-1">
+
+          <!-- Theme switcher (light/dark/auto) -->
+          <div class="dropdown me-1">
+            <button type="button" class="theme-switcher btn btn-icon btn-outline-secondary fs-lg border-0 animate-scale" data-bs-toggle="dropdown" data-bs-display="dynamic" aria-expanded="false" aria-label="Toggle theme (light)">
+              <span class="theme-icon-active d-flex animate-target">
+                <i class="fi-sun"></i>
+              </span>
+            </button>
+            <ul class="dropdown-menu start-50 translate-middle-x" style="--fn-dropdown-min-width: 9rem; --fn-dropdown-spacer: .5rem">
+              <li>
+                <button type="button" class="dropdown-item active" data-bs-theme-value="light" aria-pressed="true">
+                  <span class="theme-icon d-flex fs-base me-2">
+                    <i class="fi-sun"></i>
+                  </span>
+                  <span class="theme-label">Light</span>
+                  <i class="item-active-indicator fi-check ms-auto"></i>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item" data-bs-theme-value="dark" aria-pressed="false">
+                  <span class="theme-icon d-flex fs-base me-2">
+                    <i class="fi-moon"></i>
+                  </span>
+                  <span class="theme-label">Dark</span>
+                  <i class="item-active-indicator fi-check ms-auto"></i>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item" data-bs-theme-value="auto" aria-pressed="false">
+                  <span class="theme-icon d-flex fs-base me-2">
+                    <i class="fi-auto"></i>
+                  </span>
+                  <span class="theme-label">Auto</span>
+                  <i class="item-active-indicator fi-check ms-auto"></i>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Log in button -->
+          <a class="btn btn-outline-secondary animate-slide-end me-2" href="/login" aria-label="Sign in to account">
+            <i class="fi-log-in fs-base animate-target mx-n2 me-xl-2"></i>
+            <span class="d-none d-xl-inline">Log in</span>
+          </a>
+
+          <!-- Sign up / Register button  -->
+          <a class="btn btn-primary animate-shake" href="/register">
+            <i class="fi-user fs-base animate-target ms-n1 me-1 me-sm-2"></i>
+            Sign up
+          </a>
+        </div>
+      </div>
+    </header>
+
+
+    <!-- Page content -->
+    <main class="content-wrapper">
+      <div class="container pt-4 pb-5 mb-xxl-3">
+
+        <!-- Breadcrumb -->
+        <nav class="pb-2" aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="home-doctors.html">Home</a></li>
+            <li class="breadcrumb-item"><a href="listings-list-doctors.html">Physicians</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Dr. Michael Johnston</li>
+          </ol>
+        </nav>
+
+        <div class="row pb-2 pb-sm-3 pb-md-4 pb-lg-5">
+
+          <!-- Doctor information + Reviews -->
+          <div class="col-lg-8">
+
+            <!-- Doctor information -->
+            <div class="position-relative p-4 mb-4">
+              <div class="position-relative z-1 p-xl-2">
+                <div class="d-flex align-items-">
+                  <div class="flex-shrink-0">
+                    <div class="d-md-none" style="width: 48px"></div>
+                    <div class="d-none d-sm-block d-md-none" style="width: 100px"></div>
+                    <div class="d-none d-md-block" style="width: 172px"></div>
+                    <div class="ratio" style="--fn-aspect-ratio: calc(214 / 172 * 100%)">
+                      <img src="/finder/assets/img/listings/doctors/01.jpg" class="rounded" alt="Image">
+                    </div>
+                  </div>
+                  <div class="vstack ps-sm-4 ps-xl-5 ms-md-2 ms-xl-0">
+                    <div class="d-flex align-items-start justify-content-between gap-3 pb-1 ms-3 ms-sm-0 mb-2">
+                      <h1 class="h4 mb-0">Dr. Michael Johnston</h1>
+                      <div class="d-flex align-items-center position-relative gap-1 mt-1">
+                        <i class="fi-star-filled text-warning"></i>
+                        <a class="fs-sm text-secondary-emphasis hover-effect-underline stretched-link text-decoration-none" href="#reviews">4.5</a>
+                        <span class="fs-xs text-body-secondary align-self-end">(176)</span>
+                      </div>
+                    </div>
+                    <div class="h6 fs-sm ms-3 ms-sm-0 pb-1 mb-2">Cardiologist</div>
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center text-nowrap pt-2 pt-sm-0 ms-n5 ms-sm-0 mb-0">
+                      <li class="d-flex align-items-center gap-2 me-2">
+                        <span class="badge text-bg-primary">21</span>
+                        <span class="fs-sm text-dark-emphasis">years experience</span>
+                      </li>
+                      <li class="d-flex align-items-center gap-1 fs-sm text-dark-emphasis me-2">
+                        <i class="fi-user fs-base"></i>
+                        Adults
+                      </li>
+                      <li class="d-flex align-items-center gap-1 fs-sm text-dark-emphasis me-2">
+                        <i class="fi-baby fs-base"></i>
+                        Children
+                      </li>
+                    </ul>
+                    <figure class="pt-4 mt-auto ms-n5 ms-sm-0 mb-0">
+                      <blockquote class="blockquote fs-base fw-medium">
+                        <p>Dr. Johnston is a very knowledgeable cardiologist. He provided excellent care, improving my heart health. I'm very grateful!</p>
+                      </blockquote>
+                      <figcaption class="blockquote-footer d-flex mb-1">
+                        Jerome Bell
+                        <i class="fi-bullet align-self-center mx-1"></i>
+                        Sep 13, 2024
+                      </figcaption>
+                    </figure>
+                  </div>
+                </div>
+                <h2 class="h4 pt-4 pt-md-5 mt-3 mt-md-0">About doctor</h2>
+                <p class="fs-sm mb-0">Dr. Michael Johnston, a highly experienced cardiologist with over two decades in the field, provides comprehensive and advanced cardiovascular care. Known for his expertise in diagnosing and treating a wide range of heart conditions, Dr. Johnston combines cutting-edge medical techniques with personalized treatment plans to ensure the best possible outcomes for his patients. Whether it's managing chronic heart disease, performing complex procedures, or offering preventative care, Dr. Johnston's meticulous diagnostic analysis and patient-centered approach make him a trusted leader in cardiovascular health. Rely on his expertise to safeguard your heart health and improve your quality of life.</p>
+                <dl class="pt-4 pt-md-5 mt-3 mt-md-0 mb-0">
+                  <dt class="fs-sm mb-2">Citywide Heart Clinic</dt>
+                  <dd class="d-flex flex-wrap gap-2 fs-sm mb-3">
+                    <div class="d-flex align-items-center gap-1 me-2">
+                      <i class="fi-map-pin fs-base"></i>
+                      1.4 mi
+                    </div>
+                    <div class="me-2">201 E Randolph St, Chicago, IL 60602</div>
+                    <div class="nav mt-n1">
+                      <a class="nav-link position-relative gap-2 fs-xs py-1 px-0" href="#!">
+                        <i class="fi-map fs-sm"></i>
+                        <span class="hover-effect-underline stretched-link">Show on map</span>
+                      </a>
+                    </div>
+                  </dd>
+                  <dt class="fs-sm mb-2">Skyline Medical Center</dt>
+                  <dd class="d-flex flex-wrap gap-2 fs-sm mb-0">
+                    <div class="d-flex align-items-center gap-1 me-2">
+                      <i class="fi-map-pin fs-base"></i>
+                      3.2 mi
+                    </div>
+                    <div class="me-2">233 S Wacker Dr, Chicago, IL 60606</div>
+                    <div class="nav mt-n1">
+                      <a class="nav-link position-relative gap-2 fs-xs py-1 px-0" href="#!">
+                        <i class="fi-map fs-sm"></i>
+                        <span class="hover-effect-underline stretched-link">Show on map</span>
+                      </a>
+                    </div>
+                  </dd>
+                </dl>
+                <h2 class="h4 pt-4 pt-md-5 mt-3 mt-md-0">Procedures</h2>
+                <div class="row row-cols-1 row-cols-sm-2 fs-sm gy-2">
+                  <div class="col">
+                    <ul class="mb-0">
+                      <li>Electrocardiogram (ECG/EKG)</li>
+                      <li>Echocardiogram</li>
+                      <li>Stress Test</li>
+                      <li>Cardiac Catheterization</li>
+                      <li>Coronary Angiography</li>
+                    </ul>
+                  </div>
+                  <div class="col">
+                    <ul class="mb-0">
+                      <li>Pacemaker Implantation</li>
+                      <li>Balloon Angioplasty and Stenting</li>
+                      <li>Holter Monitoring</li>
+                      <li>Cardioversion</li>
+                      <li>Heart Valve Repair/Replacement</li>
+                    </ul>
+                  </div>
+                </div>
+                <h2 class="h4 pt-4 pt-md-5 mt-3 mt-md-0">Education</h2>
+                <ul class="list-unstyled fs-sm">
+                  <li>
+                    <span class="fw-medium text-body-emphasis">Harvard Medical School</span> - Doctor of Medicine (MD)
+                  </li>
+                  <li>
+                    <span class="fw-medium text-body-emphasis">Johns Hopkins University</span> - Residency in Cardiovascular Medicine
+                  </li>
+                </ul>
+              </div>
+              <span class="position-absolute top-0 start-0 w-100 h-100 bg-white rounded shadow d-none-dark"></span>
+              <span class="position-absolute top-0 start-0 w-100 h-100 bg-body-tertiary rounded d-none d-block-dark"></span>
+            </div>
+
+
+            <!-- Reviews -->
+            <div class="position-relative p-4 mt-4" id="reviews" style="scroll-margin-top: 98px">
+              <div class="position-relative z-1 p-xl-2">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                  <h2 class="h4 mb-0">Reviews</h2>
+                  <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#reviewForm">
+                    <i class="fi-edit-3 fs-base ms-n1 me-2"></i>
+                    Add review
+                  </button>
+                </div>
+
+                <!-- Rating breakdown -->
+                <div class="row g-4 pb-3 mb-3">
+                  <div class="col-sm-5 col-md-3 col-lg-4">
+                    <div class="vstack h-100 position-relative">
+                      <div class="d-flex flex-column align-items-center justify-content-center h-100 position-relative z-1 p-4">
+                        <div class="h1 pb-2 mb-1">4.5</div>
+                        <div class="hstack justify-content-center gap-1 fs-sm mb-2">
+                          <i class="fi-star-filled text-warning"></i>
+                          <i class="fi-star-filled text-warning"></i>
+                          <i class="fi-star-filled text-warning"></i>
+                          <i class="fi-star-filled text-warning"></i>
+                          <i class="fi-star-half text-warning"></i>
+                        </div>
+                        <div class="fs-sm">176 reviews</div>
+                      </div>
+                      <span class="position-absolute top-0 start-0 w-100 h-100 bg-body-tertiary rounded d-none-dark"></span>
+                      <span class="position-absolute top-0 start-0 w-100 h-100 bg-body-secondary rounded opacity-50 d-none d-block-dark"></span>
+                    </div>
+                  </div>
+                  <div class="col-sm-7 col-md-9 col-lg-8">
+                    <div class="vstack gap-3">
+                      <div class="hstack gap-2">
+                        <div class="hstack fs-sm gap-1">
+                          5<i class="fi-star-filled text-warning"></i>
+                        </div>
+                        <div class="progress w-100" role="progressbar" aria-label="Five stars" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
+                          <div class="progress-bar bg-warning rounded-pill" style="width: 65%"></div>
+                        </div>
+                        <div class="fs-sm text-nowrap text-end" style="width: 40px;">128</div>
+                      </div>
+                      <div class="hstack gap-2">
+                        <div class="hstack fs-sm gap-1">
+                          4<i class="fi-star-filled text-warning"></i>
+                        </div>
+                        <div class="progress w-100" role="progressbar" aria-label="Four stars" aria-valuenow="21" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
+                          <div class="progress-bar bg-warning rounded-pill" style="width: 21%"></div>
+                        </div>
+                        <div class="fs-sm text-nowrap text-end" style="width: 40px;">27</div>
+                      </div>
+                      <div class="hstack gap-2">
+                        <div class="hstack fs-sm gap-1">
+                          3<i class="fi-star-filled text-warning"></i>
+                        </div>
+                        <div class="progress w-100" role="progressbar" aria-label="Three stars" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
+                          <div class="progress-bar bg-warning rounded-pill" style="width: 10%"></div>
+                        </div>
+                        <div class="fs-sm text-nowrap text-end" style="width: 40px;">13</div>
+                      </div>
+                      <div class="hstack gap-2">
+                        <div class="hstack fs-sm gap-1">
+                          2<i class="fi-star-filled text-warning"></i>
+                        </div>
+                        <div class="progress w-100" role="progressbar" aria-label="Two stars" aria-valuenow="5" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
+                          <div class="progress-bar bg-warning rounded-pill" style="width: 5%"></div>
+                        </div>
+                        <div class="fs-sm text-nowrap text-end" style="width: 40px;">6</div>
+                      </div>
+                      <div class="hstack gap-2">
+                        <div class="hstack fs-sm gap-1">
+                          1<i class="fi-star-filled text-warning"></i>
+                        </div>
+                        <div class="progress w-100" role="progressbar" aria-label="One star" aria-valuenow="2.6" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
+                          <div class="progress-bar bg-warning rounded-pill" style="width: 2.6%"></div>
+                        </div>
+                        <div class="fs-sm text-nowrap text-end" style="width: 40px;">2</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Reviews -->
+                <div class="vstack gap-4">
+
+                  <!-- Rreview -->
+                  <div class="vstack gap-2 mb-sm-2">
+                    <div class="d-flex align-items-center gap-3 mb-1">
+                      <h6 class="mb-0">Randy W.</h6>
+                      <span class="fs-xs text-body-secondary">November 19, 2024</span>
+                    </div>
+                    <div class="d-flex gap-1 fs-sm mb-1">
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                    </div>
+                    <p class="fs-sm mb-1">Dr. Michael Johnston is truly a life-saver. His expertise and attention to detail are unmatched. He took the time to explain everything clearly and made sure I felt comfortable every step of the way. Thanks to him, my heart health is now better than ever. I highly recommend him!</p>
+                    <div class="nav align-items-center">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 me-n1">
+                        <i class="fi-thumbs-up fs-base animate-target me-1"></i>
+                        6
+                      </button>
+                      <hr class="vr my-2 mx-3">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 ms-n1">
+                        <i class="fi-thumbs-down fs-base animate-target me-1"></i>
+                        0
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Rreview -->
+                  <div class="vstack gap-2 mb-sm-2">
+                    <div class="d-flex align-items-center gap-3 mb-1">
+                      <h6 class="mb-0">Lora Palmer</h6>
+                      <span class="fs-xs text-body-secondary">November 10, 2024</span>
+                    </div>
+                    <div class="d-flex gap-1 fs-sm mb-1">
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                    </div>
+                    <p class="fs-sm mb-1">From the first consultation, Dr. Johnston showed exceptional care and professionalism. His thorough approach to diagnosing my heart condition was impressive, and his treatment plan has worked wonders. I feel fortunate to have found such a knowledgeable and compassionate cardiologist.</p>
+                    <div class="nav align-items-center">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 me-n1">
+                        <i class="fi-thumbs-up fs-base animate-target me-1"></i>
+                        13
+                      </button>
+                      <hr class="vr my-2 mx-3">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 ms-n1">
+                        <i class="fi-thumbs-down fs-base animate-target me-1"></i>
+                        2
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Rreview -->
+                  <div class="vstack gap-2 mb-sm-2">
+                    <div class="d-flex align-items-center gap-3 mb-1">
+                      <h6 class="mb-0">Melissa Smith</h6>
+                      <span class="fs-xs text-body-secondary">November 5, 2024</span>
+                    </div>
+                    <div class="d-flex gap-1 fs-sm mb-1">
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                    </div>
+                    <p class="fs-sm mb-1">Dr. Johnston was incredibly attentive and reassuring during a very stressful time for me. He made complex medical concepts easy to understand and guided me through the entire process. His expertise gave me confidence, and my heart is now in great shape. Five stars for sure!</p>
+                    <div class="nav align-items-center">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 me-n1">
+                        <i class="fi-thumbs-up fs-base animate-target me-1"></i>
+                        8
+                      </button>
+                      <hr class="vr my-2 mx-3">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 ms-n1">
+                        <i class="fi-thumbs-down fs-base animate-target me-1"></i>
+                        0
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Rreview -->
+                  <div class="vstack gap-2 mb-sm-2">
+                    <div class="d-flex align-items-center gap-3 mb-1">
+                      <h6 class="mb-0">Alice Cooper</h6>
+                      <span class="fs-xs text-body-secondary">October 23, 2024</span>
+                    </div>
+                    <div class="d-flex gap-1 fs-sm mb-1">
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                    </div>
+                    <p class="fs-sm mb-1">I can't say enough good things about Dr. Johnston. His calm demeanor, vast knowledge, and caring nature set him apart. He listens carefully to all concerns and tailors treatments to each patient's needs. I'm grateful for the care I've received and highly recommend him to anyone seeking a top-notch cardiologist.</p>
+                    <div class="nav align-items-center">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 me-n1">
+                        <i class="fi-thumbs-up fs-base animate-target me-1"></i>
+                        27
+                      </button>
+                      <hr class="vr my-2 mx-3">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 ms-n1">
+                        <i class="fi-thumbs-down fs-base animate-target me-1"></i>
+                        3
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Rreview -->
+                  <div class="vstack gap-2 mb-sm-2">
+                    <div class="d-flex align-items-center gap-3 mb-1">
+                      <h6 class="mb-0">Natalia D.</h6>
+                      <span class="fs-xs text-body-secondary">October 7, 2024</span>
+                    </div>
+                    <div class="d-flex gap-1 fs-sm mb-1">
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star-filled text-warning"></i>
+                      <i class="fi-star text-warning"></i>
+                    </div>
+                    <p class="fs-sm mb-1">Dr. Johnston is an excellent cardiologist and clearly knows his field well. My treatment has been effective, and I feel much healthier. The only reason for 4 stars is that the wait time for my appointment was longer than expected, but once I saw him, the care was outstanding.</p>
+                    <div class="nav align-items-center">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 me-n1">
+                        <i class="fi-thumbs-up fs-base animate-target me-1"></i>
+                        15
+                      </button>
+                      <hr class="vr my-2 mx-3">
+                      <button type="button" class="nav-link text-body-secondary animate-scale px-0 ms-n1">
+                        <i class="fi-thumbs-down fs-base animate-target me-1"></i>
+                        0
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Pagination -->
+                  <nav class="pt-1 pt-sm-2 pb-2" aria-label="Reviews pagination">
+                    <ul class="pagination">
+                      <li class="page-item active" aria-current="page">
+                        <span class="page-link">
+                          1
+                          <span class="visually-hidden">(current)</span>
+                        </span>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="#!">2</a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="#!">3</a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="#!">4</a>
+                      </li>
+                      <li class="page-item">
+                        <span class="page-link pe-none">...</span>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="#!">36</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+              <span class="position-absolute top-0 start-0 w-100 h-100 bg-white rounded shadow d-none-dark"></span>
+              <span class="position-absolute top-0 start-0 w-100 h-100 bg-body-tertiary rounded d-none d-block-dark"></span>
+            </div>
+          </div>
+
+
+          <!-- Sidebar with appointment booking form that turns into offcanvas on screens < 992px wide (lg breakpoint) -->
+          <div class="col-lg-4" style="margin-top: -100px">
+            <div class="offcanvas-lg offcanvas-end sticky-lg-top" id="bookAppointment">
+              <div class="d-none d-lg-block" style="height: 100px"></div>
+              <div class="offcanvas-header pt-3">
+                <h5 class="offcanvas-title">Book an appointment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#bookAppointment" aria-label="Close"></button>
+              </div>
+              <div class="offcanvas-body position-relative d-block pt-0 p-lg-4">
+                <div class="position-relative z-1 p-xl-2">
+                  <h2 class="h5 mb-4 d-none d-lg-block">Book an appointment</h2>
+                  <ul class="list-unstyled gap-1 fs-sm text-body-secondary mb-4">
+                    <li>
+                      <span class="fs-6 fw-semibold text-primary me-1">$75.00</span>
+                      Online consultation
+                    </li>
+                    <li>
+                      <span class="fs-6 fw-semibold text-dark-emphasis me-1">$90.00</span>
+                      Visiting the clinic
+                    </li>
+                  </ul>
+                  <div class="d-flex gap-4 pb-2 mb-1">
+                    <div class="form-check form-switch">
+                      <label class="form-check-label">
+                        <input type="radio" class="form-check-input" name="visit-method" checked>
+                        Online
+                      </label>
+                    </div>
+                    <div class="form-check form-switch">
+                      <label class="form-check-label">
+                        <input type="radio" class="form-check-input" name="visit-method">
+                        Visit clinic
+                      </label>
+                    </div>
+                  </div>
+                  <div class="btn-group w-100" role="group" aria-label="Date/time selection">
+                    <input type="radio" class="btn-check" name="visit-day" id="visit-day-1" checked>
+                    <label class="btn btn-outline-info w-100 px-2" for="visit-day-1">Mon, 11</label>
+                    <input type="radio" class="btn-check" name="visit-day" id="visit-day-2" checked>
+                    <label class="btn btn-outline-info w-100 px-2" for="visit-day-2">Tue, 12</label>
+                    <input type="radio" class="btn-check" name="visit-day" id="visit-day-3">
+                    <label class="btn btn-outline-info w-100 px-2" for="visit-day-3">Wed, 13</label>
+                    <button type="button" class="btn btn-icon btn-outline-info flex-grow-0 px-2" aria-label="Next">
+                      <i class="fi-chevron-right fs-lg"></i>
+                    </button>
+                  </div>
+                  <div class="row row-cols-4 g-2 pt-4 pb-2">
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-1">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-1">10:00</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-2">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-2">10:30</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-3">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-3">11:00</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-4">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-4">11:30</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-5">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-5">12:00</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-6" checked>
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-6">12:30</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-7">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-7">13:00</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-8">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-8">13:30</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-9">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-9">14:00</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-10">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-10">14:30</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-11">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-11">15:00</label>
+                    </div>
+                    <div class="col">
+                      <input type="radio" class="btn-check" name="visit-time" id="visit-time-12">
+                      <label class="btn btn-outline-secondary w-100 rounded-pill px-2" for="visit-time-12">15:30</label>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-lg btn-primary w-100 mt-4">
+                    <i class="fi-clock fs-lg me-2 ms-n1 d-lg-none d-xl-inline-flex"></i>
+                    Next appointment 12:30, Tue, 12
+                  </button>
+                </div>
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-none d-lg-block">
+                  <span class="position-absolute top-0 start-0 w-100 h-100 bg-white rounded shadow d-none-dark"></span>
+                  <span class="position-absolute top-0 start-0 w-100 h-100 bg-body-tertiary rounded d-none d-block-dark"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Nearby doctors -->
+        <div class="d-flex align-items-start justify-content-between gap-4 pt-5 pb-3 mt-xxl-3 mb-2 mb-sm-3">
+          <h2 class="h1 mb-0">Doctors nearby</h2>
+          <div class="nav">
+            <a class="nav-link position-relative text-nowrap py-1 px-0" href="listings-grid-doctors.html">
+              <span class="hover-effect-underline stretched-link me-1">View all</span>
+              <i class="fi-chevron-right fs-lg"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Row of cards that turns into carousel on screens < 992px wide (lg breakpoint) -->
+        <div class="swiper pb-2 pb-sm-3 pb-md-4 pb-lg-5" data-swiper='{
+          "slidesPerView": 1,
+          "spaceBetween": 24,
+          "pagination": {
+            "el": ".swiper-pagination",
+            "clickable": true
+          },
+          "breakpoints": {
+            "500": {
+              "slidesPerView": 2
+            },
+            "768": {
+              "slidesPerView": 3
+            },
+            "992": {
+              "slidesPerView": 4
+            }
+          }
+        }'>
+          <div class="swiper-wrapper">
+
+            <!-- Card (Doctor listing) -->
+            <div class="swiper-slide h-auto">
+              <article class="card h-100 hover-effect-scale z-1 border-0">
+                <div class="card-img-top bg-body-tertiary overflow-hidden">
+                  <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(200 / 306 * 100%)">
+                    <img src="/finder/assets/img/listings/doctors/18.jpg" alt="Image">
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="d-flex align-items-center gap-1 mb-2">
+                    <i class="fi-star-filled text-warning"></i>
+                    <span class="fs-sm text-secondary-emphasis">4.3</span>
+                    <span class="fs-xs text-body-secondary align-self-end">(37)</span>
+                  </div>
+                  <h3 class="h5 mb-2">
+                    <a class="hover-effect-underline stretched-link" href="#!">Dr. Peter Parker</a>
+                  </h3>
+                  <p class="fs-sm fw-semibold text-dark-emphasis mb-2">Orthopedic Surgeon</p>
+                  <ul class="list-unstyled flex-wrap flex-row gap-2 fs-sm mb-0">
+                    <li class="d-flex align-items-center me-2">
+                      <i class="fi-map-pin me-1"></i>
+                      1.5 mi
+                    </li>
+                    <li class="d-flex align-items-center">
+                      <i class="fi-user me-1"></i>
+                      Adults
+                    </li>
+                  </ul>
+                </div>
+                <div class="card-footer bg-transparent border-0 h6 text-dark-emphasis pt-0 pb-4 mb-0">
+                  $80.00
+                </div>
+                <span class="position-absolute top-0 start-0 w-100 h-100 z-n1 bg-white rounded shadow d-none-dark"></span>
+                <span class="position-absolute top-0 start-0 w-100 h-100 z-n1 bg-body-tertiary rounded d-none d-block-dark"></span>
+              </article>
+            </div>
+
+            <!-- Card (Doctor listing) -->
+            <div class="swiper-slide h-auto">
+              <article class="card h-100 hover-effect-scale z-1 border-0">
+                <div class="card-img-top bg-body-tertiary overflow-hidden">
+                  <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(200 / 306 * 100%)">
+                    <img src="/finder/assets/img/listings/doctors/19.jpg" alt="Image">
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="d-flex align-items-center gap-1 mb-2">
+                    <i class="fi-star-filled text-warning"></i>
+                    <span class="fs-sm text-secondary-emphasis">4.7</span>
+                    <span class="fs-xs text-body-secondary align-self-end">(112)</span>
+                  </div>
+                  <h3 class="h5 mb-2">
+                    <a class="hover-effect-underline stretched-link" href="#!">Dr. Gloria Fox</a>
+                  </h3>
+                  <p class="fs-sm fw-semibold text-dark-emphasis mb-2">Pediatrician</p>
+                  <ul class="list-unstyled flex-wrap flex-row gap-2 fs-sm mb-0">
+                    <li class="d-flex align-items-center me-2">
+                      <i class="fi-map-pin me-1"></i>
+                      1.3 mi
+                    </li>
+                    <li class="d-flex align-items-center">
+                      <i class="fi-baby me-1"></i>
+                      Children
+                    </li>
+                  </ul>
+                </div>
+                <div class="card-footer bg-transparent border-0 h6 text-dark-emphasis pt-0 pb-4 mb-0">
+                  $40.00
+                </div>
+                <span class="position-absolute top-0 start-0 w-100 h-100 z-n1 bg-white rounded shadow d-none-dark"></span>
+                <span class="position-absolute top-0 start-0 w-100 h-100 z-n1 bg-body-tertiary rounded d-none d-block-dark"></span>
+              </article>
+            </div>
+
+            <!-- Card (Doctor listing) -->
+            <div class="swiper-slide h-auto">
+              <article class="card h-100 hover-effect-scale z-1 border-0">
+                <div class="card-img-top bg-body-tertiary overflow-hidden">
+                  <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(200 / 306 * 100%)">
+                    <img src="/finder/assets/img/listings/doctors/20.jpg" alt="Image">
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="d-flex align-items-center gap-1 mb-2">
+                    <i class="fi-star-filled text-warning"></i>
+                    <span class="fs-sm text-secondary-emphasis">5.0</span>
+                    <span class="fs-xs text-body-secondary align-self-end">(43)</span>
+                  </div>
+                  <h3 class="h5 mb-2">
+                    <a class="hover-effect-underline stretched-link" href="#!">Dr. Peter Grokovski</a>
+                  </h3>
+                  <p class="fs-sm fw-semibold text-dark-emphasis mb-2">Dermatologist</p>
+                  <ul class="list-unstyled flex-wrap flex-row gap-2 fs-sm mb-0">
+                    <li class="d-flex align-items-center me-2">
+                      <i class="fi-map-pin me-1"></i>
+                      1.4 mi
+                    </li>
+                    <li class="d-flex align-items-center me-2">
+                      <i class="fi-user me-1"></i>
+                      Adults
+                    </li>
+                  </ul>
+                </div>
+                <div class="card-footer bg-transparent border-0 h6 text-dark-emphasis pt-0 pb-4 mb-0">
+                  $55.00
+                </div>
+                <span class="position-absolute top-0 start-0 w-100 h-100 z-n1 bg-white rounded shadow d-none-dark"></span>
+                <span class="position-absolute top-0 start-0 w-100 h-100 z-n1 bg-body-tertiary rounded d-none d-block-dark"></span>
+              </article>
+            </div>
+
+            <!-- Card (Doctor listing) -->
+            <div class="swiper-slide h-auto">
+              <article class="card h-100 hover-effect-scale z-1 border-0">
+                <div class="card-img-top bg-body-tertiary overflow-hidden">
+                  <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(200 / 306 * 100%)">
+                    <img src="/finder/assets/img/listings/doctors/21.jpg" alt="Image">
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="d-flex align-items-center gap-1 mb-2">
+                    <i class="fi-star-filled text-warning"></i>
+                    <span class="fs-sm text-secondary-emphasis">4.8</span>
+                    <span class="fs-xs text-body-secondary align-self-end">(95)</span>
+                  </div>
+                  <h3 class="h5 mb-2">
+                    <a class="hover-effect-underline stretched-link" href="#!">Dr. Emily Johnson</a>
+                  </h3>
+                  <p class="fs-sm fw-semibold text-dark-emphasis mb-2">General Practitioner</p>
+                  <ul class="list-unstyled flex-wrap flex-row gap-2 fs-sm mb-0">
+                    <li class="d-flex align-items-center me-2">
+                      <i class="fi-map-pin me-1"></i>
+                      1.3 mi
+                    </li>
+                    <li class="d-flex align-items-center me-2">
+                      <i class="fi-user me-1"></i>
+                      Adults
+                    </li>
+                    <li class="d-flex align-items-center">
+                      <i class="fi-baby me-1"></i>
+                      Children
+                    </li>
+                  </ul>
+                </div>
+                <div class="card-footer bg-transparent border-0 h6 text-dark-emphasis pt-0 pb-4 mb-0">
+                  $35.00
+                </div>
+                <span class="position-absolute top-0 start-0 w-100 h-100 z-n1 bg-white rounded shadow d-none-dark"></span>
+                <span class="position-absolute top-0 start-0 w-100 h-100 z-n1 bg-body-tertiary rounded d-none d-block-dark"></span>
+              </article>
+            </div>
+          </div>
+
+          <!-- Pagination (Bullets) -->
+          <div class="swiper-pagination position-static mt-3"></div>
+        </div>
+      </div>
+    </main>
+
+
+    <!-- Page footer -->
+    <footer class="footer bg-body border-top pt-5" data-bs-theme="dark">
+      <div class="container pt-sm-2 pt-md-3 pt-lg-4 pb-md-2">
+
+        <!-- Column with links that are turned into accordion on screens < 500px wide (sm breakpoint) + Subscription form -->
+        <div class="accordion row pb-4 pb-sm-5 mt-n3 mt-sm-0" id="footerLinks">
+          <div class="col-sm-4 col-md-2 col-xl-3">
+            <div class="accordion-item border-0">
+              <h6 class="accordion-header" id="forPatientsHeading">
+                <span class="d-none d-sm-block pb-1 mb-2">For patients</span>
+                <button type="button" class="accordion-button collapsed py-3 d-sm-none" data-bs-toggle="collapse" data-bs-target="#forPatients" aria-expanded="false" aria-controls="forPatients">For patients</button>
+              </h6>
+              <div class="accordion-collapse collapse d-sm-block" id="forPatients" aria-labelledby="forPatientsHeading" data-bs-parent="#footerLinks">
+                <ul class="nav flex-column gap-2 pt-sm-1 pt-lg-2 pb-3 pb-sm-0 mt-n1 mb-1 mb-sm-0">
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Family medicine</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Pediatrics</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Top hospitals</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Telehealth</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Dentistry</a>
+                  </li>
+                </ul>
+              </div>
+              <hr class="d-sm-none my-0">
+            </div>
+          </div>
+          <div class="col-sm-4 col-md-3">
+            <div class="accordion-item border-0">
+              <h6 class="accordion-header" id="forProvidersHeading">
+                <span class="d-none d-sm-block pb-1 mb-2">For providers</span>
+                <button type="button" class="accordion-button collapsed py-3 d-sm-none" data-bs-toggle="collapse" data-bs-target="#forProviders" aria-expanded="false" aria-controls="forProviders">For providers</button>
+              </h6>
+              <div class="accordion-collapse collapse d-sm-block" id="forProviders" aria-labelledby="forProvidersHeading" data-bs-parent="#footerLinks">
+                <ul class="nav flex-column gap-2 pt-sm-1 pt-lg-2 pb-3 pb-sm-0 mt-n1 mb-1 mb-sm-0">
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Provider log in</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Promote your practice</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Claim your free profile</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">News and features</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Help center</a>
+                  </li>
+                </ul>
+              </div>
+              <hr class="d-sm-none my-0">
+            </div>
+          </div>
+          <div class="col-sm-4 col-md-3">
+            <div class="accordion-item border-0">
+              <h6 class="accordion-header" id="ourCompanyHeading">
+                <span class="d-none d-sm-block pb-1 mb-2">Our company</span>
+                <button type="button" class="accordion-button collapsed py-3 d-sm-none" data-bs-toggle="collapse" data-bs-target="#ourCompany" aria-expanded="false" aria-controls="ourCompany">Our company</button>
+              </h6>
+              <div class="accordion-collapse collapse d-sm-block" id="ourCompany" aria-labelledby="ourCompanyHeading" data-bs-parent="#footerLinks">
+                <ul class="nav flex-column gap-2 pt-sm-1 pt-lg-2 pb-3 pb-sm-0 mt-n1 mb-1 mb-sm-0">
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Contact us</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">About us</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Healthgrades methodologies</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Privacy preferences</a>
+                  </li>
+                </ul>
+              </div>
+              <hr class="d-sm-none my-0">
+            </div>
+          </div>
+
+          <!-- Subscription form -->
+          <div class="col-md-4 col-xl-3 pt-4 pt-sm-5 pt-md-0 mt-3 mt-sm-0">
+            <h6 class="pb-1 pb-lg-0 mb-lg-4">Subscribe to our newsletter</h6>
+            <form class="d-flex flex-column flex-sm-row flex-md-column gap-3 needs-validation" novalidate>
+              <div class="position-relative w-100">
+                <i class="fi-mail position-absolute top-50 start-0 translate-middle-y text-body ms-3"></i>
+                <input type="email" class="form-control form-icon-start text-start" placeholder="Your email" aria-label="Email input" required>
+              </div>
+              <button type="submit" class="btn btn-outline-dark px-4">Subscribe</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Copyright + Social links -->
+        <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between pb-4 pt-3 pt-sm-2 pt-md-3 pt-lg-4">
+          <div class="d-flex justify-content-center mb-3 mb-md-0 order-sm-2">
+            <a class="btn btn-icon fs-base btn-outline-secondary border-0" href="#!" data-bs-toggle="tooltip" data-bs-template='<div class="tooltip fs-xs mb-n2" role="tooltip"><div class="tooltip-inner bg-transparent text-white opacity-75 p-0"></div></div>' title="Instagram" aria-label="Follow us on Instagram">
+              <i class="fi-instagram"></i>
+            </a>
+            <a class="btn btn-icon fs-base btn-outline-secondary border-0" href="#!" data-bs-toggle="tooltip" data-bs-template='<div class="tooltip fs-xs mb-n2" role="tooltip"><div class="tooltip-inner bg-transparent text-white opacity-75 p-0"></div></div>' title="Facebook" aria-label="Follow us on Facebook">
+              <i class="fi-facebook"></i>
+            </a>
+            <a class="btn btn-icon fs-base btn-outline-secondary border-0" href="#!" data-bs-toggle="tooltip" data-bs-template='<div class="tooltip fs-xs mb-n2" role="tooltip"><div class="tooltip-inner bg-transparent text-white opacity-75 p-0"></div></div>' title="X (Twitter)" aria-label="Follow us on X (Twitter)">
+              <i class="fi-x"></i>
+            </a>
+          </div>
+          <p class="text-body-secondary fs-sm text-center mb-0 order-sm-1">&copy; All rights reserved. Made by <a class="text-body fw-medium text-decoration-none hover-effect-underline" href="https://coderthemes.com/" target="_blank" rel="noreferrer">Coderthemes</a></p>
+        </div>
+      </div>
+
+      <!-- Additional spacing to accommodate the sticky offcanvas toggle button -->
+      <div class="d-lg-none" style="height: 3.75rem"></div>
+    </footer>
+
+
+    <!-- Sidebar with appointemnt booking form offcanvas toggle that is visible on screens < 992px wide (lg breakpoint) -->
+    <button type="button" class="fixed-bottom z-sticky w-100 btn btn-lg btn-dark border-0 border-top border-light border-opacity-10 rounded-0 pb-4 d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#bookAppointment" aria-controls="bookAppointment" data-bs-theme="light">
+      <i class="fi-clock fs-base me-2"></i>
+      Book appointment
+    </button>
+
+
+    <!-- Back to top button -->
+    <div class="floating-buttons position-fixed top-50 end-0 z-sticky me-3 me-xl-4 pb-4">
+      <a class="btn-scroll-top btn btn-sm bg-body border-0 rounded-pill shadow animate-slide-end" href="#top">
+        Top
+        <i class="fi-arrow-right fs-base ms-1 me-n1 animate-target"></i>
+        <span class="position-absolute top-0 start-0 w-100 h-100 border rounded-pill z-0"></span>
+        <svg class="position-absolute top-0 start-0 w-100 h-100 z-1" viewBox="0 0 62 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x=".75" y=".75" width="60.5" height="30.5" rx="15.25" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"/>
+        </svg>
+      </a>
+      <a class="btn btn-sm btn-outline-secondary text-uppercase bg-body rounded-pill shadow animate-rotate ms-2 me-n5" href="#customizer" style="font-size: .625rem; letter-spacing: .05rem;" data-bs-toggle="offcanvas" role="button" aria-controls="customizer">
+        Customize<i class="fi-settings fs-base ms-1 me-n2 animate-target"></i>
+      </a>
+    </div>
+
+
+    <!-- Vendor scripts -->
+    <script src="/finder/assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="/finder/assets/vendor/choices.js/public/assets/scripts/choices.min.js"></script>
+
+    <!-- Bootstrap + Theme scripts -->
+    <script src="/finder/assets/js/theme.min.js"></script>
+  </body>
+</html>
+
+
+
+
+
+

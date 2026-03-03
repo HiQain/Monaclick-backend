@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class ContractorDetail extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'listing_id',
+        'service_area',
+        'license_number',
+        'is_verified',
+        'business_hours',
+    ];
+
+    protected $casts = [
+        'is_verified' => 'boolean',
+        'business_hours' => 'array',
+    ];
+
+    public function listing(): BelongsTo
+    {
+        return $this->belongsTo(Listing::class);
+    }
+}

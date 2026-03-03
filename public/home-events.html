@@ -1,0 +1,2294 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" data-pwa="true">
+  <head>
+    <meta charset="utf-8">
+
+    <!-- Viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+
+    <!-- SEO Meta Tags -->
+    <title>Monaclick | Events - Homepage</title>
+    <meta name="description" content="Monaclick - Directory & Listings Bootstrap HTML Template">
+    <meta name="keywords" content="directory, listings, search, car dealer, real estate, city guide, business listings, medical directories, event listings, e-commerce, market, multipurpose, ui kit, light and dark mode, bootstrap, html5, css3, javascript, gallery, slider, mobile, pwa">
+    <meta name="author" content="Coderthemes">
+
+    <!-- Webmanifest + Favicon / App icons -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="manifest" href="/finder/manifest.json">
+    <link rel="icon" type="image/png" href="/finder/assets/app-icons/icon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/finder/assets/app-icons/icon-180x180.png">
+
+    <!-- Theme switcher (color modes) -->
+    <script src="/finder/assets/js/theme-switcher.js"></script>
+
+    <!-- Preloaded local web font (Inter) -->
+    <link rel="preload" href="/finder/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- Font icons -->
+    <link rel="preload" href="/finder/assets/icons/finder-icons.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/finder/assets/icons/finder-icons.min.css">
+
+    <!-- Vendor styles -->
+    <link rel="stylesheet" href="/finder/assets/vendor/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="/finder/assets/vendor/choices.js/public/assets/styles/choices.min.css">
+    <link rel="stylesheet" href="/finder/assets/vendor/flatpickr/dist/flatpickr.min.css">
+
+    <!-- Bootstrap + Theme styles -->
+    <link rel="preload" href="/finder/assets/css/theme.min.css" as="style">
+    <link rel="preload" href="/finder/assets/css/theme.rtl.min.css" as="style">
+    <link rel="stylesheet" href="/finder/assets/css/theme.min.css" id="theme-styles">
+
+    <!-- Customizer -->
+    
+    <link rel="stylesheet" href="/finder/assets/css/monaclick-finder-colors.css">
+      <script src="/finder/assets/js/monaclick-theme-lock.js"></script>
+  </head>
+
+
+  <!-- Body -->
+  <body>
+
+    <!-- Customizer offcanvas -->
+    <div class="offcanvas offcanvas-end" id="customizer" tabindex="-1">
+      <div class="offcanvas-header border-bottom">
+        <h4 class="h5 offcanvas-title">Customize theme</h4>
+        <button class="btn-close" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+
+        <!-- Customizer settings -->
+        <div class="customizer-collapse collapse show" id="customizerSettings">
+
+          <!-- Colors -->
+          <div class="pb-4 mb-2">
+            <div class="d-flex align-items-center mb-3">
+              <i class="fi-swatches text-body-tertiary fs-5 me-2"></i>
+              <h5 class="fs-lg mb-0">Colors</h5>
+            </div>
+            <div class="row row-cols-2 g-3" id="theme-colors">
+              <div class="col">
+                <h6 class="fs-sm mb-2">Primary</h6>
+                <div class="color-swatch d-flex border rounded gap-3 p-2" id="theme-primary" data-color-labels='["theme-primary", "primary", "primary-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#d85151">
+                  <label for="primary" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #d85151"></label>
+                  <input type="color" class="visually-hidden" id="primary" value="#d85151">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Success</h6>
+                <div class="color-swatch d-flex border rounded gap-3 p-2" id="theme-success" data-color-labels='["theme-success", "success", "success-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#33b36b">
+                  <label for="success" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #33b36b"></label>
+                  <input type="color" class="visually-hidden" id="success" value="#33b36b">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Warning</h6>
+                <div class="color-swatch d-flex border rounded gap-3 p-2" id="theme-warning" data-color-labels='["theme-warning", "warning", "warning-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#fc9231">
+                  <label for="warning" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #fc9231"></label>
+                  <input type="color" class="visually-hidden" id="warning" value="#fc9231">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Danger</h6>
+                <div class="color-swatch d-flex border rounded gap-2 p-2" id="theme-danger" data-color-labels='["theme-danger", "danger", "danger-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#f03d3d">
+                  <label for="danger" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #f03d3d"></label>
+                  <input type="color" class="visually-hidden" id="danger" value="#f03d3d">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Info</h6>
+                <div class="color-swatch d-flex border rounded gap-2 p-2" id="theme-info" data-color-labels='["theme-info", "info", "info-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#3d7a81">
+                  <label for="info" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #3d7a81"></label>
+                  <input type="color" class="visually-hidden" id="info" value="#3d7a81">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direction -->
+          <div class="pb-4 mb-2">
+            <div class="d-flex align-items-center pb-1 mb-2">
+              <i class="fi-sort text-body-tertiary fs-lg me-2" style="transform: rotate(90deg)"></i>
+              <h5 class="fs-lg mb-0">Direction</h5>
+            </div>
+            <div class="d-flex align-items-center justify-content-between border rounded p-3">
+              <div class="me-3">
+                <h6 class="mb-1">RTL</h6>
+                <p class="fs-sm mb-0">Change text direction</p>
+              </div>
+              <div class="form-check form-switch m-0">
+                <input type="checkbox" class="form-check-input" role="switch" id="rtl-switch">
+              </div>
+            </div>
+            <div class="alert alert-info p-2 mt-2 mb-0">
+              <div class="d-flex text-body-emphasis fs-xs py-1 pe-1">
+                <i class="fi-info text-info fs-lg mb-2 mb-sm-0" style="margin-top: .125rem"></i>
+                <div class="ps-2">To switch the text direction of your webpage from LTR to RTL, please consult the detailed instructions provided in the relevant section of our documentation.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Border width -->
+          <div class="pb-4 mb-2">
+            <div class="d-flex align-items-center pb-1 mb-2">
+              <i class="fi-menu text-body-tertiary fs-lg me-2"></i>
+              <h5 class="fs-lg mb-0">Border width, px</h5>
+            </div>
+            <div class="slider-input d-flex align-items-center gap-3 border rounded p-3" id="border-input">
+              <input type="range" class="form-range" min="0" max="10" step="1" value="1">
+              <input type="number" class="form-control" id="border-width" min="0" max="10" value="1" style="max-width: 5.5rem">
+            </div>
+          </div>
+
+          <!-- Rounding -->
+          <div class="d-flex align-items-center pb-1 mb-2">
+            <i class="fi-maximize text-body-tertiary fs-lg me-2"></i>
+            <h5 class="fs-lg mb-0">Rounding, rem</h5>
+          </div>
+          <div class="slider-input d-flex align-items-center gap-3 border rounded p-3">
+            <input type="range" class="form-range" min="0" max="5" step=".05" value="0.5">
+            <input type="number" class="form-control" id="border-radius" min="0" max="5" step=".05" value="0.5" style="max-width: 5.5rem">
+          </div>
+        </div>
+
+        <!-- Customizer code -->
+        <div class="customizer-collapse collapse" id="customizerCode">
+          <div class="nav mb-3">
+            <a class="nav-link position-relative fs-base p-0" href=".customizer-collapse" data-bs-toggle="collapse" aria-expanded="true" aria-controls="customizerSettings customizerCode">
+              <i class="fi-chevron-left fs-lg ms-n1 me-1"></i>
+              <span class="hover-effect-underline stretched-link">Back to settings</span>
+            </a>
+          </div>
+          <p class="fs-sm pb-1">To apply the provided styles to your webpage, enclose them within a <code>&lt;style&gt;</code> tag and insert this tag into the <code>&lt;head&gt;</code> section of your HTML document after the following link to the main stylesheet:<br><code>&lt;link href=&quot;assets/css/theme.min.css&quot;&gt;</code></p>
+          <div class="position-relative bg-body-tertiary rounded overflow-hidden pt-3">
+            <div class="position-absolute top-0 start-0 w-100 p-3">
+              <button type="button" class="btn btn-sm btn-outline-dark w-100" data-copy-text-from="#generated-styles" data-done-label="Code copied">
+                <i class="fi-copy fs-sm me-1"></i>
+                Copy code
+              </button>
+            </div>
+            <pre class="text-wrap bg-transparent border-0 fs-xs text-body-emphasis p-4 pt-5" id="generated-styles"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offcanvas footer (Action buttons) -->
+      <div class="offcanvas-header border-top gap-3 d-none" id="customizer-btns">
+        <button type="button" class="btn btn-lg btn-secondary w-100 fs-sm" id="customizer-reset">
+          <i class="fi-trash fs-lg me-2 ms-n1"></i>
+          Reset
+        </button>
+        <button class="btn btn-lg btn-primary hiding-collapse-toggle w-100 fs-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target=".customizer-collapse" aria-expanded="false" aria-controls="customizerSettings customizerCode">
+          <i class="fi-code fs-lg me-2 ms-n1"></i>
+          Show code
+        </button>
+      </div>
+    </div>
+
+
+    <!-- Navigation bar (Page header) -->
+    <header class="navbar navbar-expand-lg navbar-sticky sticky-top z-fixed px-0" data-sticky-element>
+      <div class="container">
+
+        <!-- Mobile offcanvas menu toggler (Hamburger) -->
+        <button type="button" class="navbar-toggler me-3 me-lg-0" data-bs-toggle="offcanvas" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar brand (Logo) -->
+        <a class="navbar-brand py-1 py-md-2 py-xl-1 me-2 me-sm-n4 me-md-n5 me-lg-0" href="index.html">
+          <span class="d-none d-sm-flex flex-shrink-0 text-primary rtl-flip me-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="35" height="34"><path d="M34.5 16.894v10.731c0 3.506-2.869 6.375-6.375 6.375H17.5h-.85C7.725 33.575.5 26.138.5 17c0-9.35 7.65-17 17-17s17 7.544 17 16.894z" fill="currentColor"/><g fill-rule="evenodd"><path d="M17.5 13.258c-3.101 0-5.655 2.554-5.655 5.655s2.554 5.655 5.655 5.655 5.655-2.554 5.655-5.655-2.554-5.655-5.655-5.655zm-9.433 5.655c0-5.187 4.246-9.433 9.433-9.433s9.433 4.246 9.433 9.433a9.36 9.36 0 0 1-1.569 5.192l2.397 2.397a1.89 1.89 0 0 1 0 2.671 1.89 1.89 0 0 1-2.671 0l-2.397-2.397a9.36 9.36 0 0 1-5.192 1.569c-5.187 0-9.433-4.246-9.433-9.433z" fill="#000" fill-opacity=".05"/><g fill="#fff"><path d="M17.394 10.153c-3.723 0-6.741 3.018-6.741 6.741s3.018 6.741 6.741 6.741 6.741-3.018 6.741-6.741-3.018-6.741-6.741-6.741zM7.347 16.894A10.05 10.05 0 0 1 17.394 6.847 10.05 10.05 0 0 1 27.44 16.894 10.05 10.05 0 0 1 17.394 26.94 10.05 10.05 0 0 1 7.347 16.894z"/><path d="M23.025 22.525c.645-.645 1.692-.645 2.337 0l3.188 3.188c.645.645.645 1.692 0 2.337s-1.692.645-2.337 0l-3.187-3.187c-.645-.646-.645-1.692 0-2.337z"/></g></g><path d="M23.662 14.663c2.112 0 3.825-1.713 3.825-3.825s-1.713-3.825-3.825-3.825-3.825 1.713-3.825 3.825 1.713 3.825 3.825 3.825z" fill="#fff"/><path fill-rule="evenodd" d="M23.663 8.429a2.41 2.41 0 0 0-2.408 2.408 2.41 2.41 0 0 0 2.408 2.408 2.41 2.41 0 0 0 2.408-2.408 2.41 2.41 0 0 0-2.408-2.408zm-5.242 2.408c0-2.895 2.347-5.242 5.242-5.242s5.242 2.347 5.242 5.242-2.347 5.242-5.242 5.242-5.242-2.347-5.242-5.242z" fill="currentColor"/></svg>
+          </span>
+          Monaclick
+        </a>
+
+        <!-- Main navigation that turns into offcanvas on screens < 992px wide (lg breakpoint) -->
+        <nav class="offcanvas offcanvas-start" id="navbarNav" tabindex="-1" aria-labelledby="navbarNavLabel">
+          <div class="offcanvas-header py-3">
+            <h5 class="offcanvas-title" id="navbarNavLabel">Browse Monaclick</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body pt-2 pb-4 py-lg-0 mx-lg-auto">
+            <ul class="navbar-nav position-relative">
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle active" aria-current="page" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Home</a>
+                <ul class="dropdown-menu">
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="/real-estate">
+                      <span class="fw-medium">Real Estate</span>
+                      <span class="d-block fs-xs text-body-secondary">Property listings directory</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/real-estate-light.jpg" alt="Real Estate Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/real-estate-dark.jpg" alt="Real Estate Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="/cars">
+                      <span class="fw-medium">Cars</span>
+                      <span class="d-block fs-xs text-body-secondary">Vehicle sales listings</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/cars-light.jpg" alt="Cars Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/cars-dark.jpg" alt="Cars Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="/contractors">
+                      <span class="fw-medium">Contractors</span>
+                      <span class="d-block fs-xs text-body-secondary">Professional services directory</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/contractors-light.jpg" alt="Contractors Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/contractors-dark.jpg" alt="Contractors Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="home-doctors.html">
+                      <span class="fw-medium">Doctors</span>
+                      <span class="d-block fs-xs text-body-secondary">Medical professionals listings</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/doctors-light.jpg" alt="Doctors Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/doctors-dark.jpg" alt="Doctors Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="/events">
+                      <span class="fw-medium">Events</span>
+                      <span class="d-block fs-xs text-body-secondary">Upcoming events listings</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/events-light.jpg" alt="Events Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/events-dark.jpg" alt="Events Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="hover-effect-opacity px-2 mx-n2">
+                    <a class="dropdown-item d-block mb-0" href="home-city-guide.html">
+                      <span class="fw-medium">City Guide</span>
+                      <span class="d-block fs-xs text-body-secondary">Local places directory</span>
+                      <div class="d-none d-lg-block hover-effect-target position-absolute top-0 start-100 bg-body border border-light-subtle rounded rounded-start-0 transition-none invisible opacity-0 pt-2 px-2 ms-n2" style="width: 212px; height: calc(100% + 2px); margin-top: -1px">
+                        <img class="position-relative z-2 d-none-dark" src="/finder/assets/img/mega-menu/city-guide-light.jpg" alt="City Guide Demo">
+                        <img class="position-relative z-2 d-none d-block-dark" src="/finder/assets/img/mega-menu/city-guide-dark.jpg" alt="City Guide Demo">
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none-dark" style="box-shadow: .875rem .5rem 2rem -.5rem #676f7b; opacity: .1"></span>
+                        <span class="position-absolute top-0 start-0 w-100 h-100 rounded rounded-start-0 d-none d-block-dark" style="box-shadow: .875rem .5rem 1.875rem -.5rem #080b12; opacity: .25"></span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown position-static py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Listings</a>
+                <div class="dropdown-menu rounded-4 p-4">
+                  <div class="d-flex flex-column flex-lg-row gap-4">
+                    <div style="min-width: 190px">
+                      <div class="h6 mb-2">Real Estate</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/real-estate">Map/Listings Split View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/entry/real-estate">Property Details Page</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="vendor-real-estate.html">Vendor Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Cars</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/cars">Listings Grid View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/cars">Listings List View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/entry/cars">Car Details Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Contractors</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/contractors">Listings with Side Filters</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/entry/contractors">Contractor Details Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Doctors</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="listings-list-doctors.html">Listings List View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="listings-grid-doctors.html">Listings Grid View</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="single-entry-doctors.html">Doctor Details Page</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div style="min-width: 190px">
+                      <div class="h6 mb-2">Events</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/listings/events">Listings with Top Filters</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="/entry/events">Event Details Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">City Guide</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="listings-side-filters-city-guide.html">Listings with Side Filters</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="listings-top-filters-city-guide.html">Listings with Top Filters</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="single-entry-city-guide.html">Place Details Page</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Add Property</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-type.html">Property type</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-location.html">Location</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-photos.html">Photos and Videos</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-details.html">Property Details</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-price.html">Price</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-contact-info.html">Contact Info</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-property-promotion.html">Ad Promotion</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div style="min-width: 190px">
+                      <div class="h6 mb-2">Add Contractor</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-location.html">Business Location</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-services.html">Choose Services</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-profile.html">Profile Details</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-price-hours.html">Price and Hours</a>
+                        </li>
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-contractor-project.html">Create First Project</a>
+                        </li>
+                      </ul>
+                      <div class="h6 pt-4 mb-2">Add (Sell) Car</div>
+                      <ul class="nav flex-column gap-2 mt-0">
+                        <li class="pt-1">
+                          <a class="nav-link hover-effect-underline d-inline fw-normal p-0" href="add-car.html">Add (Sell) Car Page</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" data-bs-auto-close="outside" aria-expanded="false">Account</a>
+                <ul class="dropdown-menu">
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Auth Pages</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="/login">Sign In</a></li>
+                      <li><a class="dropdown-item" href="/register">Sign Up</a></li>
+                      <li><a class="dropdown-item" href="account-password-recovery.html">Password Recovery</a></li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item" href="/dashboard">My Profile</a></li>
+                  <li><a class="dropdown-item" href="account-listings.html">My Listings</a></li>
+                  <li><a class="dropdown-item" href="account-reviews.html">Reviews</a></li>
+                  <li><a class="dropdown-item" href="account-favorites.html">Favorites</a></li>
+                  <li><a class="dropdown-item" href="account-payment.html">Payment Details</a></li>
+                  <li><a class="dropdown-item" href="/profile">Account Settings</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" data-bs-auto-close="outside" aria-expanded="false">Pages</a>
+                <ul class="dropdown-menu">
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#!" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">About</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="about-v1.html">About v.1</a></li>
+                      <li><a class="dropdown-item" href="about-v2.html">About v.2</a></li>
+                    </ul>
+                  </li>
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Blog</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="blog-layout-v1.html">Blog Layout v.1</a></li>
+                      <li><a class="dropdown-item" href="blog-layout-v2.html">Blog Layout v.2</a></li>
+                      <li><a class="dropdown-item" href="blog-layout-v3.html">Blog Layout v.3</a></li>
+                      <li><a class="dropdown-item" href="blog-layout-v4.html">Blog Layout v.4</a></li>
+                      <li><a class="dropdown-item" href="blog-single-v1.html">Single Post v.1</a></li>
+                      <li><a class="dropdown-item" href="blog-single-v2.html">Single Post v.2</a></li>
+                      <li><a class="dropdown-item" href="blog-single-v3.html">Single Post v.3</a></li>
+                    </ul>
+                  </li>
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Contact</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="contact-v1.html">Contact v.1</a></li>
+                      <li><a class="dropdown-item" href="contact-v2.html">Contact v.2</a></li>
+                      <li><a class="dropdown-item" href="contact-v3.html">Contact v.3</a></li>
+                    </ul>
+                  </li>
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Help Center</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="help-topics-v1.html">Help Topics v.1</a></li>
+                      <li><a class="dropdown-item" href="help-topics-v2.html">Help Topics v.2</a></li>
+                      <li><a class="dropdown-item" href="help-topics-v3.html">Help Topics v.3</a></li>
+                      <li><a class="dropdown-item" href="help-single-article-v1.html">Help Single Article v.1</a></li>
+                      <li><a class="dropdown-item" href="help-single-article-v2.html">Help Single Article v.2</a></li>
+                      <li><a class="dropdown-item" href="help-single-article-v3.html">Help Single Article v.3</a></li>
+                    </ul>
+                  </li>
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">404 Error</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="404-bg-image.html">Background Image (Real Estate)</a></li>
+                      <li><a class="dropdown-item" href="404-icon.html">Icon Image (Cars)</a></li>
+                      <li><a class="dropdown-item" href="404-split-screen.html">Split Screen (Contractors)</a></li>
+                      <li><a class="dropdown-item" href="404-illustration.html">Illustration (City Guide)</a></li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item" href="terms-and-conditions.html">Terms &amp; Conditions</a></li>
+                </ul>
+              </li>
+              <li class="nav-item py-lg-2 me-lg-n2 me-xl-0">
+                <a class="nav-link" href="docs/installation.html">Docs</a>
+              </li>
+              <li class="nav-item py-lg-2 me-lg-n2 me-xl-0">
+                <a class="nav-link" href="docs/typography.html">Components</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Button group -->
+        <div class="d-flex gap-sm-1">
+
+          <!-- Theme switcher (light/dark/auto) -->
+          <div class="dropdown me-1 me-sm-2">
+            <button type="button" class="theme-switcher btn btn-icon btn-outline-secondary fs-lg border-0 animate-scale" data-bs-toggle="dropdown" data-bs-display="dynamic" aria-expanded="false" aria-label="Toggle theme (light)">
+              <span class="theme-icon-active d-flex animate-target">
+                <i class="fi-sun"></i>
+              </span>
+            </button>
+            <ul class="dropdown-menu start-50 translate-middle-x" style="--fn-dropdown-min-width: 9rem; --fn-dropdown-spacer: .5rem">
+              <li>
+                <button type="button" class="dropdown-item active" data-bs-theme-value="light" aria-pressed="true">
+                  <span class="theme-icon d-flex fs-base me-2">
+                    <i class="fi-sun"></i>
+                  </span>
+                  <span class="theme-label">Light</span>
+                  <i class="item-active-indicator fi-check ms-auto"></i>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item" data-bs-theme-value="dark" aria-pressed="false">
+                  <span class="theme-icon d-flex fs-base me-2">
+                    <i class="fi-moon"></i>
+                  </span>
+                  <span class="theme-label">Dark</span>
+                  <i class="item-active-indicator fi-check ms-auto"></i>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item" data-bs-theme-value="auto" aria-pressed="false">
+                  <span class="theme-icon d-flex fs-base me-2">
+                    <i class="fi-auto"></i>
+                  </span>
+                  <span class="theme-label">Auto</span>
+                  <i class="item-active-indicator fi-check ms-auto"></i>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Sign up / Register button  -->
+          <a class="btn btn-outline-dark animate-shake" href="/login">
+            <i class="fi-user fs-base animate-target ms-n1 me-1 me-sm-2"></i>
+            Sign in
+          </a>
+        </div>
+      </div>
+    </header>
+
+
+    <!-- Page content -->
+    <main class="content-wrapper">
+
+      <!-- Hero with search form and featured events slider -->
+      <section class="position-relative overflow-hidden pt-5" style="margin-top: -76px">
+        <div class="container position-relative pt-5 mt-sm-2">
+
+          <!-- Search form -->
+          <form class="position-relative z-3 bg-body border rounded shadow p-2 mb-4">
+            <div class="d-flex flex-column flex-md-row gap-2 p-1">
+              <div class="d-flex flex-column flex-sm-row w-100 gap-2 gap-sm-3">
+                <div class="position-relative w-100">
+                  <i class="fi-search position-absolute top-50 start-0 translate-middle-y fs-xl text-secondary-emphasis ms-2"></i>
+                  <input type="search" class="form-control form-control-lg form-icon-start border-0 rounded-0 pe-0" placeholder="Search by Artist, Events" required>
+                </div>
+                <hr class="d-sm-none m-0">
+                <hr class="vr d-none d-sm-block my-2">
+                <div class="position-relative w-100" style="max-width: 200px">
+                  <i class="fi-map-pin position-absolute top-50 start-0 translate-middle-y z-1 fs-xl text-secondary-emphasis ms-2"></i>
+                  <select class="form-select form-select-lg form-icon-start border-0" data-select='{
+                    "classNames": {
+                      "containerInner": ["form-select", "form-select-lg", "form-icon-start", "border-0"]
+                    },
+                    "searchEnabled": true
+                  }' aria-label="Location select">
+                    <option value="">Location</option>
+                    <option value="New York">New York</option>
+                    <option value="Los Angeles">Los Angeles</option>
+                    <option value="Chicago">Chicago</option>
+                    <option value="Houston">Houston</option>
+                    <option value="Phoenix">Phoenix</option>
+                    <option value="Philadelphia">Philadelphia</option>
+                    <option value="San Antonio">San Antonio</option>
+                    <option value="San Diego">San Diego</option>
+                    <option value="Dallas">Dallas</option>
+                    <option value="San Jose">San Jose</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-lg btn-primary">Search</button>
+            </div>
+          </form>
+
+          <!-- Featured events slider -->
+          <div class="row position-relative z-2">
+            <div class="col-md-4 d-flex flex-column">
+              <div class="text-center text-md-start pt-3 pt-md-4 pt-lg-5 mt-xl-5 mb-4">
+                <h1 class="display-5 mt-xxl-3 mb-xxl-4">Discover Events Near You</h1>
+                <p class="mb-0">Tickets for all events in one place</p>
+              </div>
+              <div class="d-flex justify-content-center justify-content-md-start gap-3 mt-auto pb-lg-2 mb-4 mb-md-0 mb-lg-4">
+                <button type="button" class="btn btn-icon btn-outline-secondary animate-slide-start bg-body rounded-circle" id="hero-prev" aria-label="Prev">
+                  <i class="fi-chevron-left fs-lg animate-target"></i>
+                </button>
+                <button type="button" class="btn btn-icon btn-outline-secondary animate-slide-end bg-body rounded-circle" id="hero-next" aria-label="Next">
+                  <i class="fi-chevron-right fs-lg animate-target"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="swiper" data-swiper='{
+                "effect": "creative",
+                "loop": true,
+                "speed": 450,
+                "autoplay": {
+                  "delay": 7000,
+                  "disableOnInteraction": false
+                },
+                "creativeEffect": {
+                  "prev": {
+                    "translate": [0, 0, -800],
+                    "rotate": [180, 0, 0]
+                  },
+                  "next": {
+                    "translate": [0, 0, -800],
+                    "rotate": [-180, 0, 0]
+                  }
+                },
+                "navigation": {
+                  "prevEl": "#hero-prev",
+                  "nextEl": "#hero-next"
+                }
+              }'>
+                <div class="swiper-wrapper">
+
+                  <!-- Event -->
+                  <div class="swiper-slide">
+                    <a class="ratio d-block bg-body-secondary rounded-4 overflow-hidden" href="/entry/events" style="--fn-aspect-ratio: calc(463 / 856 * 100%)">
+                      <img src="/finder/assets/img/home/events/hero-slider/01.jpg" alt="Image">
+                    </a>
+                    <div class="position-absolute shadow" style="bottom: 9%; left: 7%; width: 160px; height: 86px" data-bs-theme="light">
+                      <div class="position-absolute vstack text-white z-2" style="top: 19px; left: 75px">
+                        <div style="font-size: 10px; line-height: 10px">From</div>
+                        <div class="fs-4 fw-semibold">$56</div>
+                      </div>
+                      <svg class="position-relative z-1" style="margin: 4px 0 0 8px" xmlns="http://www.w3.org/2000/svg" width="142" height="69"><path class="text-primary" d="M8 0h31.189c.666 2.588 3.015 4.5 5.811 4.5s5.145-1.912 5.811-4.5H134a8 8 0 0 1 8 8v53a8 8 0 0 1-8 8H50.659c-.824-2.33-3.046-4-5.659-4s-4.835 1.67-5.659 4H8a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8z" fill="currentColor"/><path d="M45 65V4.5c2.796 0 5.145-1.912 5.811-4.5H134a8 8 0 0 1 8 8v53a8 8 0 0 1-8 8H50.659c-.824-2.33-3.046-4-5.659-4z" fill="url(#A)"/><path d="M45 4v61" stroke="#1d2735" stroke-width="1.5" stroke-dasharray="4 2"/><path d="M23.5 25l.008 8.919a1 1 0 0 0 .499.865l7.72 4.466-7.728-4.453a1 1 0 0 0-.998 0l-7.728 4.453 7.72-4.466a1 1 0 0 0 .499-.865L23.5 25z" stroke="currentColor" stroke-width="2" style="color: var(--fn-primary-text-emphasis)"/><defs><linearGradient id="A" x1="46" y1="35.5" x2="66.5" y2="35.5" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(0,0,0,.15)"/><stop class="text-primary" offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs></svg>
+                      <img src="/finder/assets/img/home/events/hero-slider/ticket.png" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" alt="Ticket">
+                    </div>
+                  </div>
+
+                  <!-- Event -->
+                  <div class="swiper-slide">
+                    <a class="ratio d-block bg-body-secondary rounded-4 overflow-hidden" href="/entry/events" style="--fn-aspect-ratio: calc(463 / 856 * 100%)">
+                      <img src="/finder/assets/img/home/events/hero-slider/02.jpg" alt="Image">
+                    </a>
+                    <div class="position-absolute shadow" style="bottom: 9%; left: 7%; width: 160px; height: 86px" data-bs-theme="light">
+                      <div class="position-absolute vstack text-white z-2" style="top: 19px; left: 75px">
+                        <div style="font-size: 10px; line-height: 10px">From</div>
+                        <div class="fs-4 fw-semibold">$40</div>
+                      </div>
+                      <svg class="position-relative z-1" style="margin: 4px 0 0 8px" xmlns="http://www.w3.org/2000/svg" width="142" height="69"><path class="text-primary" d="M8 0h31.189c.666 2.588 3.015 4.5 5.811 4.5s5.145-1.912 5.811-4.5H134a8 8 0 0 1 8 8v53a8 8 0 0 1-8 8H50.659c-.824-2.33-3.046-4-5.659-4s-4.835 1.67-5.659 4H8a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8z" fill="currentColor"/><path d="M45 65V4.5c2.796 0 5.145-1.912 5.811-4.5H134a8 8 0 0 1 8 8v53a8 8 0 0 1-8 8H50.659c-.824-2.33-3.046-4-5.659-4z" fill="url(#A)"/><path d="M45 4v61" stroke="#1d2735" stroke-width="1.5" stroke-dasharray="4 2"/><path d="M23.5 25l.008 8.919a1 1 0 0 0 .499.865l7.72 4.466-7.728-4.453a1 1 0 0 0-.998 0l-7.728 4.453 7.72-4.466a1 1 0 0 0 .499-.865L23.5 25z" stroke="currentColor" stroke-width="2" style="color: var(--fn-primary-text-emphasis)"/><defs><linearGradient id="A" x1="46" y1="35.5" x2="66.5" y2="35.5" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(0,0,0,.15)"/><stop class="text-primary" offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs></svg>
+                      <img src="/finder/assets/img/home/events/hero-slider/ticket.png" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" alt="Ticket">
+                    </div>
+                  </div>
+
+                  <!-- Event -->
+                  <div class="swiper-slide">
+                    <a class="ratio d-block bg-body-secondary rounded-4 overflow-hidden" href="/entry/events" style="--fn-aspect-ratio: calc(463 / 856 * 100%)">
+                      <img src="/finder/assets/img/home/events/hero-slider/03.jpg" alt="Image">
+                    </a>
+                    <div class="position-absolute shadow" style="bottom: 9%; left: 7%; width: 160px; height: 86px" data-bs-theme="light">
+                      <div class="position-absolute vstack text-white z-2" style="top: 19px; left: 75px">
+                        <div style="font-size: 10px; line-height: 10px">From</div>
+                        <div class="fs-4 fw-semibold">Free</div>
+                      </div>
+                      <svg class="position-relative z-1" style="margin: 4px 0 0 8px" xmlns="http://www.w3.org/2000/svg" width="142" height="69"><path class="text-primary" d="M8 0h31.189c.666 2.588 3.015 4.5 5.811 4.5s5.145-1.912 5.811-4.5H134a8 8 0 0 1 8 8v53a8 8 0 0 1-8 8H50.659c-.824-2.33-3.046-4-5.659-4s-4.835 1.67-5.659 4H8a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8z" fill="currentColor"/><path d="M45 65V4.5c2.796 0 5.145-1.912 5.811-4.5H134a8 8 0 0 1 8 8v53a8 8 0 0 1-8 8H50.659c-.824-2.33-3.046-4-5.659-4z" fill="url(#A)"/><path d="M45 4v61" stroke="#1d2735" stroke-width="1.5" stroke-dasharray="4 2"/><path d="M23.5 25l.008 8.919a1 1 0 0 0 .499.865l7.72 4.466-7.728-4.453a1 1 0 0 0-.998 0l-7.728 4.453 7.72-4.466a1 1 0 0 0 .499-.865L23.5 25z" stroke="currentColor" stroke-width="2" style="color: var(--fn-primary-text-emphasis)"/><defs><linearGradient id="A" x1="46" y1="35.5" x2="66.5" y2="35.5" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(0,0,0,.15)"/><stop class="text-primary" offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs></svg>
+                      <img src="/finder/assets/img/home/events/hero-slider/ticket.png" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" alt="Ticket">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="position-absolute z-1 fw-bold" style="top: -15px; right: 100%; margin-right: -216px; font-size: 128px; color: var(--fn-tertiary-bg); text-shadow: 1px 1px 0 var(--fn-border-color), -1px 1px 0 var(--fn-border-color), -1px -1px 0 var(--fn-border-color), 1px -1px 0 var(--fn-border-color)">Hobbies</span>
+          <span class="position-absolute z-1 fw-bold" style="top: 82px; right: 100%; margin-right: -365px; font-size: 128px; color: var(--fn-tertiary-bg); text-shadow: 1px 1px 0 var(--fn-border-color), -1px 1px 0 var(--fn-border-color), -1px -1px 0 var(--fn-border-color), 1px -1px 0 var(--fn-border-color)">Concerts</span>
+          <span class="position-absolute z-1 fw-bold" style="top: 110px; left: 100%; margin-left: 90px; font-size: 128px; color: var(--fn-tertiary-bg); text-shadow: 1px 1px 0 var(--fn-border-color), -1px 1px 0 var(--fn-border-color), -1px -1px 0 var(--fn-border-color), 1px -1px 0 var(--fn-border-color)">Sports</span>
+          <span class="position-absolute z-1 fw-bold" style="top: 206px; left: 100%; margin-left: 10px; font-size: 128px; color: var(--fn-tertiary-bg); text-shadow: 1px 1px 0 var(--fn-border-color), -1px 1px 0 var(--fn-border-color), -1px -1px 0 var(--fn-border-color), 1px -1px 0 var(--fn-border-color)">Theaters</span>
+        </div>
+        <span class="position-absolute top-0 start-0 w-100 bg-body-tertiary d-lg-none" style="height: calc(100% - 20px)"></span>
+        <span class="position-absolute top-0 start-0 w-100 bg-body-tertiary d-none d-lg-block" style="height: calc(100% - 52px)"></span>
+      </section>
+
+
+      <!-- Categories: Row of cards that turns into carousel on screens < 1200px wide (xl breakpoint) -->
+      <section class="container pt-2 pt-sm-3 pt-md-4 pt-lg-5 my-xxl-3">
+        <div class="swiper py-5" data-swiper='{
+          "slidesPerView": 2,
+          "spaceBetween": 16,
+          "pagination": {
+            "el": ".swiper-pagination",
+            "clickable": true
+          },
+          "breakpoints": {
+            "560": {
+              "slidesPerView": 3,
+              "spaceBetween": 24
+            },
+            "768": {
+              "slidesPerView": 4,
+              "spaceBetween": 24
+            },
+            "920": {
+              "slidesPerView": 5,
+              "spaceBetween": 24
+            },
+            "1200": {
+              "slidesPerView": 6,
+              "spaceBetween": 24
+            }
+          }
+        }'>
+          <div class="swiper-wrapper">
+
+            <!-- Category -->
+            <div class="swiper-slide">
+              <div class="nav nav-pills">
+                <a class="nav-link flex-column justify-content-center gap-2 flex-shrink-0 rounded-circle p-0 mx-auto" href="/listings/events" style="width: 150px; height: 150px">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"><path d="M29.206 4.898c-.137-.317-.505-.463-.822-.326s-.462.505-.325.822c.947 2.189.68 4.708-.65 6.639l-.027-.029-9.515-9.515-.029-.027a6.91 6.91 0 0 1 6.639-.65c.317.137.685-.009.822-.326s-.009-.685-.326-.822a8.16 8.16 0 0 0-8.471 1.246l-.035-.001c-.529 0-1.026.206-1.399.58a1.98 1.98 0 0 0-.526 1.855 8.13 8.13 0 0 0-.9 4.516l-.051.053L3.402 21.086a3.39 3.39 0 0 0 .063 4.436l-.273.273a3.64 3.64 0 0 0 0 5.142C3.901 31.646 4.832 32 5.763 32s1.862-.354 2.571-1.063l2.919-2.919c.602-.602 1.582-.602 2.184 0l.985.985c.244.244.64.244.884 0s.244-.64 0-.884l-.985-.985a2.8 2.8 0 0 0-3.951 0l-2.92 2.919a2.39 2.39 0 0 1-3.374 0 2.39 2.39 0 0 1 0-3.374l.273-.273a3.39 3.39 0 0 0 2.104.853l.152.003a3.39 3.39 0 0 0 2.181-.793L20.958 16.28a.65.65 0 0 0 .054-.051l.732.033a8.12 8.12 0 0 0 3.783-.933c.15.035.303.053.456.053a1.97 1.97 0 0 0 1.399-.579c.394-.394.587-.915.578-1.433 1.978-2.344 2.472-5.643 1.247-8.473zM7.983 25.511a2.14 2.14 0 0 1-2.899-.128l-.297-.297-.298-.298a2.14 2.14 0 0 1-.128-2.899l9.75-11.648 5.521 5.521-11.648 9.75zm12.565-10.602l-5.585-5.586a6.89 6.89 0 0 1 .388-3.751l8.949 8.949a6.9 6.9 0 0 1-3.752.388zm5.949-.989a.73.73 0 0 1-1.031 0l-9.515-9.516a.73.73 0 0 1 0-1.031c.138-.138.321-.214.515-.214a.72.72 0 0 1 .515.214l9.515 9.515a.73.73 0 0 1 0 1.031zm-11.199.652c-.409-.409-.953-.635-1.532-.635a2.15 2.15 0 0 0-1.532.635l-2.021 2.021a2.15 2.15 0 0 0-.635 1.532 2.15 2.15 0 0 0 .635 1.532 2.16 2.16 0 0 0 3.064 0l2.021-2.021a2.17 2.17 0 0 0 0-3.064zm-4.202 4.202a.91.91 0 0 1-.268-.648.91.91 0 0 1 .268-.648l.569-.569 1.296 1.296-.569.569a.92.92 0 0 1-1.296 0zm3.318-2.021l-.569.569-1.296-1.296.569-.569a.91.91 0 0 1 1.296 0 .92.92 0 0 1 0 1.296zM27.043 3.455c.16 0 .32-.061.442-.183l.008-.008c.244-.244.244-.64 0-.884s-.64-.244-.884 0l-.008.008c-.244.244-.244.64 0 .884.122.122.282.183.442.183z"/></svg>
+                  Concerts
+                </a>
+              </div>
+            </div>
+
+            <!-- Category -->
+            <div class="swiper-slide">
+              <div class="nav nav-pills">
+                <a class="nav-link flex-column justify-content-center gap-2 flex-shrink-0 rounded-circle p-0 mx-auto" href="/listings/events" style="width: 150px; height: 150px">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"><path d="M31.384 11.639c-1.165-4.11-3.861-7.52-7.591-9.602S15.746-.552 11.636.613a15.98 15.98 0 0 0-9.062 6.693c-.187.29-.105.677.185.864s.677.105.864-.185a14.73 14.73 0 0 1 .618-.881l3.134.232c3.901.288 7.726 1.519 11.064 3.558a5.78 5.78 0 0 0 3.018.849h.468c.411 0 .818-.044 1.215-.13.374 1.208.591 2.469.644 3.762H1.268a14.57 14.57 0 0 1 .31-2.459c.073-.337-.142-.67-.48-.742s-.67.142-.742.48c-.544 2.533-.456 5.198.255 7.707a15.89 15.89 0 0 0 7.591 9.603C10.618 31.313 13.281 32 15.974 32a16.07 16.07 0 0 0 4.385-.613 15.89 15.89 0 0 0 9.603-7.591c2.083-3.73 2.587-8.047 1.422-12.157zm-8.2-8.511a14.77 14.77 0 0 1 3.262 2.464c.103 1.269-.312 2.485-1.173 3.426a4.54 4.54 0 0 1-1.367 1.024c-.571-1.425-1.352-2.771-2.334-4.007a16.16 16.16 0 0 0-6.226-4.767 14.65 14.65 0 0 1 7.837 1.86zm-1.26 7.366h-.468c-.835 0-1.653-.23-2.366-.666A26.08 26.08 0 0 0 7.467 6.09l-2.233-.165c1.82-1.945 4.146-3.372 6.743-4.109.209-.059.419-.113.629-.163a14.87 14.87 0 0 1 7.989 5.158 14.77 14.77 0 0 1 2.119 3.614 4.63 4.63 0 0 1-.789.068zm2.402.726c.702-.32 1.341-.78 1.871-1.36a5.8 5.8 0 0 0 1.432-2.932c1.156 1.482 2.025 3.188 2.553 5.051a14.85 14.85 0 0 1 .55 3.396h-5.699c-.054-1.429-.292-2.822-.707-4.155zM1.269 16.625h22.514a14.79 14.79 0 0 1-.51 3.303 5.89 5.89 0 0 0-1.196-.123h-.479a5.91 5.91 0 0 0-3.083.867 25.44 25.44 0 0 1-11.338 3.646l-3.196.236c-.965-1.357-1.7-2.884-2.168-4.534a14.8 14.8 0 0 1-.545-3.396zm3.65 9.113l2.35-.174c4.194-.31 8.308-1.633 11.897-3.826a4.66 4.66 0 0 1 2.431-.684h.479c.276 0 .547.025.812.07a14.75 14.75 0 0 1-2.294 4.064 14.87 14.87 0 0 1-8.002 5.162 14.81 14.81 0 0 1-3.782-1.478 14.76 14.76 0 0 1-3.892-3.134zm15.099 4.446c-1.544.438-3.119.619-4.677.552a16.16 16.16 0 0 0 6.232-4.77c1.086-1.367 1.926-2.868 2.508-4.462a4.66 4.66 0 0 1 1.437 1.068 4.61 4.61 0 0 1 1.203 3.555 14.65 14.65 0 0 1-6.703 4.058zm8.852-6.998c-.295.529-.619 1.034-.97 1.516-.192-1.1-.694-2.137-1.46-2.974-.558-.61-1.233-1.091-1.976-1.419.33-1.19.521-2.423.568-3.685h5.702a14.68 14.68 0 0 1-1.864 6.562zM1.797 10.732c.345 0 .625-.28.625-.625s-.28-.625-.625-.625-.625.28-.625.625.28.625.625.625z"/></svg>
+                  Sports
+                </a>
+              </div>
+            </div>
+
+            <!-- Category -->
+            <div class="swiper-slide">
+              <div class="nav nav-pills">
+                <a class="nav-link flex-column justify-content-center gap-2 flex-shrink-0 rounded-circle p-0 mx-auto" href="/listings/events" style="width: 150px; height: 150px">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"><path d="M9.785 13.397a.62.62 0 0 0-.403-.147c-.345 0-.625.28-.625.625 0 .216.11.407.277.519a.62.62 0 0 0 .348.106c.345 0 .625-.28.625-.625 0-.192-.086-.363-.222-.478zm22.169-8.56c-.08-.226-.282-.387-.52-.414l-3.481-.387-.387-3.481c-.027-.239-.188-.442-.415-.521s-.479-.021-.649.149c-.076.076.71-.713-4.957 4.975a14.33 14.33 0 0 0-7.162-1.91 14.375 14.375 0 1 0 0 28.75 14.37 14.37 0 0 0 14.375-14.375 14.34 14.34 0 0 0-1.909-7.162l4.959-4.977c.17-.171.227-.423.147-.649zM26.468 1.99zm0 0l.265 2.383-4.093 4.098-.264-2.376 4.091-4.105zm-15.76 10.533c.169.301.55.408.851.238.924-.52 1.821-.762 2.824-.762a5.58 5.58 0 0 1 3.506 1.23l-1.784 1.787a3.1 3.1 0 0 0-1.721-.517 3.13 3.13 0 0 0-3.125 3.125 3.13 3.13 0 0 0 3.125 3.125 3.13 3.13 0 0 0 3.125-3.125 3.1 3.1 0 0 0-.519-1.725l1.784-1.787c.8.995 1.235 2.22 1.235 3.512 0 3.102-2.523 5.625-5.625 5.625s-5.625-2.523-5.625-5.625a5.53 5.53 0 0 1 .163-1.349c.078-.336-.131-.672-.467-.75s-.672.131-.75.467a6.75 6.75 0 0 0-.196 1.632c0 3.791 3.084 6.875 6.875 6.875s6.875-3.084 6.875-6.875a6.82 6.82 0 0 0-1.597-4.401l1.77-1.773a9.35 9.35 0 0 1 2.251 7.372c-.599 4.663-4.596 8.178-9.3 8.178a9.39 9.39 0 0 1-9.375-9.375 9.39 9.39 0 0 1 9.375-9.375 9.3 9.3 0 0 1 6.164 2.318l-1.771 1.773a6.82 6.82 0 0 0-4.394-1.591c-1.209 0-2.333.302-3.436.922-.301.169-.408.55-.238.851zm3.233 5.544c.243.243.639.245.884-.001l1.249-1.251a1.86 1.86 0 0 1 .183.809 1.88 1.88 0 0 1-1.875 1.875 1.88 1.88 0 0 1-1.875-1.875 1.88 1.88 0 0 1 1.875-1.875 1.86 1.86 0 0 1 .807.182l-1.249 1.251c-.244.244-.244.64.001.884zm13.567-.442c0 7.237-5.888 13.125-13.125 13.125S1.258 24.862 1.258 17.625 7.146 4.5 14.383 4.5c2.396 0 4.729.648 6.767 1.877l.359 3.228-.077.077A10.54 10.54 0 0 0 14.383 7 10.64 10.64 0 0 0 3.758 17.625 10.64 10.64 0 0 0 14.383 28.25c5.331 0 9.862-3.984 10.539-9.27.386-3.09-.56-6.122-2.605-8.416l.067-.067 3.246.361c1.229 2.038 1.878 4.371 1.878 6.768zm-1.596-7.994l-2.398-.266 1.405-1.407c-.015.016-.454.454 2.698-2.701l2.39.266c-.091.091.709-.712-4.095 4.109z"/></svg>
+                  Hobbies
+                </a>
+              </div>
+            </div>
+
+            <!-- Category -->
+            <div class="swiper-slide">
+              <div class="nav nav-pills">
+                <a class="nav-link flex-column justify-content-center gap-2 flex-shrink-0 rounded-circle p-0 mx-auto" href="/listings/events" style="width: 150px; height: 150px">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"><path d="M16.625 5.767V3.75h3.125c.345 0 .625-.28.625-.625v-2.5c0-.345-.28-.625-.625-.625h-7.5c-.345 0-.625.28-.625.625v2.5c0 .345.28.625.625.625h3.125v2.017c-7.012.333-12.5 6.116-12.5 13.108a13.13 13.13 0 0 0 13.081 13.124L16 32a13.13 13.13 0 0 0 13.125-13.125c0-7.071-5.575-12.778-12.5-13.108zm8.686 11.267c1.874.659 2.564 1.383 2.564 1.842s-.69 1.183-2.564 1.842a26.54 26.54 0 0 0 0-3.684zm1.211-3.666a11.83 11.83 0 0 1 1.166 3.41c-.634-.411-1.473-.781-2.508-1.102a23.58 23.58 0 0 0-.649-3.32c.714.301 1.38.64 1.991 1.012zm-1.432-2.133a19.09 19.09 0 0 0-1.041-.407 18.88 18.88 0 0 0-.407-1.041 11.79 11.79 0 0 1 1.448 1.448zm-4.793 7.052a48.27 48.27 0 0 0-.08-2.313c1.386.151 2.676.378 3.809.673a25.18 25.18 0 0 1 .099 2.23 25.17 25.17 0 0 1-.099 2.23c-1.124.292-2.426.522-3.821.674a47.57 47.57 0 0 0 .091-3.494zm3.574-2.967c-1.256-.298-2.547-.489-3.748-.612-.121-1.353-.301-2.596-.535-3.695a21.62 21.62 0 0 1 3.477.8c.357 1.106.627 2.282.805 3.507zm-2.363-6.965a14.97 14.97 0 0 1 1.013 1.992 23.71 23.71 0 0 0-3.254-.64c-.29-1.018-.634-1.862-1.027-2.492a11.83 11.83 0 0 1 3.267 1.14zM16 22a40.26 40.26 0 0 1-3.011-.111l-.04-.551c-.02-.344-.315-.608-.66-.587s-.608.316-.588.66l.024.361c-1.369-.153-2.646-.38-3.751-.667a25.14 25.14 0 0 1-.099-2.23 25.38 25.38 0 0 1 .099-2.23c1.118-.291 2.388-.515 3.752-.667l-.025.36c-.021.345.241.641.585.662s.641-.241.662-.585l.041-.553a40.38 40.38 0 0 1 3.01-.111 40.24 40.24 0 0 1 2.956.107 46.58 46.58 0 0 1 .09 2.442c.014 1.242-.02 2.45-.095 3.594-.963.071-1.952.107-2.951.107zm2.848 1.153c-.136 1.388-.337 2.656-.596 3.746a25.4 25.4 0 0 1-4.456.004c-.321-1.272-.54-2.632-.676-3.752a41.91 41.91 0 0 0 2.88.099 41.73 41.73 0 0 0 2.848-.097zM13.121 14.6c.144-1.166.367-2.513.679-3.752a25.03 25.03 0 0 1 2.199-.098 25.01 25.01 0 0 1 2.276.104c.252 1.085.449 2.351.581 3.744a41.94 41.94 0 0 0-2.857-.098 42.06 42.06 0 0 0-2.879.1zm-.246-12.1V1.25h6.25V2.5h-6.25zm3.076 4.503c.008-.001.016-.001.024-.002.015-.001.02 0 .025 0 .063 0 .125.002.188.003.209.035.527.185.902.734.309.452.589 1.074.834 1.834A26.13 26.13 0 0 0 16 9.5a26.28 26.28 0 0 0-1.825.065c.534-1.579 1.173-2.516 1.776-2.562zm-5.459 1.351a11.84 11.84 0 0 1 3.384-1.161c-.393.626-.744 1.459-1.055 2.502-1.152.142-2.274.36-3.343.651a15.01 15.01 0 0 1 1.013-1.992zm1.986 2.648a34.7 34.7 0 0 0-.628 3.708 29.37 29.37 0 0 0-3.721.609 21.48 21.48 0 0 1 .806-3.507c1.116-.36 2.308-.632 3.543-.81zm-4.12-1.217c-.144.337-.28.685-.407 1.041a18.87 18.87 0 0 0-1.041.407 11.85 11.85 0 0 1 1.448-1.448zm-2.88 3.581c.611-.373 1.276-.711 1.991-1.012a23.55 23.55 0 0 0-.649 3.32c-1.035.322-1.874.691-2.508 1.102a11.83 11.83 0 0 1 1.166-3.41zm1.211 3.666a26.5 26.5 0 0 0 0 3.684c-1.874-.659-2.564-1.383-2.564-1.842s.69-1.183 2.564-1.842zm-1.211 7.35a11.83 11.83 0 0 1-1.166-3.41c.634.411 1.473.781 2.508 1.102a23.55 23.55 0 0 0 .649 3.32c-.714-.301-1.38-.64-1.991-1.012zm1.432 2.133a18.85 18.85 0 0 0 1.041.407 18.87 18.87 0 0 0 .407 1.041 11.87 11.87 0 0 1-1.448-1.448zm1.219-4.086a30.13 30.13 0 0 0 3.717.611c.13 1.129.335 2.451.627 3.709a21.47 21.47 0 0 1-3.538-.81c-.358-1.107-.628-2.283-.806-3.509zm2.363 6.966c-.373-.611-.711-1.276-1.012-1.991 1.067.292 2.184.51 3.338.651.312 1.042.663 1.875 1.057 2.501-1.18-.214-2.323-.605-3.383-1.161zm6.85.125c-.295.56-.768 1.228-1.342 1.228h-.015c-.616-.027-1.27-.966-1.813-2.563A26.58 26.58 0 0 0 16 28.25a26.5 26.5 0 0 0 1.894-.068 8.77 8.77 0 0 1-.552 1.34zm4.166-.125a11.83 11.83 0 0 1-3.316 1.15 6.29 6.29 0 0 0 .255-.441c.308-.583.57-1.281.793-2.055a23.55 23.55 0 0 0 3.28-.644c-.301.714-.64 1.38-1.012 1.991zm-1.944-2.652c.247-1.157.424-2.421.542-3.699 1.352-.139 2.63-.348 3.764-.616-.178 1.226-.448 2.402-.806 3.509-1.104.357-2.277.626-3.5.805zm4.077 1.22a18.86 18.86 0 0 0 .407-1.041 19.09 19.09 0 0 0 1.041-.407 11.86 11.86 0 0 1-1.448 1.448zm2.88-3.581c-.61.373-1.276.711-1.991 1.012.29-1.06.507-2.171.649-3.32 1.035-.322 1.874-.691 2.508-1.102a11.85 11.85 0 0 1-1.166 3.41zM29.75 4.125h-.625V3.5c0-.345-.28-.625-.625-.625s-.625.28-.625.625v.625h-.625c-.345 0-.625.28-.625.625s.28.625.625.625h.625V6c0 .345.28.625.625.625s.625-.28.625-.625v-.625h.625c.345 0 .625-.28.625-.625s-.28-.625-.625-.625zm-25 0h-.625V3.5c0-.345-.28-.625-.625-.625s-.625.28-.625.625v.625H2.25c-.345 0-.625.28-.625.625s.28.625.625.625h.625V6c0 .345.28.625.625.625s.625-.28.625-.625v-.625h.625c.345 0 .625-.28.625-.625s-.28-.625-.625-.625zm0 25.375h-.625v-.625c0-.345-.28-.625-.625-.625s-.625.28-.625.625v.625H2.25c-.345 0-.625.28-.625.625s.28.625.625.625h.625v.625c0 .345.28.625.625.625s.625-.28.625-.625v-.625h.625c.345 0 .625-.28.625-.625s-.28-.625-.625-.625zm25 0h-.625v-.625c0-.345-.28-.625-.625-.625s-.625.28-.625.625v.625h-.625c-.345 0-.625.28-.625.625s.28.625.625.625h.625v.625c0 .345.28.625.625.625s.625-.28.625-.625v-.625h.625c.345 0 .625-.28.625-.625s-.28-.625-.625-.625zM12.255 18.25c-.35 0-.63.28-.63.625s.28.625.625.625.625-.281.625-.625-.277-.622-.62-.625z"/></svg>
+                  Disco
+                </a>
+              </div>
+            </div>
+
+            <!-- Category -->
+            <div class="swiper-slide">
+              <div class="nav nav-pills">
+                <a class="nav-link flex-column justify-content-center gap-2 flex-shrink-0 rounded-circle p-0 mx-auto" href="/listings/events" style="width: 150px; height: 150px">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"><path d="M15.603 10.903h.903c.345 0 .625-.28.625-.625s-.28-.625-.625-.625h-.349l.319-.886c.117-.325-.052-.683-.377-.8s-.683.052-.8.376l-.506 1.407a.86.86 0 0 0 .81 1.152zM2.195 32h27.609c.345 0 .625-.28.625-.625v-2.906c0-.345-.28-.625-.625-.625h-.954v-.766a1.86 1.86 0 0 0-.581-1.35v-2.562a7.5 7.5 0 0 0-.043-.79c-.037-.343-.344-.592-.688-.556s-.592.344-.555.688a6.26 6.26 0 0 1 .036.658v2.048h-.034-1.846a1.87 1.87 0 0 0-.286.022v-2.027c0-.345-.28-.625-.625-.625s-.625.28-.625.625v2.814c-.207.3-.329.665-.329 1.057v.766h-6.649v-1.852a1.9 1.9 0 0 0 1.272-1.791v-.902A1.9 1.9 0 0 0 16 21.4a1.9 1.9 0 0 0-1.897 1.897v.902a1.9 1.9 0 0 0 1.272 1.791v1.852h-6.69v-.766c0-.394-.123-.76-.333-1.062v-2.809c0-.345-.28-.625-.625-.625s-.625.28-.625.625v2.027a1.87 1.87 0 0 0-.282-.021H4.984v-2.047c0-2.437 1.362-3.986 4.417-5.021l1.311-.41 1.78 3.628a.63.63 0 0 0 .974.194L16 19.322l2.484 2.183a.63.63 0 0 0 .975-.197l1.746-3.601 1.398.436a11.91 11.91 0 0 1 1.525.629c.308.155.684.032.84-.276s.032-.684-.276-.84c-.5-.252-1.053-.481-1.693-.699l-1.935-.604-.035-.011-1.727-.539-.294-1.868c1.673-1.031 2.791-2.88 2.791-4.985V7.32h.061c.345 0 .625-.28.625-.625v-.256A6.45 6.45 0 0 0 16.044 0h-.256a6.45 6.45 0 0 0-6.441 6.441v.256c0 .345.28.625.625.625h.124v1.63c0 2.135 1.15 4.006 2.863 5.028l-.267 1.827-3.67 1.147c-1.637.554-2.841 1.242-3.693 2.11-1.057 1.076-1.593 2.456-1.593 4.102v2.521a1.86 1.86 0 0 0-.625 1.391v.766h-.914c-.345 0-.625.28-.625.625v2.906c0 .345.28.625.625.625zm13.157-8.702A.65.65 0 0 1 16 22.65a.65.65 0 0 1 .648.647v.902a.65.65 0 0 1-.648.648.65.65 0 0 1-.647-.648v-.902zm-2.099-3.221L11.92 17.36l1.202-.378 1.907 1.53-1.776 1.565zm5.439-.052l-1.72-1.512 1.861-1.495.044-.035 1.122.349-1.305 2.693zM15.788 1.25h.256a5.2 5.2 0 0 1 5.178 4.822h-4.055c-.521 0-1.038-.156-1.474-.439-.462-.3-.756-.736-1.062-1.182-.082-.12-.158-.254-.255-.363a.63.63 0 0 0-.991.071l-.452.689a2.73 2.73 0 0 1-1.339 1.061c-.316.115-.647.163-.983.163a5.2 5.2 0 0 1 5.178-4.822zm-4.442 7.701V7.264c1.036-.179 1.973-.778 2.572-1.641.733 1.055 1.964 1.699 3.249 1.699h3.382v1.629a4.61 4.61 0 0 1-4.359 4.594 4.58 4.58 0 0 1-.713-.018 4.61 4.61 0 0 1-4.13-4.577zm3.576 5.761a5.88 5.88 0 0 0 2.907-.219l.241 1.533L16 17.687l-2.078-1.667.219-1.501a5.8 5.8 0 0 0 .779.193zM4.359 27.078a.62.62 0 0 1 .615-.615H6.82c.339 0 .615.276.615.615v.766H4.359v-.766zm22.7-.61a.62.62 0 0 1 .541.61v.766h-3.076v-.766c0-.339.276-.615.615-.615h1.846c.024 0 .05.002.074.005zM2.82 29.094h26.359v1.656H2.82v-1.656zm23.184-8.956c.217.52.987.496 1.168-.038.183-.539-.424-1.028-.912-.737a.63.63 0 0 0-.256.775z"/></svg>
+                  Conference
+                </a>
+              </div>
+            </div>
+
+            <!-- Category -->
+            <div class="swiper-slide">
+              <div class="nav nav-pills">
+                <a class="nav-link flex-column justify-content-center gap-2 flex-shrink-0 rounded-circle p-0 mx-auto" href="/listings/events" style="width: 150px; height: 150px">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"><path d="M13.866 8.546a3.5 3.5 0 0 0 2.492-1.032c.244-.244.244-.64 0-.884s-.64-.244-.884 0a2.26 2.26 0 0 1-3.216 0c-.244-.244-.64-.244-.884 0s-.244.64 0 .884a3.5 3.5 0 0 0 2.492 1.032zm-8.183-1.25a2.26 2.26 0 0 1-1.608-.666c-.244-.244-.64-.244-.884 0s-.244.64 0 .884a3.5 3.5 0 0 0 2.492 1.032 3.5 3.5 0 0 0 2.492-1.032c.244-.244.244-.64 0-.884s-.64-.244-.884 0a2.26 2.26 0 0 1-1.608.666zm25.974 4.321c-2.855-1.442-6.056-2.204-9.259-2.204a20.51 20.51 0 0 0-3.188.251V2.761c0-.236-.133-.452-.343-.558-2.004-1.012-4.147-1.685-6.37-2-.341-.049-.658.189-.707.531s.189.658.531.707A19.23 19.23 0 0 1 17.96 3.15v6.751c-1.672.37-3.299.946-4.827 1.717-.211.106-.344.322-.344.558v.911l-.127-.131c-.822-.807-1.909-1.252-3.061-1.252a4.34 4.34 0 0 0-3.061 1.252c-.822.808-1.285 1.883-1.308 3.032-.005.234.122.45.327.562a.62.62 0 0 0 .649-.033c1.002-.682 2.175-1.043 3.392-1.043 1.135 0 2.232.314 3.188.91V20.1c-.987.58-2.056.991-3.185 1.223A10.49 10.49 0 0 1 1.25 11.069V3.15a19.27 19.27 0 0 1 5.636-1.708c.342-.049.579-.365.531-.707S7.051.156 6.71.204A20.51 20.51 0 0 0 .344 2.203C.133 2.309 0 2.525 0 2.761v8.309a11.74 11.74 0 0 0 9.486 11.504.63.63 0 0 0 .238 0c1.09-.212 2.132-.572 3.11-1.073.449 5.159 4.281 9.485 9.442 10.487a.63.63 0 0 0 .238 0A11.74 11.74 0 0 0 32 20.484v-8.309c0-.236-.133-.452-.343-.558zM9.602 14.223c-.987 0-1.951.197-2.844.576.492-1.085 1.588-1.846 2.844-1.846s2.353.761 2.844 1.846c-.893-.379-1.857-.576-2.844-.576zm21.148 6.26a10.49 10.49 0 0 1-8.355 10.253 10.49 10.49 0 0 1-8.355-10.253v-7.92c5.264-2.524 11.454-2.524 16.71 0v7.92h0zm-10.667-2.705c.122.122.282.183.442.183s.32-.061.442-.183c.244-.244.244-.64 0-.884a3.53 3.53 0 0 0-4.983 0c-.244.244-.244.64 0 .884s.64.244.884 0a2.28 2.28 0 0 1 3.216 0zm4.523.183c.16 0 .32-.061.442-.183a2.28 2.28 0 0 1 3.216 0c.244.244.64.244.884 0s.244-.64 0-.884a3.53 3.53 0 0 0-4.983 0c-.244.244-.244.64 0 .884.122.122.282.183.442.183zm1.828 3.55c-.206-.111-.456-.099-.649.033-1.002.682-2.175 1.043-3.392 1.043s-2.39-.36-3.392-1.043c-.193-.131-.444-.144-.649-.033s-.332.328-.327.562c.023 1.149.487 2.226 1.308 3.032s1.909 1.252 3.061 1.252a4.34 4.34 0 0 0 3.061-1.252c.822-.808 1.285-1.883 1.308-3.032.005-.234-.122-.451-.327-.562zm-4.042 3.595c-1.256 0-2.353-.761-2.844-1.846a7.27 7.27 0 0 0 2.845.576c.988 0 1.951-.197 2.844-.576-.492 1.085-1.588 1.846-2.844 1.846zM9.602 1.251a.63.63 0 0 0 .442-.183.63.63 0 0 0 .182-.442.63.63 0 0 0-.182-.442.63.63 0 0 0-.442-.183.63.63 0 0 0-.442.183.63.63 0 0 0-.183.442.63.63 0 0 0 .183.442.63.63 0 0 0 .442.183z"/></svg>
+                  Cinema
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination (Bullets) -->
+          <div class="swiper-pagination position-static mt-3"></div>
+        </div>
+      </section>
+
+
+      <!-- Upcoming online events -->
+      <section class="container pt-2 pt-sm-3 pt-md-4 pt-lg-5 my-xxl-3">
+        <div class="row pb-5">
+          <div class="col-lg-3 vstack mb-4 mb-lg-0">
+            <div class="d-flex flex-lg-column justify-content-between gap-3 order-lg-2 pt-lg-5 mt-lg-5 mb-3 mb-sm-4 mb-lg-0">
+              <h2 class="mb-0">Upcoming Online Events</h2>
+              <div class="nav">
+                <a class="nav-link position-relative fs-base text-nowrap py-1 px-0" href="/listings/events">
+                  <span class="hover-effect-underline stretched-link me-1">View all</span>
+                  <i class="fi-chevron-right fs-lg"></i>
+                </a>
+              </div>
+            </div>
+
+            <!-- Date master slider -->
+            <div class="row row-cols-2 row-cols-lg-1 align-items-center g-4">
+              <div class="col">
+                <div class="swiper" data-swiper='{
+                  "spaceBetween": 32,
+                  "controlSlider": "#listings",
+                  "grabCursor": true,
+                  "navigation": {
+                    "prevEl": "#online-prev",
+                    "nextEl": "#online-next"
+                  }
+                }'>
+                  <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                      <div class="display-3" style="color: var(--fn-body-bg); text-shadow: 1px 1px 0 var(--fn-component-color), -1px 1px 0 var(--fn-component-color), -1px -1px 0 var(--fn-component-color), 1px -1px 0 var(--fn-component-color)">28</div>
+                      <div class="text-body-secondary">November, 2024</div>
+                    </div>
+                    <div class="swiper-slide">
+                      <div class="display-3" style="color: var(--fn-body-bg); text-shadow: 1px 1px 0 var(--fn-component-color), -1px 1px 0 var(--fn-component-color), -1px -1px 0 var(--fn-component-color), 1px -1px 0 var(--fn-component-color)">29</div>
+                      <div class="text-body-secondary">November, 2024</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col d-flex justify-content-end justify-content-lg-start gap-3">
+                <button type="button" class="btn btn-icon btn-outline-secondary animate-slide-start bg-body rounded-circle" id="online-prev" aria-label="Prev">
+                  <i class="fi-chevron-left fs-lg animate-target"></i>
+                </button>
+                <button type="button" class="btn btn-icon btn-outline-secondary animate-slide-end bg-body rounded-circle" id="online-next" aria-label="Next">
+                  <i class="fi-chevron-right fs-lg animate-target"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-1 d-none d-lg-block">
+            <hr class="vr h-100 m-0">
+          </div>
+          <div class="col-lg-8">
+            <div class="swiper" id="listings" data-swiper='{
+              "allowTouchMove": false,
+              "spaceBetween": 24
+            }'>
+              <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                  <div class="row row-cols-1 row-cols-sm-2 g-4 g-sm-3 g-md-4">
+
+                    <!-- Event listing -->
+                    <div class="col">
+                      <article class="card h-100 hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+                        <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                          <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                            <i class="fi-heart animate-target fs-sm"></i>
+                          </button>
+                        </div>
+                        <div class="bg-body-secondary rounded overflow-hidden">
+                          <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(160 / 416 * 100%)">
+                            <img src="/finder/assets/img/home/events/events/01.jpg" alt="Image">
+                          </div>
+                        </div>
+                        <div class="card-body pb-2">
+                          <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                            <li class="d-flex align-items-center">
+                              <i class="fi-calendar me-1"></i>
+                              Nov 28
+                            </li>
+                            <li>15:00</li>
+                            <li class="d-flex mx-n1">
+                              <i class="fi-bullet fs-base"></i>
+                            </li>
+                            <li>Online event</li>
+                          </ul>
+                          <h3 class="h5 mb-0">
+                            <a class="hover-effect-underline stretched-link" href="/entry/events">Christian in Chicago</a>
+                          </h3>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-1 pb-4">
+                          <div class="h5 text-info mb-0">Free</div>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Event listing -->
+                    <div class="col">
+                      <article class="card h-100 hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+                        <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                          <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                            <i class="fi-heart animate-target fs-sm"></i>
+                          </button>
+                        </div>
+                        <div class="bg-body-secondary rounded overflow-hidden">
+                          <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(160 / 416 * 100%)">
+                            <img src="/finder/assets/img/home/events/events/02.jpg" alt="Image">
+                          </div>
+                        </div>
+                        <div class="card-body pb-2">
+                          <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                            <li class="d-flex align-items-center">
+                              <i class="fi-calendar me-1"></i>
+                              Nov 28
+                            </li>
+                            <li>17:00</li>
+                            <li class="d-flex mx-n1">
+                              <i class="fi-bullet fs-base"></i>
+                            </li>
+                            <li>Online event</li>
+                          </ul>
+                          <h3 class="h5 mb-0">
+                            <a class="hover-effect-underline stretched-link" href="/entry/events">Motivational Podcast</a>
+                          </h3>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-1 pb-4">
+                          <div class="h5 text-info mb-0">$15.00</div>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Event listing -->
+                    <div class="col">
+                      <article class="card h-100 hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+                        <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                          <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                            <i class="fi-heart animate-target fs-sm"></i>
+                          </button>
+                        </div>
+                        <div class="bg-body-secondary rounded overflow-hidden">
+                          <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(160 / 416 * 100%)">
+                            <img src="/finder/assets/img/home/events/events/03.jpg" alt="Image">
+                          </div>
+                        </div>
+                        <div class="card-body pb-2">
+                          <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                            <li class="d-flex align-items-center">
+                              <i class="fi-calendar me-1"></i>
+                              Nov 28
+                            </li>
+                            <li>08:30</li>
+                            <li class="d-flex mx-n1">
+                              <i class="fi-bullet fs-base"></i>
+                            </li>
+                            <li>Online event</li>
+                          </ul>
+                          <h3 class="h5 mb-0">
+                            <a class="hover-effect-underline stretched-link" href="/entry/events">Sunday Online Meditation</a>
+                          </h3>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-1 pb-4">
+                          <div class="h5 text-info mb-0">$23.00</div>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Event listing -->
+                    <div class="col">
+                      <article class="card h-100 hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+                        <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                          <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                            <i class="fi-heart animate-target fs-sm"></i>
+                          </button>
+                        </div>
+                        <div class="bg-body-secondary rounded overflow-hidden">
+                          <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(160 / 416 * 100%)">
+                            <img src="/finder/assets/img/home/events/events/04.jpg" alt="Image">
+                          </div>
+                        </div>
+                        <div class="card-body pb-2">
+                          <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                            <li class="d-flex align-items-center">
+                              <i class="fi-calendar me-1"></i>
+                              Nov 28
+                            </li>
+                            <li>10:00</li>
+                            <li class="d-flex mx-n1">
+                              <i class="fi-bullet fs-base"></i>
+                            </li>
+                            <li>Online event</li>
+                          </ul>
+                          <h3 class="h5 mb-0">
+                            <a class="hover-effect-underline stretched-link" href="/entry/events">Morning Stretching &amp; Exercise</a>
+                          </h3>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-1 pb-4">
+                          <div class="h5 text-info mb-0">$12.00</div>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+                <div class="swiper-slide">
+                  <div class="row row-cols-1 row-cols-sm-2 g-4 g-sm-3 g-md-4">
+
+                    <!-- Event listing -->
+                    <div class="col">
+                      <article class="card h-100 hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+                        <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                          <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                            <i class="fi-heart animate-target fs-sm"></i>
+                          </button>
+                        </div>
+                        <div class="bg-body-secondary rounded overflow-hidden">
+                          <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(160 / 416 * 100%)">
+                            <img src="/finder/assets/img/home/events/events/05.jpg" alt="Image">
+                          </div>
+                        </div>
+                        <div class="card-body pb-2">
+                          <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                            <li class="d-flex align-items-center">
+                              <i class="fi-calendar me-1"></i>
+                              Nov 29
+                            </li>
+                            <li>13:45</li>
+                            <li class="d-flex mx-n1">
+                              <i class="fi-bullet fs-base"></i>
+                            </li>
+                            <li>Online event</li>
+                          </ul>
+                          <h3 class="h5 mb-0">
+                            <a class="hover-effect-underline stretched-link" href="/entry/events">Virtual Taste of Chicago</a>
+                          </h3>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-1 pb-4">
+                          <div class="h5 text-info mb-0">$10.00</div>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Event listing -->
+                    <div class="col">
+                      <article class="card h-100 hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+                        <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                          <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                            <i class="fi-heart animate-target fs-sm"></i>
+                          </button>
+                        </div>
+                        <div class="bg-body-secondary rounded overflow-hidden">
+                          <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(160 / 416 * 100%)">
+                            <img src="/finder/assets/img/home/events/events/06.jpg" alt="Image">
+                          </div>
+                        </div>
+                        <div class="card-body pb-2">
+                          <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                            <li class="d-flex align-items-center">
+                              <i class="fi-calendar me-1"></i>
+                              Nov 29
+                            </li>
+                            <li>16:00</li>
+                            <li class="d-flex mx-n1">
+                              <i class="fi-bullet fs-base"></i>
+                            </li>
+                            <li>Online event</li>
+                          </ul>
+                          <h3 class="h5 mb-0">
+                            <a class="hover-effect-underline stretched-link" href="/entry/events">Digital Business Summit</a>
+                          </h3>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-1 pb-4">
+                          <div class="h5 text-info mb-0">$40.00</div>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Event listing -->
+                    <div class="col">
+                      <article class="card h-100 hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+                        <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                          <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                            <i class="fi-heart animate-target fs-sm"></i>
+                          </button>
+                        </div>
+                        <div class="bg-body-secondary rounded overflow-hidden">
+                          <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(160 / 416 * 100%)">
+                            <img src="/finder/assets/img/home/events/events/07.jpg" alt="Image">
+                          </div>
+                        </div>
+                        <div class="card-body pb-2">
+                          <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                            <li class="d-flex align-items-center">
+                              <i class="fi-calendar me-1"></i>
+                              Nov 29
+                            </li>
+                            <li>12:00</li>
+                            <li class="d-flex mx-n1">
+                              <i class="fi-bullet fs-base"></i>
+                            </li>
+                            <li>Online event</li>
+                          </ul>
+                          <h3 class="h5 mb-0">
+                            <a class="hover-effect-underline stretched-link" href="/entry/events">Virtual City Art Expo</a>
+                          </h3>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-1 pb-4">
+                          <div class="h5 text-info mb-0">Free</div>
+                        </div>
+                      </article>
+                    </div>
+
+                    <!-- Event listing -->
+                    <div class="col">
+                      <article class="card h-100 hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+                        <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                          <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                            <i class="fi-heart animate-target fs-sm"></i>
+                          </button>
+                        </div>
+                        <div class="bg-body-secondary rounded overflow-hidden">
+                          <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(160 / 416 * 100%)">
+                            <img src="/finder/assets/img/home/events/events/08.jpg" alt="Image">
+                          </div>
+                        </div>
+                        <div class="card-body pb-2">
+                          <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                            <li class="d-flex align-items-center">
+                              <i class="fi-calendar me-1"></i>
+                              Nov 29
+                            </li>
+                            <li>15:30</li>
+                            <li class="d-flex mx-n1">
+                              <i class="fi-bullet fs-base"></i>
+                            </li>
+                            <li>Online event</li>
+                          </ul>
+                          <h3 class="h5 mb-0">
+                            <a class="hover-effect-underline stretched-link" href="/entry/events">Fitness Fest Online</a>
+                          </h3>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-1 pb-4">
+                          <div class="h5 text-info mb-0">$25.00</div>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Popular near events -->
+      <section class="container py-2 py-sm-3 py-md-4 py-lg-5 my-xxl-3">
+        <div class="d-md-flex align-items-start gap-5 pb-2 pb-sm-3">
+          <h2 class="text-nowrap mb-4 mb-md-0">Popular Near You</h2>
+          <div class="d-flex min-w-0 flex-fill gap-4">
+            <div class="overflow-x-auto pb-3">
+              <ul class="nav nav-pills flex-nowrap gap-2 text-nowrap">
+                <li class="nav-item me-1">
+                  <a class="nav-link active" aria-current="page" href="#!">All</a>
+                </li>
+                <li class="nav-item me-1">
+                  <a class="nav-link" href="#!">Theater &amp; Cinema</a>
+                </li>
+                <li class="nav-item me-1">
+                  <a class="nav-link" href="#!">Sports</a>
+                </li>
+                <li class="nav-item me-1">
+                  <a class="nav-link" href="#!">Concert</a>
+                </li>
+              </ul>
+            </div>
+            <div class="nav ms-auto mb-3">
+              <a class="nav-link position-relative fs-base text-nowrap py-1 px-0" href="/listings/events">
+                <span class="hover-effect-underline stretched-link me-1">View all</span>
+                <i class="fi-chevron-right fs-lg"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="row row-cols-1 row-cols-lg-2 g-4 pb-5">
+          <div class="col">
+
+            <!-- Event listing card -->
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="row h-100">
+                <div class="col-sm-5 col-md-6 col-lg-12 order-sm-2 order-lg-1">
+                  <div class="position-relative h-100 bg-body-secondary rounded overflow-hidden">
+                    <div class="ratio d-none d-lg-block" style="--fn-aspect-ratio: calc(250 / 636 * 100%)"></div>
+                    <div class="ratio ratio-16x9 d-lg-none"></div>
+                    <img src="/finder/assets/img/listings/events/15.jpg" class="hover-effect-target position-absolute top-0 start-0 w-100 h-100 object-fit-cover" style="object-position: center top" alt="Image">
+                  </div>
+                </div>
+                <div class="col-sm-7 col-md-6 col-lg-12 d-flex flex-column order-md-1">
+                  <div class="card-body pe-sm-0 pe-lg-4">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                      <li class="d-flex align-items-center">
+                        <i class="fi-calendar me-1"></i>
+                        Nov 7
+                      </li>
+                      <li>10:00</li>
+                      <li class="d-flex mx-n1">
+                        <i class="fi-bullet fs-base"></i>
+                      </li>
+                      <li>Sports</li>
+                    </ul>
+                    <h3 class="h5 pt-1 mb-2">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Workout with Fitness Stars</a>
+                    </h3>
+                    <div class="d-flex align-items-center fs-sm">
+                      <i class="fi-map-pin me-1"></i>
+                      Chicago
+                    </div>
+                  </div>
+                  <div class="card-footer d-flex align-items-center justify-content-between gap-3 bg-transparent border-0 pt-0 pt-sm-4 p-4 pe-sm-0 pe-lg-4">
+                    <div class="h5 text-info mb-0">$25.00</div>
+                    <button type="button" class="btn btn-outline-dark position-relative z-2">Book now</button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+          <div class="col vstack gap-4">
+
+            <!-- Event listing card -->
+            <article class="card hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="row">
+                <div class="col-sm-5 col-md-6 order-sm-2">
+                  <div class="position-relative h-100 bg-body-secondary rounded overflow-hidden">
+                    <div class="ratio d-none d-lg-block" style="--fn-aspect-ratio: calc(250 / 306 * 100%)"></div>
+                    <div class="ratio ratio-16x9 d-lg-none"></div>
+                    <img src="/finder/assets/img/listings/events/16.jpg" class="hover-effect-target position-absolute top-0 start-0 w-100 h-100 object-fit-cover" style="object-position: center top" alt="Image">
+                  </div>
+                </div>
+                <div class="col-sm-7 col-md-6 d-flex flex-column order-md-1">
+                  <div class="card-body pe-sm-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                      <li class="d-flex align-items-center">
+                        <i class="fi-calendar me-1"></i>
+                        Dec 26
+                      </li>
+                      <li>19:00</li>
+                      <li class="d-flex mx-n1">
+                        <i class="fi-bullet fs-base"></i>
+                      </li>
+                      <li>Concert</li>
+                    </ul>
+                    <h3 class="h5 pt-1 mb-2">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Winter Fest</a>
+                    </h3>
+                    <div class="d-flex align-items-center fs-sm">
+                      <i class="fi-map-pin me-1"></i>
+                      Chicago
+                    </div>
+                  </div>
+                  <div class="card-footer d-flex align-items-center justify-content-between gap-3 bg-transparent border-0 pt-0 pt-sm-4 p-4 pe-sm-0">
+                    <div class="h5 text-info mb-0">$32.00</div>
+                    <button type="button" class="btn btn-outline-dark position-relative z-2">Book now</button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- Event listing card -->
+            <article class="card hover-effect-scale hover-effect-opacity bg-body-tertiary border-0">
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="row">
+                <div class="col-sm-5 col-md-6 order-sm-2">
+                  <div class="position-relative h-100 bg-body-secondary rounded overflow-hidden">
+                    <div class="ratio d-none d-lg-block" style="--fn-aspect-ratio: calc(250 / 306 * 100%)"></div>
+                    <div class="ratio ratio-16x9 d-lg-none"></div>
+                    <img src="/finder/assets/img/listings/events/17.jpg" class="hover-effect-target position-absolute top-0 start-0 w-100 h-100 object-fit-cover" style="object-position: center top" alt="Image">
+                  </div>
+                </div>
+                <div class="col-sm-7 col-md-6 d-flex flex-column order-md-1">
+                  <div class="card-body pe-sm-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                      <li class="d-flex align-items-center">
+                        <i class="fi-calendar me-1"></i>
+                        Oct 15
+                      </li>
+                      <li>18:00</li>
+                      <li class="d-flex mx-n1">
+                        <i class="fi-bullet fs-base"></i>
+                      </li>
+                      <li>Theater &amp; Cinema</li>
+                    </ul>
+                    <h3 class="h5 pt-1 mb-2">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Parallax Show Ballet</a>
+                    </h3>
+                    <div class="d-flex align-items-center fs-sm">
+                      <i class="fi-map-pin me-1"></i>
+                      Chicago
+                    </div>
+                  </div>
+                  <div class="card-footer d-flex align-items-center justify-content-between gap-3 bg-transparent border-0 pt-0 pt-sm-4 p-4 pe-sm-0">
+                    <div class="h5 text-info mb-0">$56.00</div>
+                    <button type="button" class="btn btn-outline-dark position-relative z-2">Book now</button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Filterable events -->
+      <section class="bg-body-tertiary py-2 py-sm-3 py-md-4 py-lg-5">
+        <div class="container py-5 my-xxl-3">
+          <h2 class="text-nowrap pb-2 pb-lg-3">Choose Your Event</h2>
+
+          <!-- Filters + Sort selector -->
+          <div class="row g-3 pb-3 mb-lg-3">
+            <div class="col-lg-9 col-xl-8">
+              <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-2 g-md-3">
+                <div class="col">
+                  <div class="position-relative">
+                    <i class="fi-menu position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                    <select class="form-select form-icon-start bg-transparent" data-select='{
+                      "classNames": {
+                        "containerInner": ["form-select", "form-icon-start", "bg-transparent"]
+                      }
+                    }' aria-label="Category select">
+                      <option value="">Category</option>
+                      <option value="Concerts">Concerts</option>
+                      <option value="Sports">Sports</option>
+                      <option value="Hobbies">Hobbies</option>
+                      <option value="Disco">Disco</option>
+                      <option value="Conference">Conference</option>
+                      <option value="Cinema">Cinema</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="position-relative">
+                    <i class="fi-map-pin position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                    <select class="form-select form-icon-start bg-transparent" data-select='{
+                      "searchEnabled": true,
+                      "classNames": {
+                        "containerInner": ["form-select", "form-icon-start", "bg-transparent"]
+                      }
+                    }' aria-label="Location select">
+                    <option value="">Location</option>
+                    <option value="New York">New York</option>
+                    <option value="Los Angeles">Los Angeles</option>
+                    <option value="Chicago">Chicago</option>
+                    <option value="Houston">Houston</option>
+                    <option value="Phoenix">Phoenix</option>
+                    <option value="Philadelphia">Philadelphia</option>
+                    <option value="San Antonio">San Antonio</option>
+                    <option value="San Diego">San Diego</option>
+                    <option value="Dallas">Dallas</option>
+                    <option value="San Jose">San Jose</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="position-relative">
+                    <i class="fi-calendar position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                    <input type="text" class="form-control form-icon-start bg-transparent" data-datepicker='{"dateFormat": "M j, Y"}' placeholder="Date">
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="position-relative">
+                    <i class="fi-credit-card position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                    <select class="form-select form-icon-start bg-transparent" data-select='{
+                      "classNames": {
+                        "containerInner": ["form-select", "form-icon-start", "bg-transparent"]
+                      }
+                    }' aria-label="Price select">
+                      <option value="">Price</option>
+                      <option value="Free">Free</option>
+                      <option value="Up to $25">Up to $25</option>
+                      <option value="$25 - $50">$25 - $50</option>
+                      <option value="$50 - $100">$50 - $100</option>
+                      <option value="$100 - $200">$100 - $200</option>
+                      <option value="Over $200">Over $200</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-xl-4 d-flex align-items-center justify-content-lg-end gap-3">
+              <div class="fs-sm fw-semibold text-dark-emphasis d-none d-sm-inline d-lg-none d-xl-inline">Sort by:</div>
+              <div class="position-relative" style="width: 160px">
+                <i class="fi-sort position-absolute top-50 start-0 translate-middle-y z-2"></i>
+                <select class="form-select bg-transparent border-0 rounded-0 ps-4 pe-1" data-select='{
+                  "removeItemButton": false,
+                  "classNames": {
+                    "containerInner": ["form-select", "bg-transparent", "border-0", "rounded-0", "ps-4", "pe-1"]
+                  }
+                }'>
+                <option value="Most popular">Most popular</option>
+                <option value="Best rated">Best rated</option>
+                <option value="Most recent">Most recent</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Row of event cards that turns into carousel on screens < 992px wide (lg breakpoint) -->
+          <div class="mx-n2">
+            <div class="swiper px-2 pb-4" data-swiper='{
+              "slidesPerView": 1,
+              "spaceBetween": 24,
+              "pagination": {
+                "el": ".swiper-pagination",
+                "clickable": true
+              },
+              "breakpoints": {
+                "500": {
+                  "slidesPerView": 2
+                },
+                "992": {
+                  "slidesPerView": 3
+                }
+              }
+            }'>
+              <div class="swiper-wrapper">
+
+                <!-- Event listing card -->
+                <div class="swiper-slide h-auto">
+                  <article class="card h-100 hover-effect-scale hover-effect-opacity border-0 shadow">
+                    <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                      <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                        <i class="fi-heart animate-target fs-sm"></i>
+                      </button>
+                    </div>
+                    <div class="bg-body-secondary rounded overflow-hidden">
+                      <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(250 / 416 * 100%)">
+                        <img src="/finder/assets/img/listings/events/13.jpg" alt="Image">
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                        <li class="d-flex align-items-center">
+                          <i class="fi-calendar me-1"></i>
+                          Sep 23
+                        </li>
+                        <li>18:00</li>
+                        <li class="d-flex mx-n1">
+                          <i class="fi-bullet fs-base"></i>
+                        </li>
+                        <li>Conference</li>
+                      </ul>
+                      <h3 class="h5 pt-1 mb-2">
+                        <a class="hover-effect-underline stretched-link" href="/entry/events">Chicago Business Conference</a>
+                      </h3>
+                      <div class="d-flex align-items-center fs-sm">
+                        <i class="fi-map-pin me-1"></i>
+                        Chicago
+                      </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between gap-3 bg-transparent border-0 pt-0 pb-4">
+                      <div class="h5 text-info mb-0">$75.00</div>
+                      <button type="button" class="btn btn-outline-dark position-relative z-2">Book now</button>
+                    </div>
+                  </article>
+                </div>
+
+                <!-- Event listing card -->
+                <div class="swiper-slide h-auto">
+                  <article class="card h-100 hover-effect-scale hover-effect-opacity border-0 shadow">
+                    <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                      <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                        <i class="fi-heart animate-target fs-sm"></i>
+                      </button>
+                    </div>
+                    <div class="bg-body-secondary rounded overflow-hidden">
+                      <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(250 / 416 * 100%)">
+                        <img src="/finder/assets/img/listings/events/14.jpg" alt="Image">
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                        <li class="d-flex align-items-center">
+                          <i class="fi-calendar me-1"></i>
+                          Nov 8
+                        </li>
+                        <li>17:30</li>
+                        <li class="d-flex mx-n1">
+                          <i class="fi-bullet fs-base"></i>
+                        </li>
+                        <li>Concert</li>
+                      </ul>
+                      <h3 class="h5 pt-1 mb-2">
+                        <a class="hover-effect-underline stretched-link" href="/entry/events">Classic Music Evening</a>
+                      </h3>
+                      <div class="d-flex align-items-center fs-sm">
+                        <i class="fi-map-pin me-1"></i>
+                        Boston
+                      </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between gap-3 bg-transparent border-0 pt-0 pb-4">
+                      <div class="h5 text-info mb-0">$60.00</div>
+                      <button type="button" class="btn btn-outline-dark position-relative z-2">Book now</button>
+                    </div>
+                  </article>
+                </div>
+
+                <!-- Event listing card -->
+                <div class="swiper-slide h-auto">
+                  <article class="card h-100 hover-effect-scale hover-effect-opacity border-0 shadow">
+                    <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                      <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                        <i class="fi-heart animate-target fs-sm"></i>
+                      </button>
+                    </div>
+                    <div class="bg-body-secondary rounded overflow-hidden">
+                      <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(250 / 416 * 100%)">
+                        <img src="/finder/assets/img/listings/events/03.jpg" alt="Image">
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm mb-2">
+                        <li class="d-flex align-items-center">
+                          <i class="fi-calendar me-1"></i>
+                          Oct 16
+                        </li>
+                        <li>22:00</li>
+                        <li class="d-flex mx-n1">
+                          <i class="fi-bullet fs-base"></i>
+                        </li>
+                        <li>Disco</li>
+                      </ul>
+                      <h3 class="h5 pt-1 mb-2">
+                        <a class="hover-effect-underline stretched-link" href="/entry/events">Sunset Disco Party</a>
+                      </h3>
+                      <div class="d-flex align-items-center fs-sm">
+                        <i class="fi-map-pin me-1"></i>
+                        San Francisco
+                      </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between gap-3 bg-transparent border-0 pt-0 pb-4">
+                      <div class="h5 text-info mb-0">$45.00</div>
+                      <button type="button" class="btn btn-outline-dark position-relative z-2">Book now</button>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              <!-- Pagination (Bullets) -->
+              <div class="swiper-pagination position-static mt-3 mt-md-4"></div>
+            </div>
+          </div>
+
+          <!-- View all button -->
+          <div class="text-center pt-md-2 pt-lg-3">
+            <a class="btn btn-lg btn-primary" href="/listings/events">View all 32 events</a>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Sport events carousel -->
+      <section class="container pt-2 pt-sm-3 pt-md-4 pt-lg-5 my-xxl-3">
+        <div class="d-flex align-items-start justify-content-between gap-4 pt-5 pb-3 mb-2 mb-sm-3">
+          <h2 class="mb-0">Sports</h2>
+          <div class="nav">
+            <a class="nav-link position-relative fs-base text-nowrap py-1 px-0" href="/listings/events">
+              <span class="hover-effect-underline stretched-link me-1">View all</span>
+              <i class="fi-chevron-right fs-lg"></i>
+            </a>
+          </div>
+        </div>
+        <div class="position-relative mx-3 mx-sm-0 mb-5">
+
+          <!-- Carousel -->
+          <div class="swiper" data-swiper='{
+            "slidesPerView": 1,
+            "spaceBetween": 24,
+            "loop": true,
+            "autoHeight": true,
+            "navigation": {
+              "prevEl": "#sports-prev",
+              "nextEl": "#sports-next"
+            },
+            "breakpoints": {
+              "500": {
+                "slidesPerView": 2
+              },
+              "800": {
+                "slidesPerView": 3
+              },
+              "1100": {
+                "slidesPerView": 4
+              }
+            }
+          }'>
+            <div class="swiper-wrapper">
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/18.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        Jul 8
+                        <span class="ms-1">10:30</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        New York
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Soccer Championship: Battle for the Cup</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/19.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        Jun 29
+                        <span class="ms-1">13:45</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        Boston
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Boston Home Run Classic: Baseball</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/20.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        May 17
+                        <span class="ms-1">12:00</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        Chicago
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Regional Motocross Championship</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/21.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        Aug 23
+                        <span class="ms-1">18:00</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        Houston
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Boxing WBA Professional League 2024</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/22.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        Jul 14
+                        <span class="ms-1">16:00</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        Philadelphia
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Philadelphia Open Tennis Tournament</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prev button -->
+          <button type="button" class="btn btn-icon btn-outline-secondary animate-slide-start bg-body rounded-circle position-absolute top-50 start-0 translate-middle z-1 mt-n5" id="sports-prev" aria-label="Prev">
+            <i class="fi-chevron-left fs-lg animate-target"></i>
+          </button>
+
+          <!-- Next button -->
+          <button type="button" class="btn btn-icon btn-outline-secondary animate-slide-end bg-body rounded-circle position-absolute top-50 start-100 translate-middle z-1 mt-n5" id="sports-next" aria-label="Next">
+            <i class="fi-chevron-right fs-lg animate-target"></i>
+          </button>
+        </div>
+      </section>
+
+
+      <!-- Music and dance events carousel -->
+      <section class="container py-2 py-sm-3 py-md-4 py-lg-5 mb-xxl-3">
+        <div class="d-flex align-items-start justify-content-between gap-4 pt-xxl-3 pb-3 mb-2 mb-sm-3">
+          <h2 class="mb-0">Music &amp; Dance</h2>
+          <div class="nav">
+            <a class="nav-link position-relative fs-base text-nowrap py-1 px-0" href="/listings/events">
+              <span class="hover-effect-underline stretched-link me-1">View all</span>
+              <i class="fi-chevron-right fs-lg"></i>
+            </a>
+          </div>
+        </div>
+        <div class="position-relative mx-3 mx-sm-0 mb-5">
+
+          <!-- Carousel -->
+          <div class="swiper" data-swiper='{
+            "slidesPerView": 1,
+            "spaceBetween": 24,
+            "loop": true,
+            "autoHeight": true,
+            "navigation": {
+              "prevEl": "#theater-prev",
+              "nextEl": "#theater-next"
+            },
+            "breakpoints": {
+              "500": {
+                "slidesPerView": 2
+              },
+              "800": {
+                "slidesPerView": 3
+              },
+              "1100": {
+                "slidesPerView": 4
+              }
+            }
+          }'>
+            <div class="swiper-wrapper">
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/23.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        Dec 19
+                        <span class="ms-1">11:30</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        Los Angeles
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Parallax Ballet Show</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/24.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        Nov 21
+                        <span class="ms-1">14:00</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        New York
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Classic Music Evening</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/25.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        Nov 15
+                        <span class="ms-1">20:00</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        Dallas
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Singers on Stage</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/26.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        Oct 17
+                        <span class="ms-1">18:30</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        Phoenix
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Street Dance Showdown</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Event listing -->
+              <div class="swiper-slide">
+                <article class="card hover-effect-scale hover-effect-opacity bg-transparent border-0">
+                  <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                    <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                      <i class="fi-heart animate-target fs-sm"></i>
+                    </button>
+                  </div>
+                  <div class="bg-body-tertiary rounded overflow-hidden">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(320 / 306 * 100%)">
+                      <img src="/finder/assets/img/listings/events/27.jpg" alt="Image">
+                    </div>
+                  </div>
+                  <div class="card-body pt-3 pt-sm-4 p-0">
+                    <ul class="list-unstyled flex-row flex-wrap align-items-center gap-2 fs-sm pt-1 pt-sm-0 mb-2">
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-calendar me-1"></i>
+                        Sep 28
+                        <span class="ms-1">16:00</span>
+                      </li>
+                      <li class="d-flex align-items-center me-2">
+                        <i class="fi-map-pin me-1"></i>
+                        Chicago
+                      </li>
+                    </ul>
+                    <h3 class="h5 mb-0">
+                      <a class="hover-effect-underline stretched-link" href="/entry/events">Elegant Ballet Performance</a>
+                    </h3>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prev button -->
+          <button type="button" class="btn btn-icon btn-outline-secondary animate-slide-start bg-body rounded-circle position-absolute top-50 start-0 translate-middle z-1 mt-n5" id="theater-prev" aria-label="Prev">
+            <i class="fi-chevron-left fs-lg animate-target"></i>
+          </button>
+
+          <!-- Next button -->
+          <button type="button" class="btn btn-icon btn-outline-secondary animate-slide-end bg-body rounded-circle position-absolute top-50 start-100 translate-middle z-1 mt-n5" id="theater-next" aria-label="Next">
+            <i class="fi-chevron-right fs-lg animate-target"></i>
+          </button>
+        </div>
+      </section>
+
+
+      <!-- Featured news -->
+      <section class="container my-xxl-3">
+        <div class="border-top pt-sm-2 pt-md-3 pt-lg-4 pt-xl-5 pb-sm-2 pb-md-4 pb-lg-5">
+          <div class="d-flex align-items-start justify-content-between gap-4 pt-5 pb-3 mb-2 mb-sm-3">
+            <h2 class="mb-0">Featured News</h2>
+            <div class="nav">
+              <a class="nav-link position-relative fs-base text-nowrap py-1 px-0" href="#!">
+                <span class="hover-effect-underline stretched-link me-1">View all</span>
+                <i class="fi-chevron-right fs-lg"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Row of articles that turns into carousel on screens < 850px wide -->
+          <div class="swiper pb-5" data-swiper='{
+            "slidesPerView": 1,
+            "spaceBetween": 48,
+            "autoHeight": true,
+            "pagination": {
+              "el": ".swiper-pagination",
+              "clickable": true
+            },
+            "breakpoints": {
+              "500": {
+                "slidesPerView": 2,
+                "spaceBetween": 24
+              },
+              "850": {
+                "slidesPerView": 3,
+                "spaceBetween": 32
+              },
+              "992": {
+                "slidesPerView": 3,
+                "spaceBetween": 48
+              },
+              "1200": {
+                "slidesPerView": 3,
+                "spaceBetween": 80
+              }
+            }
+          }'>
+            <div class="swiper-wrapper">
+
+              <!-- Article -->
+              <div class="swiper-slide">
+                <article class="position-relative hover-effect-scale">
+                  <div class="d-flex align-items-end gap-3 mb-3 mb-md-4">
+                    <div class="ratio bg-body-secondary rounded overflow-hidden flex-shrink-0" style="width: 140px; --fn-aspect-ratio: calc(100 / 140 * 100%)">
+                      <img src="/finder/assets/img/home/events/news/01.jpg" class="hover-effect-target" alt="Image">
+                    </div>
+                    <div class="fs-sm text-body-secondary text-uppercase" style="writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(-180deg)">Concert</div>
+                  </div>
+                  <h3 class="h5 mb-2">
+                    <a class="hover-effect-underline stretched-link" href="#!">Tools to Sell Tickets Online and Manage Your Concerts</a>
+                  </h3>
+                  <p class="pb-1 mb-2">Easily create and manage concerts on our platform to give unforgettable experiences to...</p>
+                  <div class="fs-sm text-body-secondary">10 mins read</div>
+                </article>
+              </div>
+
+              <!-- Article -->
+              <div class="swiper-slide">
+                <article class="position-relative hover-effect-scale">
+                  <div class="d-flex align-items-end gap-3 mb-3 mb-md-4">
+                    <div class="ratio bg-body-secondary rounded overflow-hidden flex-shrink-0" style="width: 140px; --fn-aspect-ratio: calc(100 / 140 * 100%)">
+                      <img src="/finder/assets/img/home/events/news/02.jpg" class="hover-effect-target" alt="Image">
+                    </div>
+                    <div class="fs-sm text-body-secondary text-uppercase" style="writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(-180deg)">Planning</div>
+                  </div>
+                  <h3 class="h5 mb-2">
+                    <a class="hover-effect-underline stretched-link" href="#!">Event Ideas that Celebrate Culture, Community, and Your Brand</a>
+                  </h3>
+                  <p class="pb-1 mb-2">Embracing your community and celebrating culture together also makes business sense...</p>
+                  <div class="fs-sm text-body-secondary">15 mins read</div>
+                </article>
+              </div>
+
+              <!-- Article -->
+              <div class="swiper-slide">
+                <article class="position-relative hover-effect-scale">
+                  <div class="d-flex align-items-end gap-3 mb-3 mb-md-4">
+                    <div class="ratio bg-body-secondary rounded overflow-hidden flex-shrink-0" style="width: 140px; --fn-aspect-ratio: calc(100 / 140 * 100%)">
+                      <img src="/finder/assets/img/home/events/news/03.jpg" class="hover-effect-target" alt="Image">
+                    </div>
+                    <div class="fs-sm text-body-secondary text-uppercase" style="writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(-180deg)">Hobbies</div>
+                  </div>
+                  <h3 class="h5 mb-2">
+                    <a class="hover-effect-underline stretched-link" href="#!">20 Creative Event Activity Ideas to Help Create Positive Change</a>
+                  </h3>
+                  <p class="pb-1 mb-2">The type of event you choose depends on your goals. To inspire you to take the next step, he...</p>
+                  <div class="fs-sm text-body-secondary">8 mins read</div>
+                </article>
+              </div>
+            </div>
+
+            <!-- Pagination (Bullets) -->
+            <div class="swiper-pagination position-static mt-3 mt-md-4"></div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Mobile app download CTA -->
+      <section class="bg-body-tertiary overflow-hidden pt-5">
+        <div class="container">
+          <div class="row align-items-center justify-content-center justify-content-md-start">
+            <div class="col-md-6 col-lg-5 offset-lg-1 text-center text-md-start mt-lg-n5 pt-2 py-md-3 py-lg-0 mb-5 mb-lg-0">
+              <h2 class="h1">Get the Top-rated App!</h2>
+              <p class="pb-3">Find the perfect event near you, book tickets, or reserve your spot for exciting experiencesâ€”all in one place with the Monaclick app. Discover events, secure your booking, and enjoy exclusive deals effortlessly. Install now and never miss out!</p>
+              <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-md-start gap-3">
+                <a class="btn btn-market btn-lg" href="#!" aria-label="Download on App Store">
+                  <i class="fi-apple lead ms-n1 me-2"></i>
+                  <svg class="flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="77" height="24" viewBox="0 0 77 24" fill="currentColor"><path d="M40.713 15.797c.701-.624 1.055-1.431 1.055-2.427 0-.806-.242-1.486-.733-2.032-.483-.546-1.232-1.02-2.255-1.423-.838-.324-1.418-.625-1.732-.901a1.41 1.41 0 0 1-.548-1.138 1.39 1.39 0 0 1 .475-1.059c.379-.316.91-.482 1.579-.482.854 0 1.611.182 2.288.538l.483-1.518c-.717-.372-1.619-.553-2.699-.553-1.216 0-2.191.308-2.924.917a2.94 2.94 0 0 0-1.103 2.356c0 1.463 1.039 2.577 3.142 3.344.765.277 1.313.577 1.643.901a1.63 1.63 0 0 1 .491 1.194c0 .53-.201.957-.604 1.273-.395.316-.959.474-1.675.474-.999 0-1.917-.245-2.755-.727l-.443 1.557c.773.482 1.796.727 3.077.727 1.386 0 2.465-.34 3.238-1.02zm-31.706.846h2.03L7.195 4.966H4.826L1 16.644h1.974l1.055-3.431h3.867l1.112 3.431zM6.558 8.729l1.007 3.044H4.367l.991-3.044.564-2.198h.04l.596 2.198zm13.122 6.997c.797-.83 1.192-1.961 1.192-3.392 0-1.289-.338-2.316-1.031-3.107-.677-.783-1.514-1.178-2.529-1.178-1.289 0-2.255.506-2.892 1.51h-.032l-.105-1.336h-1.675l.072 2.767v9.068h1.909v-4.42c.499.798 1.313 1.194 2.449 1.194 1.047 0 1.933-.364 2.642-1.107zm-1.313-5.353c.379.53.564 1.202.564 2.024 0 .893-.201 1.605-.604 2.15-.403.538-.959.814-1.675.814-.612 0-1.112-.213-1.49-.633s-.572-.941-.572-1.55v-1.407c0-.15.032-.34.089-.569a2.11 2.11 0 0 1 .749-1.202c.387-.3.814-.459 1.281-.459a1.96 1.96 0 0 1 1.659.83zm12.366 1.961c0 1.431-.395 2.562-1.192 3.392-.709.743-1.595 1.107-2.642 1.107-1.136 0-1.949-.395-2.449-1.194v4.42H22.54v-9.068l-.072-2.767h1.675l.105 1.336h.032c.636-1.004 1.603-1.51 2.892-1.51 1.015 0 1.853.395 2.529 1.178.693.791 1.031 1.818 1.031 3.107zm-1.941.063c0-.822-.185-1.494-.564-2.024a1.96 1.96 0 0 0-1.659-.83c-.467 0-.894.158-1.281.459-.379.308-.628.704-.749 1.202-.056.229-.089.419-.089.569v1.407c0 .609.193 1.131.572 1.55s.878.633 1.49.633c.717 0 1.281-.277 1.676-.814.411-.546.604-1.257.604-2.15zM48.083 9.63h-2.102v4.087c0 1.036.37 1.557 1.112 1.557.338 0 .62-.032.846-.087l.056 1.423c-.379.134-.87.206-1.482.206-.757 0-1.337-.229-1.764-.68s-.636-1.21-.636-2.269V9.623h-1.248V8.223h1.249V6.681l1.869-.553v2.095h2.102V9.63zm8.329 5.922c.749-.83 1.128-1.89 1.128-3.186 0-1.257-.362-2.285-1.096-3.075-.765-.822-1.78-1.233-3.037-1.233-1.305 0-2.344.419-3.117 1.249-.765.83-1.152 1.897-1.152 3.202 0 1.249.37 2.285 1.12 3.099s1.756 1.225 3.013 1.225c1.305 0 2.352-.427 3.142-1.281zm-1.353-5.131c.338.553.508 1.21.508 1.984s-.177 1.439-.524 2.008c-.419.68-.991 1.02-1.716 1.02-.741 0-1.321-.332-1.732-1.004-.338-.546-.508-1.21-.508-1.984 0-.799.161-1.471.508-2.024.395-.672.983-1.004 1.748-1.004.741 0 1.313.332 1.716 1.004zm8.683-.553c-.185-.032-.387-.047-.604-.047-.669 0-1.192.245-1.555.743-.314.435-.475.996-.475 1.66v4.419h-1.909v-5.771l-.056-2.649h1.659l.072 1.613h.056c.201-.553.516-1.004.951-1.336.427-.3.886-.451 1.377-.451a4.09 4.09 0 0 1 .475.032l.008 1.787zm8.451 3.012c.048-.229.072-.514.072-.846 0-1.051-.258-1.929-.765-2.656-.628-.901-1.571-1.352-2.803-1.352-1.257 0-2.255.451-2.997 1.352-.709.846-1.063 1.905-1.063 3.17 0 1.289.379 2.324 1.136 3.091s1.804 1.154 3.133 1.154c1.104 0 2.062-.174 2.876-.522l-.298-1.297c-.693.261-1.466.395-2.312.395-.765 0-1.386-.198-1.869-.585-.532-.435-.806-1.075-.83-1.905h5.719zm-2.119-2.767c.258.403.387.886.371 1.439l-3.963-.008c.056-.561.25-1.051.564-1.455a1.82 1.82 0 0 1 1.514-.759c.677 0 1.184.261 1.514.783z"/></svg>
+                </a>
+                <a class="btn btn-market btn-lg" href="#!" aria-label="Download on Google Play">
+                  <svg class="flex-shrink-0 ms-n1 me-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19.665 10.561l-3.251-1.878-3.329 3.329 3.328 3.329 3.263-1.884c.509-.309.812-.849.812-1.444s-.304-1.135-.823-1.451z" fill="#ffce00"/><path d="M13.085 12.011L4.018 2.879a1.71 1.71 0 0 0-.507 1.216v15.804a1.71 1.71 0 0 0 .507 1.217l9.067-9.105z" fill="#01daff"/><path d="M13.086 12.011l3.329-3.329.005-.005-4.46-2.568L6.08 2.654c-.529-.327-1.171-.338-1.712-.034a2.54 2.54 0 0 0-.349.259l9.067 9.132z" fill="#00f076"/><path d="M4.019 21.116c.113.101.225.18.349.259.27.146.552.225.834.225.304 0 .597-.09.867-.248l5.891-3.439 4.46-2.568-.005-.005-3.329-3.329-9.067 9.104z" fill="#f63448"/></svg>
+                  <svg class="flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="77" height="24" viewBox="0 0 77 24" fill="currentColor"><path d="M24.575 9.45c-2.184 0-3.914 1.704-3.914 4.071 0 2.272 1.729 4.071 3.914 4.071s3.914-1.704 3.914-4.071c0-2.461-1.729-4.071-3.914-4.071zm0 6.438c-1.183 0-2.184-1.041-2.184-2.462s1.001-2.462 2.184-2.462 2.184.947 2.184 2.462c0 1.42-1.001 2.462-2.184 2.462zM16.11 9.45c-2.184 0-3.914 1.704-3.914 4.071 0 2.272 1.729 4.071 3.914 4.071s3.914-1.704 3.914-4.071c0-2.461-1.729-4.071-3.914-4.071zm0 6.438c-1.183 0-2.184-1.041-2.184-2.462s1.001-2.462 2.184-2.462 2.184.947 2.184 2.462c0 1.42-1.001 2.462-2.184 2.462zM6.007 10.681v1.704h3.914c-.091.947-.455 1.704-.91 2.177-.546.568-1.456 1.231-3.004 1.231-2.457 0-4.278-1.988-4.278-4.544s1.911-4.544 4.278-4.544c1.274 0 2.275.568 3.004 1.231l1.183-1.231C9.193 5.757 7.918 5 6.098 5 2.822 5 0 7.84 0 11.249s2.822 6.249 6.098 6.249c1.82 0 3.095-.568 4.187-1.799 1.092-1.136 1.456-2.745 1.456-3.976 0-.379 0-.757-.091-1.041H6.007zm41.322 1.325c-.364-.947-1.274-2.556-3.277-2.556s-3.641 1.61-3.641 4.071c0 2.272 1.638 4.071 3.823 4.071 1.729 0 2.822-1.136 3.186-1.799l-1.274-.947c-.455.663-1.001 1.136-1.911 1.136s-1.456-.379-1.911-1.231l5.188-2.272-.182-.473zm-5.279 1.326c0-1.515 1.183-2.367 2.002-2.367.637 0 1.274.379 1.456.852l-3.459 1.515zm-4.278 3.882h1.729V5.379h-1.729v11.834zm-2.73-6.911c-.455-.473-1.183-.947-2.093-.947-1.911 0-3.732 1.799-3.732 4.071s1.729 3.976 3.732 3.976c.91 0 1.638-.473 2.002-.947h.091v.568c0 1.515-.819 2.367-2.093 2.367-1.001 0-1.729-.757-1.911-1.42l-1.456.663C30.036 19.675 31.128 21 33.039 21c2.002 0 3.641-1.231 3.641-4.166V9.639h-1.638v.663zm-2.002 5.586c-1.183 0-2.184-1.041-2.184-2.462s1.001-2.462 2.184-2.462 2.093 1.041 2.093 2.462-.91 2.462-2.093 2.462zM55.247 5.379h-4.096v11.834h1.729v-4.45h2.367c1.911 0 3.732-1.42 3.732-3.692s-1.82-3.692-3.732-3.692zm.091 5.681h-2.457V6.988h2.457c1.274 0 2.002 1.136 2.002 1.988-.091 1.041-.819 2.083-2.002 2.083zm10.467-1.704c-1.274 0-2.549.568-3.004 1.799l1.547.663c.364-.663.91-.852 1.547-.852.91 0 1.729.568 1.82 1.515v.095c-.273-.189-1.001-.473-1.729-.473-1.638 0-3.277.947-3.277 2.651 0 1.609 1.365 2.651 2.821 2.651 1.183 0 1.729-.568 2.184-1.136h.091v.947h1.638v-4.544c-.182-2.083-1.729-3.314-3.641-3.314zm-.182 6.533c-.546 0-1.365-.284-1.365-1.041 0-.947 1.001-1.231 1.82-1.231.728 0 1.092.189 1.547.379-.182 1.136-1.092 1.894-2.002 1.894zm9.557-6.249l-1.911 5.112h-.091l-2.002-5.112h-1.82l3.004 7.195-1.729 3.976h1.729L77 9.639h-1.82zm-15.291 7.574h1.729V5.379h-1.729v11.834z"/></svg>
+                </a>
+              </div>
+            </div>
+            <div class="col-7 col-sm-5 col-md-4 offset-md-1">
+              <div class="position-relative w-100" style="max-width: 364px; ">
+                <div class="position-absolute" style="top: 24.52%; left: 30%; width: 42.31%">
+                  <img src="/finder/assets/img/home/events/app-cta.png" alt="Image">
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="364" viewBox="0 0 364 734" fill="none"><path d="M358.27 116.439h-.683V43.993c0-24.012-19.446-43.515-43.464-43.515H50.743C26.759.477 7.279 19.947 7.279 43.993v72.446h-.682c-3.139 0-5.663 2.527-5.663 5.67v50.107c0 3.143 2.525 5.67 5.663 5.67h.682v11.955h-.682c-3.139 0-5.663 2.528-5.663 5.67v50.108c0 3.142 2.525 5.67 5.663 5.67h.682v438.946c0 24.012 19.446 43.515 43.465 43.515h263.38c23.984 0 43.464-19.469 43.464-43.515V208.662h.683c3.139 0 5.663-2.528 5.663-5.67v-80.883c0-3.143-2.524-5.67-5.663-5.67z" fill="#333d4c"/><path d="M309.621 723.059H55.248c-19.481 0-35.276-15.814-35.276-35.318V46.554c0-19.503 15.796-35.318 35.277-35.318h254.407c19.481 0 35.277 15.814 35.277 35.318v641.153c0 19.538-15.796 35.352-35.311 35.352z" fill="currentColor" style="color: var(--fn-body-bg)"/><use href="#E" fill="currentColor" style="color: var(--fn-secondary-bg)"/><path class="text-secondary-emphasis" fill-rule="evenodd" d="M301.889 298.139a.51.51 0 0 1 .722 0l3.5 3.5a.51.51 0 0 1 0 .722l-3.5 3.5a.51.51 0 1 1-.722-.722l3.139-3.139-3.139-3.139a.51.51 0 0 1 0-.722z" fill="currentColor"/><path d="M43.934 302c0-8.837 7.163-16 16-16h0c8.837 0 16 7.163 16 16h0c0 8.836-7.163 16-16 16h0c-8.837 0-16-7.164-16-16h0z" fill="currentColor" style="color: var(--fn-secondary-bg)"/><path class="text-secondary-emphasis" fill-rule="evenodd" d="M62.045 298.139a.51.51 0 0 1 0 .722L58.906 302l3.139 3.139a.51.51 0 1 1-.722.722l-3.5-3.5a.51.51 0 0 1 0-.722l3.5-3.5a.51.51 0 0 1 .722 0z" fill="currentColor"/><rect x="58.242" y="84.753" width="240" height="59" rx="29.5" stroke="currentColor" style="color: var(--fn-border-color)"/><path class="text-dark-emphasis" d="M83.021 120.254v-11.637h7.216v1.512h-5.46v3.545h4.943v1.506h-4.943v5.074h-1.756zm9.239 0v-8.728h1.699v8.728h-1.699zm.858-10.074a1.08 1.08 0 0 1-.761-.296.96.96 0 0 1-.312-.716c0-.28.104-.519.313-.715a1.07 1.07 0 0 1 .761-.302 1.05 1.05 0 0 1 .756.302c.212.196.318.435.318.715a.95.95 0 0 1-.318.716 1.06 1.06 0 0 1-.756.296zm4.825 4.892v5.182h-1.699v-8.728h1.631v1.421h.108a2.5 2.5 0 0 1 .943-1.114c.432-.28.975-.42 1.631-.42.595 0 1.116.125 1.563.375a2.5 2.5 0 0 1 1.039 1.102c.247.489.37 1.093.37 1.813v5.551h-1.699v-5.347c0-.633-.165-1.127-.494-1.483s-.783-.54-1.358-.54c-.394 0-.744.086-1.051.256s-.543.42-.722.75-.261.72-.261 1.182zm11.13 5.352a3.38 3.38 0 0 1-1.886-.54c-.549-.363-.981-.88-1.296-1.551s-.466-1.483-.466-2.426.158-1.75.472-2.42.754-1.184 1.307-1.54 1.18-.534 1.881-.534c.541 0 .977.091 1.306.272s.591.387.773.625.33.449.432.631h.102v-4.324h1.699v11.637h-1.659v-1.358h-.142a4.54 4.54 0 0 1-.443.636c-.19.239-.451.447-.784.625s-.766.267-1.296.267zm.375-1.449c.489 0 .902-.129 1.239-.386s.598-.623.773-1.085.267-1 .267-1.614c0-.606-.088-1.136-.262-1.591s-.43-.809-.767-1.062-.754-.381-1.25-.381c-.511 0-.937.133-1.278.398s-.599.627-.773 1.085-.256.975-.256 1.551c0 .583.087 1.108.262 1.574s.432.835.772 1.108.769.403 1.273.403zm14.369 1.455c-.859 0-1.6-.184-2.221-.551-.618-.372-1.095-.892-1.432-1.563s-.5-1.464-.5-2.369c0-.894.167-1.682.5-2.364s.807-1.214 1.409-1.596 1.315-.574 2.125-.574a4.27 4.27 0 0 1 1.432.244c.462.163.877.419 1.244.767s.657.801.87 1.358.318 1.225.318 2.017v.602h-6.938v-1.272h5.273c0-.447-.091-.843-.273-1.188s-.437-.623-.767-.824-.708-.301-1.147-.301c-.478 0-.894.118-1.25.352a2.37 2.37 0 0 0-.819.91c-.189.371-.284.774-.284 1.21v.994c0 .583.103 1.08.307 1.489s.498.721.869.937.805.318 1.302.318a2.7 2.7 0 0 0 .88-.136c.265-.095.495-.235.688-.42s.341-.415.443-.688l1.608.29a2.92 2.92 0 0 1-.693 1.244 3.37 3.37 0 0 1-1.245.824c-.496.193-1.062.29-1.699.29zm12.846-8.904l-3.165 8.728h-1.818l-3.171-8.728h1.824l2.21 6.716h.091l2.205-6.716h1.824zm5.061 8.904c-.86 0-1.601-.184-2.222-.551-.617-.372-1.095-.892-1.432-1.563s-.5-1.464-.5-2.369c0-.894.167-1.682.5-2.364s.807-1.214 1.409-1.596 1.315-.574 2.125-.574a4.27 4.27 0 0 1 1.432.244c.462.163.877.419 1.245.767s.657.801.869 1.358.318 1.225.318 2.017v.602h-6.937v-1.272h5.272c0-.447-.091-.843-.272-1.188s-.438-.623-.768-.824-.708-.301-1.147-.301c-.478 0-.894.118-1.25.352a2.36 2.36 0 0 0-.818.91c-.19.371-.285.774-.285 1.21v.994c0 .583.103 1.08.307 1.489a2.22 2.22 0 0 0 .87.937c.371.212.805.318 1.301.318.322 0 .615-.045.88-.136s.495-.235.688-.42.341-.415.443-.688l1.608.29a2.92 2.92 0 0 1-.693 1.244c-.33.352-.744.627-1.244.824s-1.063.29-1.699.29zm7.328-5.358v5.182h-1.699v-8.728h1.631v1.421h.108c.2-.462.515-.833.943-1.114s.975-.42 1.63-.42c.595 0 1.116.125 1.563.375s.794.613 1.04 1.102.369 1.093.369 1.813v5.551h-1.699v-5.347c0-.633-.165-1.127-.494-1.483s-.782-.54-1.358-.54c-.394 0-.744.086-1.051.256s-.544.42-.722.75-.261.72-.261 1.182zm11.937-3.546v1.364h-4.767v-1.364h4.767zm-3.488-2.091h1.699v8.256c0 .33.049.578.147.744s.226.275.381.336a1.52 1.52 0 0 0 .517.085 2.08 2.08 0 0 0 .358-.028l.239-.046.306 1.403c-.098.038-.238.076-.42.114s-.409.065-.682.068c-.447.008-.863-.072-1.25-.238s-.699-.425-.937-.773-.358-.786-.358-1.313v-8.608zm11.767 4.222l-1.54.273a1.82 1.82 0 0 0-.307-.563c-.136-.178-.322-.324-.557-.437s-.528-.171-.88-.171c-.481 0-.883.108-1.205.324s-.483.487-.483.824c0 .292.108.527.324.705s.564.323 1.045.437l1.387.318c.803.186 1.401.472 1.795.858s.591.889.591 1.506c0 .523-.151.989-.454 1.398s-.718.723-1.256.954-1.153.347-1.858.347c-.977 0-1.775-.209-2.392-.625-.617-.421-.996-1.017-1.136-1.79l1.642-.25c.102.428.312.752.63.972s.733.323 1.245.323c.556 0 1.002-.115 1.335-.346s.5-.521.5-.858a.89.89 0 0 0-.307-.688c-.201-.185-.509-.325-.926-.42l-1.477-.324c-.815-.185-1.417-.481-1.807-.886s-.58-.919-.58-1.54c0-.515.144-.966.432-1.352s.686-.688 1.193-.904 1.089-.329 1.745-.329c.943 0 1.685.204 2.227.613s.9.949 1.074 1.631z" fill="currentColor"/><path class="text-primary" d="M271.743 123.254l-3.636-3.636m0 0a8.97 8.97 0 0 0 2.636-6.364 9 9 0 0 0-9-9c-4.97 0-9 4.03-9 9a9 9 0 0 0 9 9 8.97 8.97 0 0 0 6.364-2.636z" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path class="text-primary" d="M157.158 57.155v6.811a4.06 4.06 0 0 1-4.046 4.046h-6.743-.539c-5.665-.27-10.25-4.99-10.25-10.789 0-5.934 4.855-10.789 10.789-10.789s10.789 4.788 10.789 10.722z" fill="currentColor"/><g fill-rule="evenodd"><path d="M146.369 54.847a3.61 3.61 0 0 0-3.589 3.589 3.61 3.61 0 0 0 3.589 3.589 3.61 3.61 0 0 0 3.589-3.589 3.61 3.61 0 0 0-3.589-3.589zm-5.986 3.589c0-3.292 2.694-5.986 5.986-5.986a6.01 6.01 0 0 1 5.987 5.986 5.94 5.94 0 0 1-.996 3.295l1.521 1.521a1.2 1.2 0 0 1 0 1.695 1.2 1.2 0 0 1-1.695 0l-1.521-1.521c-.947.629-2.081.996-3.296.996-3.292 0-5.986-2.695-5.986-5.986z" fill="#000" fill-opacity=".05"/><g fill="#fff"><path d="M146.302 52.877a4.28 4.28 0 0 0-4.278 4.278 4.28 4.28 0 0 0 4.278 4.278 4.28 4.28 0 0 0 4.278-4.278 4.28 4.28 0 0 0-4.278-4.278zm-6.376 4.278c0-3.521 2.854-6.376 6.376-6.376a6.38 6.38 0 0 1 6.376 6.376 6.38 6.38 0 0 1-6.376 6.376c-3.522 0-6.376-2.855-6.376-6.376z"/><path d="M149.876 60.729a1.05 1.05 0 0 1 1.483 0l2.023 2.023a1.05 1.05 0 0 1 0 1.483 1.05 1.05 0 0 1-1.483 0l-2.023-2.023a1.05 1.05 0 0 1 0-1.483z"/></g></g><path d="M150.281 55.739a2.43 2.43 0 0 0 2.427-2.428 2.43 2.43 0 0 0-2.427-2.428 2.43 2.43 0 0 0-2.428 2.428 2.43 2.43 0 0 0 2.428 2.428z" fill="#fff"/><path class="text-primary" fill-rule="evenodd" d="M150.28 51.783a1.53 1.53 0 0 0-1.528 1.529 1.53 1.53 0 0 0 1.528 1.528 1.53 1.53 0 0 0 1.529-1.528 1.53 1.53 0 0 0-1.529-1.529zm-3.326 1.529c0-1.837 1.489-3.327 3.326-3.327s3.327 1.489 3.327 3.327-1.489 3.327-3.327 3.327-3.326-1.489-3.326-3.327z" fill="currentColor"/><path class="text-dark-emphasis" d="M163.328 62.722V51.645h7.097v1.682h-5.09v3.007h4.603v1.682h-4.603v4.706h-2.007zm8.838 0v-8.308h1.958v8.308h-1.958zm.985-9.487c-.31 0-.577-.103-.801-.308s-.335-.46-.335-.752.112-.546.335-.752.491-.314.801-.314a1.12 1.12 0 0 1 .8.314.98.98 0 0 1 .336.752c0 .292-.112.543-.336.752a1.13 1.13 0 0 1-.8.308zm4.945 4.619v4.868h-1.958v-8.308h1.871v1.412h.098a2.37 2.37 0 0 1 .914-1.109c.422-.274.943-.411 1.563-.411.573 0 1.073.123 1.498.368s.761.6.995 1.066.356 1.029.352 1.693v5.29h-1.958v-4.987c0-.555-.144-.99-.433-1.303s-.679-.471-1.184-.471c-.343 0-.648.076-.914.227s-.471.362-.622.644-.222.622-.222 1.022zm10.407 5.014c-.653 0-1.237-.168-1.753-.503s-.923-.822-1.222-1.46-.449-1.413-.449-2.326c0-.923.151-1.702.454-2.337s.72-1.12 1.239-1.444a3.18 3.18 0 0 1 1.736-.492c.487 0 .887.083 1.201.249s.562.359.746.59.327.442.428.644h.081v-4.143h1.963v11.078h-1.925v-1.309h-.119c-.101.202-.247.416-.439.644s-.443.415-.757.573-.708.238-1.184.238zm.546-1.606c.415 0 .768-.112 1.06-.335s.514-.543.665-.947.228-.874.228-1.412-.076-1.004-.228-1.401-.367-.705-.659-.925-.644-.33-1.066-.33c-.436 0-.801.114-1.093.341s-.512.541-.66.941-.221.858-.221 1.374a4.08 4.08 0 0 0 .221 1.39c.152.404.374.723.666.957s.658.346 1.087.346zm9.643 1.623c-.833 0-1.553-.173-2.158-.519s-1.066-.844-1.391-1.482-.486-1.397-.486-2.266c0-.855.162-1.605.486-2.25s.787-1.154 1.374-1.514 1.279-.546 2.072-.546a4.2 4.2 0 0 1 1.45.249c.458.162.861.415 1.211.757s.631.779.833 1.309.303 1.154.303 1.882v.6h-6.81v-1.32h4.933c-.003-.375-.085-.709-.243-1.001s-.381-.528-.666-.698-.609-.254-.984-.254c-.4 0-.752.097-1.055.292s-.539.444-.708.757a2.17 2.17 0 0 0-.254 1.022v1.152c0 .483.088.898.265 1.244s.423.606.741.79.688.27 1.114.27c.285 0 .543-.04.773-.119s.431-.204.601-.362a1.52 1.52 0 0 0 .384-.59l1.828.205a2.84 2.84 0 0 1-.66 1.266c-.321.357-.732.635-1.233.833s-1.075.292-1.72.292zm5.351-.162v-8.308h1.898v1.385h.087c.151-.48.411-.849.779-1.109s.795-.395 1.271-.395l.362.016c.137.007.251.02.341.038v1.801c-.083-.029-.215-.054-.395-.076s-.348-.038-.514-.038c-.357 0-.678.078-.963.233a1.7 1.7 0 0 0-.665.633c-.162.27-.243.582-.243.936v4.884h-1.958z" fill="currentColor"/><path class="text-primary" d="M119.934 460.648a8 8 0 0 1 8-8h108a8 8 0 0 1 8 8v32a8 8 0 0 1-8 8h-108a8 8 0 0 1-8-8v-32z" fill="currentColor"/><path d="M145.212 482.648v-11.636h4.261c.826 0 1.51.136 2.052.409s.946.635 1.215 1.097.404.975.404 1.551c0 .485-.089.894-.267 1.227a2.19 2.19 0 0 1-.716.795 3.16 3.16 0 0 1-.977.432v.114c.386.019.763.144 1.13.375a2.68 2.68 0 0 1 .921.972c.242.42.363.931.363 1.534a3.09 3.09 0 0 1-.42 1.602c-.277.47-.705.843-1.284 1.119s-1.32.409-2.222.409h-4.46zm1.756-1.505h2.534c.841 0 1.443-.163 1.807-.489s.545-.733.545-1.222c0-.367-.093-.704-.278-1.011a1.99 1.99 0 0 0-.796-.733c-.341-.182-.746-.273-1.216-.273h-2.596v3.728zm0-5.097h2.352a2.42 2.42 0 0 0 1.062-.227c.319-.152.571-.364.756-.637a1.68 1.68 0 0 0 .284-.977c0-.481-.168-.884-.505-1.21s-.855-.489-1.552-.489h-2.397v3.54zm12.253 6.778c-.819 0-1.533-.187-2.143-.562s-1.083-.9-1.42-1.574-.506-1.462-.506-2.364.169-1.697.506-2.375.811-1.204 1.42-1.579 1.324-.563 2.143-.563 1.532.188 2.142.563 1.083.901 1.42 1.579.506 1.47.506 2.375-.169 1.69-.506 2.364-.811 1.199-1.42 1.574-1.324.562-2.142.562zm.005-1.426c.531 0 .97-.14 1.318-.42s.606-.654.773-1.119.256-.98.256-1.54a4.42 4.42 0 0 0-.256-1.534c-.167-.47-.424-.847-.773-1.131s-.787-.426-1.318-.426-.977.142-1.329.426-.608.661-.779 1.131a4.54 4.54 0 0 0-.25 1.534c0 .56.084 1.074.25 1.54s.43.839.779 1.119.795.42 1.329.42zm9.635 1.426c-.818 0-1.532-.187-2.142-.562s-1.083-.9-1.42-1.574-.506-1.462-.506-2.364.169-1.697.506-2.375a3.78 3.78 0 0 1 1.42-1.579c.61-.375 1.324-.563 2.142-.563s1.532.188 2.142.563 1.084.901 1.421 1.579.505 1.47.505 2.375-.168 1.69-.505 2.364-.811 1.199-1.421 1.574-1.324.562-2.142.562zm.006-1.426c.53 0 .97-.14 1.318-.42s.606-.654.773-1.119.255-.98.255-1.54-.085-1.068-.255-1.534-.425-.847-.773-1.131-.788-.426-1.318-.426-.977.142-1.33.426-.608.661-.778 1.131-.25.977-.25 1.534.083 1.074.25 1.54.43.839.778 1.119.796.42 1.33.42zm7.521-1.71l-.011-2.074h.295l3.478-3.693h2.034l-3.966 4.205h-.267l-1.563 1.562zm-1.562 2.96v-11.636h1.699v11.636h-1.699zm5.511 0l-3.125-4.147 1.17-1.188 4.04 5.335h-2.085zm9.328-5.182v5.182h-1.699v-8.727h1.631v1.42h.108c.201-.462.515-.833.943-1.113s.975-.421 1.631-.421c.594 0 1.115.125 1.562.375a2.51 2.51 0 0 1 1.04 1.103c.246.488.369 1.092.369 1.812v5.551h-1.699v-5.346c0-.633-.164-1.127-.494-1.483s-.782-.54-1.358-.54c-.394 0-.744.085-1.051.256a1.84 1.84 0 0 0-.722.75c-.174.325-.261.719-.261 1.181zm11.54 5.358c-.818 0-1.532-.187-2.142-.562a3.8 3.8 0 0 1-1.421-1.574c-.337-.674-.505-1.462-.505-2.364s.168-1.697.505-2.375a3.79 3.79 0 0 1 1.421-1.579c.61-.375 1.324-.563 2.142-.563s1.532.188 2.142.563a3.78 3.78 0 0 1 1.42 1.579c.338.678.506 1.47.506 2.375s-.168 1.69-.506 2.364-.81 1.199-1.42 1.574-1.324.562-2.142.562zm.006-1.426c.53 0 .969-.14 1.318-.42s.606-.654.772-1.119c.171-.466.256-.98.256-1.54a4.42 4.42 0 0 0-.256-1.534c-.166-.47-.424-.847-.772-1.131s-.788-.426-1.318-.426c-.535 0-.978.142-1.33.426s-.608.661-.778 1.131-.25.977-.25 1.534.083 1.074.25 1.54.43.839.778 1.119.795.42 1.33.42zm7.585 1.25l-2.568-8.727h1.755l1.711 6.409h.085l1.716-6.409h1.755l1.705 6.381h.085l1.699-6.381h1.756l-2.563 8.727h-1.733l-1.773-6.301h-.13l-1.773 6.301h-1.727z" fill="#fff"/><defs><path fill="#fff" transform="translate(.934 .648)" d="M0 0h363v733H0z"/><path fill="#fff" transform="translate(250.743 102.254)" d="M0 0h24v24H0z"/><path fill="#fff" transform="translate(135.58 46.433)" d="M0 0h73.655v21.578H0z"/><path fill="#fff" transform="translate(135.58 46.433)" d="M0 0h21.578v21.578H0z"/><path id="E" d="M288 302c0-8.837 7.163-16 16-16h0c8.837 0 16 7.163 16 16h0c0 8.836-7.163 16-16 16h0c-8.837 0-16-7.164-16-16h0z"/></defs></svg>
+              </div>
+              <div class="d-md-none" style="margin-bottom: -120px"></div>
+              <div class="d-none d-md-block d-xl-none" style="margin-bottom: -160px"></div>
+              <div class="d-none d-xl-block" style="margin-bottom: -200px"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+
+    <!-- Page footer -->
+    <footer class="footer bg-body pt-5" data-bs-theme="dark">
+      <div class="container pt-sm-2 pt-md-3 pb-md-2">
+
+        <!-- Logo + Social links -->
+        <div class="border-bottom pb-4">
+          <div class="d-flex align-items-center justify-content-between pb-2 pb-sm-3">
+            <a class="d-inline-flex align-items-center text-dark-emphasis text-decoration-none" href="index.html">
+              <span class="flex-shrink-0 text-primary rtl-flip me-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="35" height="34"><path d="M34.5 16.894v10.731c0 3.506-2.869 6.375-6.375 6.375H17.5h-.85C7.725 33.575.5 26.138.5 17c0-9.35 7.65-17 17-17s17 7.544 17 16.894z" fill="currentColor"/><g fill-rule="evenodd"><path d="M17.5 13.258c-3.101 0-5.655 2.554-5.655 5.655s2.554 5.655 5.655 5.655 5.655-2.554 5.655-5.655-2.554-5.655-5.655-5.655zm-9.433 5.655c0-5.187 4.246-9.433 9.433-9.433s9.433 4.246 9.433 9.433a9.36 9.36 0 0 1-1.569 5.192l2.397 2.397a1.89 1.89 0 0 1 0 2.671 1.89 1.89 0 0 1-2.671 0l-2.397-2.397a9.36 9.36 0 0 1-5.192 1.569c-5.187 0-9.433-4.246-9.433-9.433z" fill="#000" fill-opacity=".05"/><g fill="#fff"><path d="M17.394 10.153c-3.723 0-6.741 3.018-6.741 6.741s3.018 6.741 6.741 6.741 6.741-3.018 6.741-6.741-3.018-6.741-6.741-6.741zM7.347 16.894A10.05 10.05 0 0 1 17.394 6.847 10.05 10.05 0 0 1 27.44 16.894 10.05 10.05 0 0 1 17.394 26.94 10.05 10.05 0 0 1 7.347 16.894z"/><path d="M23.025 22.525c.645-.645 1.692-.645 2.337 0l3.188 3.188c.645.645.645 1.692 0 2.337s-1.692.645-2.337 0l-3.187-3.187c-.645-.646-.645-1.692 0-2.337z"/></g></g><path d="M23.662 14.663c2.112 0 3.825-1.713 3.825-3.825s-1.713-3.825-3.825-3.825-3.825 1.713-3.825 3.825 1.713 3.825 3.825 3.825z" fill="#fff"/><path fill-rule="evenodd" d="M23.663 8.429a2.41 2.41 0 0 0-2.408 2.408 2.41 2.41 0 0 0 2.408 2.408 2.41 2.41 0 0 0 2.408-2.408 2.41 2.41 0 0 0-2.408-2.408zm-5.242 2.408c0-2.895 2.347-5.242 5.242-5.242s5.242 2.347 5.242 5.242-2.347 5.242-5.242 5.242-5.242-2.347-5.242-5.242z" fill="currentColor"/></svg>
+              </span>
+              <span class="fs-4 fw-semibold">Monaclick</span>
+            </a>
+            <div class="d-flex justify-content-center">
+              <a class="btn btn-icon fs-base btn-outline-secondary border-0" href="#!" data-bs-toggle="tooltip" data-bs-template='<div class="tooltip fs-xs mb-n2" role="tooltip"><div class="tooltip-inner bg-transparent text-white opacity-75 p-0"></div></div>' title="Instagram" aria-label="Follow us on Instagram">
+                <i class="fi-instagram"></i>
+              </a>
+              <a class="btn btn-icon fs-base btn-outline-secondary border-0" href="#!" data-bs-toggle="tooltip" data-bs-template='<div class="tooltip fs-xs mb-n2" role="tooltip"><div class="tooltip-inner bg-transparent text-white opacity-75 p-0"></div></div>' title="Facebook" aria-label="Follow us on Facebook">
+                <i class="fi-facebook"></i>
+              </a>
+              <a class="btn btn-icon fs-base btn-outline-secondary border-0" href="#!" data-bs-toggle="tooltip" data-bs-template='<div class="tooltip fs-xs mb-n2" role="tooltip"><div class="tooltip-inner bg-transparent text-white opacity-75 p-0"></div></div>' title="X (Twitter)" aria-label="Follow us on X (Twitter)">
+                <i class="fi-x"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column with links that are turned into accordion on screens < 500px wide (sm breakpoint) + Subscription form -->
+        <div class="accordion row pb-4 py-sm-5" id="footerLinks">
+          <div class="col-sm-4 col-md-2 col-xl-3">
+            <div class="accordion-item border-0">
+              <h6 class="accordion-header" id="eventLinksHeading">
+                <span class="d-none d-sm-block pb-1 mb-2">Events</span>
+                <button type="button" class="accordion-button collapsed py-3 d-sm-none" data-bs-toggle="collapse" data-bs-target="#eventLinks" aria-expanded="false" aria-controls="eventLinks">Events</button>
+              </h6>
+              <div class="accordion-collapse collapse d-sm-block" id="eventLinks" aria-labelledby="eventLinksHeading" data-bs-parent="#footerLinks">
+                <ul class="nav flex-column gap-2 pt-sm-1 pt-lg-2 pb-3 pb-sm-0 mt-n1 mb-1 mb-sm-0">
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Popular near you</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Online events</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Sport</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Cinema</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Theater</a>
+                  </li>
+                </ul>
+              </div>
+              <hr class="d-sm-none my-0">
+            </div>
+          </div>
+          <div class="col-sm-4 col-md-3">
+            <div class="accordion-item border-0">
+              <h6 class="accordion-header" id="forProvidersHeading">
+                <span class="d-none d-sm-block pb-1 mb-2">For providers</span>
+                <button type="button" class="accordion-button collapsed py-3 d-sm-none" data-bs-toggle="collapse" data-bs-target="#forProviders" aria-expanded="false" aria-controls="forProviders">For providers</button>
+              </h6>
+              <div class="accordion-collapse collapse d-sm-block" id="forProviders" aria-labelledby="forProvidersHeading" data-bs-parent="#footerLinks">
+                <ul class="nav flex-column gap-2 pt-sm-1 pt-lg-2 pb-3 pb-sm-0 mt-n1 mb-1 mb-sm-0">
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Provider log in</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">For partners</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Event ticket service</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">News and features</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Help center</a>
+                  </li>
+                </ul>
+              </div>
+              <hr class="d-sm-none my-0">
+            </div>
+          </div>
+          <div class="col-sm-4 col-md-3">
+            <div class="accordion-item border-0">
+              <h6 class="accordion-header" id="ourCompanyHeading">
+                <span class="d-none d-sm-block pb-1 mb-2">Our company</span>
+                <button type="button" class="accordion-button collapsed py-3 d-sm-none" data-bs-toggle="collapse" data-bs-target="#ourCompany" aria-expanded="false" aria-controls="ourCompany">Our company</button>
+              </h6>
+              <div class="accordion-collapse collapse d-sm-block" id="ourCompany" aria-labelledby="ourCompanyHeading" data-bs-parent="#footerLinks">
+                <ul class="nav flex-column gap-2 pt-sm-1 pt-lg-2 pb-3 pb-sm-0 mt-n1 mb-1 mb-sm-0">
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">About us</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Ticket delivery</a>
+                  </li>
+                  <li class="pt-1">
+                    <a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="#!">Payment</a>
+                  </li>
+                </ul>
+              </div>
+              <hr class="d-sm-none my-0">
+            </div>
+          </div>
+
+          <!-- Subscription form -->
+          <div class="col-md-4 col-xl-3 pt-4 pt-sm-5 pt-md-0 mt-3 mt-sm-0">
+            <h6 class="pb-1 pb-lg-0 mb-lg-4">Subscribe to our newsletter</h6>
+            <form class="d-flex flex-column flex-sm-row flex-md-column gap-3 needs-validation" novalidate>
+              <div class="position-relative w-100">
+                <i class="fi-mail position-absolute top-50 start-0 translate-middle-y text-body ms-3"></i>
+                <input type="email" class="form-control form-icon-start text-start" placeholder="Your email" aria-label="Email input" required>
+              </div>
+              <button type="submit" class="btn btn-primary px-4">Subscribe</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Contact link + Copyright -->
+        <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between pb-4 pt-3 pt-sm-2 pt-md-3 pt-lg-4">
+          <div class="mb-3 mb-md-0">
+            <span class="text-body-secondary me-3">Need help?</span>
+            <a class="text-white text-decoration-none hover-effect-underline" href="#!">Contact us</a>
+          </div>
+          <p class="text-body-secondary fs-sm text-center mb-0">&copy; All rights reserved. Made by <a class="text-body fw-medium text-decoration-none hover-effect-underline" href="https://coderthemes.com/" target="_blank" rel="noreferrer">Coderthemes</a></p>
+        </div>
+      </div>
+    </footer>
+
+
+    <!-- Back to top button -->
+    <div class="floating-buttons position-fixed top-50 end-0 z-sticky me-3 me-xl-4 pb-4">
+      <a class="btn-scroll-top btn btn-sm bg-body border-0 rounded-pill shadow animate-slide-end" href="#top">
+        Top
+        <i class="fi-arrow-right fs-base ms-1 me-n1 animate-target"></i>
+        <span class="position-absolute top-0 start-0 w-100 h-100 border rounded-pill z-0"></span>
+        <svg class="position-absolute top-0 start-0 w-100 h-100 z-1" viewBox="0 0 62 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x=".75" y=".75" width="60.5" height="30.5" rx="15.25" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"/>
+        </svg>
+      </a>
+      <a class="btn btn-sm btn-outline-secondary text-uppercase bg-body rounded-pill shadow animate-rotate ms-2 me-n5" href="#customizer" style="font-size: .625rem; letter-spacing: .05rem;" data-bs-toggle="offcanvas" role="button" aria-controls="customizer">
+        Customize<i class="fi-settings fs-base ms-1 me-n2 animate-target"></i>
+      </a>
+    </div>
+
+
+    <!-- Vendor scripts -->
+    <script src="/finder/assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="/finder/assets/vendor/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="/finder/assets/vendor/flatpickr/dist/flatpickr.min.js"></script>
+
+    <!-- Bootstrap + Theme scripts -->
+    <script src="/finder/assets/js/theme.min.js"></script>
+    <script src="/finder/assets/js/monaclick-home-dynamic.js?v=20260303-1"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
