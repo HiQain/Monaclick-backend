@@ -18,6 +18,7 @@ class Listing extends Model
         'real-estate' => 'Real Estate',
         'cars' => 'Cars',
         'events' => 'Events',
+        'restaurants' => 'Restaurants',
     ];
 
     protected $fillable = [

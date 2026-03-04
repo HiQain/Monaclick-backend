@@ -11,6 +11,8 @@
     '/home-cars.html': 'cars',
     '/events': 'events',
     '/home-events.html': 'events',
+    '/restaurants': 'restaurants',
+    '/home-restaurants.html': 'restaurants',
   };
 
   const inferModuleFromPath = (path) => {
@@ -20,6 +22,7 @@
     if (p.includes('contractors')) return 'contractors';
     if (p.includes('cars')) return 'cars';
     if (p.includes('events')) return 'events';
+    if (p.includes('restaurants')) return 'restaurants';
     return '';
   };
 
@@ -32,6 +35,7 @@
     'real-estate': 'Real Estate',
     cars: 'Cars',
     events: 'Events',
+    restaurants: 'Restaurants',
   }[selectedModule] || 'Listings';
   const persistedState = {
     q: new URLSearchParams(window.location.search).get('q') || '',
@@ -119,6 +123,7 @@
     if (clean === '/real-estate' || clean === '/listings/real-estate') return 'real-estate';
     if (clean === '/cars' || clean === '/listings/cars') return 'cars';
     if (clean === '/events' || clean === '/listings/events') return 'events';
+    if (clean === '/restaurants' || clean === '/listings/restaurants') return 'restaurants';
     return '';
   };
 
@@ -126,7 +131,7 @@
     const fullQs = stateToQueryString(state);
     const targets = Array.from(
       document.querySelectorAll(
-        'a[href="/"], a[href="/contractors"], a[href="/real-estate"], a[href="/cars"], a[href="/events"], a[href="/listings"], a[href^="/listings/"]'
+        'a[href="/"], a[href="/contractors"], a[href="/real-estate"], a[href="/cars"], a[href="/events"], a[href="/restaurants"], a[href="/listings"], a[href^="/listings/"]'
       )
     );
 

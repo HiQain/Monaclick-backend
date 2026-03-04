@@ -14,27 +14,27 @@
 
     <!-- Webmanifest + Favicon / App icons -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" href="assets/app-icons/icon-32x32.png" sizes="32x32">
-    <link rel="apple-touch-icon" href="assets/app-icons/icon-180x180.png">
+    <link rel="manifest" href="/finder/manifest.json">
+    <link rel="icon" type="image/png" href="/finder/assets/app-icons/icon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/finder/assets/app-icons/icon-180x180.png">
 
     <!-- Theme switcher (color modes) -->
-    <script src="assets/js/theme-switcher.js"></script>
+    <script src="/finder/assets/js/theme-switcher.js"></script>
 
     <!-- Preloaded local web font (Inter) -->
-    <link rel="preload" href="assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/finder/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
 
     <!-- Font icons -->
-    <link rel="preload" href="assets/icons/finder-icons.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="assets/icons/finder-icons.min.css">
+    <link rel="preload" href="/finder/assets/icons/finder-icons.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/finder/assets/icons/finder-icons.min.css">
 
     <!-- Bootstrap + Theme styles -->
-    <link rel="preload" href="assets/css/theme.min.css" as="style">
-    <link rel="preload" href="assets/css/theme.rtl.min.css" as="style">
-    <link rel="stylesheet" href="assets/css/theme.min.css" id="theme-styles">
+    <link rel="preload" href="/finder/assets/css/theme.min.css" as="style">
+    <link rel="preload" href="/finder/assets/css/theme.rtl.min.css" as="style">
+    <link rel="stylesheet" href="/finder/assets/css/theme.min.css" id="theme-styles">
 
     <!-- Customizer -->
-    <script src="assets/js/customizer.min.js"></script>
+    <script src="/finder/assets/js/customizer.min.js"></script>
   </head>
 
 
@@ -210,10 +210,11 @@
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
                 <a class="nav-link dropdown-toggle" href="/listings/contractors" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Listings</a>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="/listings/contractors">Contractors</a></li>
-                  <li><a class="dropdown-item" href="/listings/real-estate">Real Estate</a></li>
-                  <li><a class="dropdown-item" href="/listings/cars">Cars</a></li>
-                  <li><a class="dropdown-item" href="/listings/events">Events</a></li>
+                  <li><a class="dropdown-item" href="/contractors">Contractors</a></li>
+                  <li><a class="dropdown-item" href="/real-estate">Real Estate</a></li>
+                  <li><a class="dropdown-item" href="/cars">Cars</a></li>
+                  <li><a class="dropdown-item" href="/events">Events</a></li>
+                  <li><a class="dropdown-item" href="/restaurants">Restaurants</a></li>
                 </ul>
               </li>
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
@@ -359,7 +360,7 @@
                   <div class="hover-effect-opacity position-relative overflow-hidden rounded">
                     <span class="badge text-bg-light position-absolute top-0 start-0 z-3 mt-2 ms-2">Cover</span>
                     <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
-                      <img src="assets/img/add-item/property/01.jpg" alt="Image">
+                      <img src="/finder/assets/img/add-item/property/01.jpg" alt="Image">
                     </div>
                     <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
                       <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove">
@@ -374,7 +375,7 @@
                 <div class="col">
                   <div class="hover-effect-opacity position-relative overflow-hidden rounded">
                     <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
-                      <img src="assets/img/add-item/property/02.jpg" alt="Image">
+                      <img src="/finder/assets/img/add-item/property/02.jpg" alt="Image">
                     </div>
                     <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
                       <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove">
@@ -389,7 +390,7 @@
                 <div class="col">
                   <div class="hover-effect-opacity position-relative overflow-hidden rounded">
                     <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
-                      <img src="assets/img/add-item/property/03.jpg" alt="Image">
+                      <img src="/finder/assets/img/add-item/property/03.jpg" alt="Image">
                     </div>
                     <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
                       <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove">
@@ -404,7 +405,7 @@
                 <div class="col">
                   <div class="hover-effect-opacity position-relative overflow-hidden rounded">
                     <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
-                      <img src="assets/img/add-item/property/04.jpg" alt="Image">
+                      <img src="/finder/assets/img/add-item/property/04.jpg" alt="Image">
                     </div>
                     <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
                       <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove">
@@ -432,6 +433,14 @@
                 <i class="fi-link position-absolute top-50 start-0 translate-middle-y fs-lg ms-3"></i>
                 <input type="url" class="form-control form-control-lg form-icon-start" id="link" placeholder="www.youtube.com/...">
               </div>
+            </div>
+
+            <div class="pt-5 d-flex flex-wrap gap-3 align-items-center">
+              <button type="button" class="btn btn-lg btn-outline-secondary">Save draft</button>
+              <a class="btn btn-lg btn-dark" href="add-property-details.html">
+                Go to property details
+                <i class="fi-chevron-right fs-lg ms-1 me-n2"></i>
+              </a>
             </div>
           </div>
         </div>
@@ -574,11 +583,13 @@
         Customize<i class="fi-settings fs-base ms-1 me-n2 animate-target"></i>
       </a>
     </div>
+    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260305-1"></script>
 
-
-    <!-- Bootstrap + Theme scripts -->
-    <script src="assets/js/theme.min.js"></script>
+    <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>
+
+
+
 
 

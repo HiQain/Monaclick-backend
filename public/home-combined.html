@@ -84,10 +84,11 @@
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
                 <a class="nav-link dropdown-toggle" href="/listings/contractors" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Listings</a>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="/listings/contractors">Contractors</a></li>
-                  <li><a class="dropdown-item" href="/listings/real-estate">Real Estate</a></li>
-                  <li><a class="dropdown-item" href="/listings/cars">Cars</a></li>
-                  <li><a class="dropdown-item" href="/listings/events">Events</a></li>
+                  <li><a class="dropdown-item" href="/contractors">Contractors</a></li>
+                  <li><a class="dropdown-item" href="/real-estate">Real Estate</a></li>
+                  <li><a class="dropdown-item" href="/cars">Cars</a></li>
+                  <li><a class="dropdown-item" href="/events">Events</a></li>
+                  <li><a class="dropdown-item" href="/restaurants">Restaurants</a></li>
                 </ul>
               </li>
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
@@ -258,6 +259,59 @@
 
       <section class="container py-5 cv-auto">
         <div class="d-flex align-items-center justify-content-between mb-4">
+          <h2 class="h1 mb-0">Signature collections</h2>
+          <div class="d-flex gap-2">
+            <button class="btn btn-icon btn-lg btn-outline-secondary rounded-circle" type="button" id="combinedRestaurantCollectionsPrev"><i class="fi-chevron-left"></i></button>
+            <button class="btn btn-icon btn-lg btn-outline-secondary rounded-circle" type="button" id="combinedRestaurantCollectionsNext"><i class="fi-chevron-right"></i></button>
+          </div>
+        </div>
+        <div class="swiper" data-swiper='{
+          "slidesPerView": 1.1,
+          "spaceBetween": 24,
+          "navigation": {
+            "prevEl": "#combinedRestaurantCollectionsPrev",
+            "nextEl": "#combinedRestaurantCollectionsNext"
+          },
+          "breakpoints": {
+            "576": { "slidesPerView": 1.6 },
+            "992": { "slidesPerView": 2.3 },
+            "1200": { "slidesPerView": 2.8 }
+          }
+        }'>
+          <div class="swiper-wrapper">
+            <div class="swiper-slide h-auto">
+              <a class="card border-0 overflow-hidden text-white d-block h-100" href="/listings/restaurants?q=chef+table">
+                <img class="w-100 object-fit-cover" src="/finder/assets/img/monaclick/restaurants/kebab-plate-low-res.webp" alt="Chef table" style="height: 260px;">
+                <span class="position-absolute bottom-0 start-0 p-4 w-100" style="background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.76) 100%);">
+                  <span class="h4 text-white d-block mb-1" style="text-shadow:0 4px 14px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.85);">Chef Table</span>
+                  <span class="text-white-50" style="text-shadow:0 4px 14px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.85);">Fine dining and tasting menus</span>
+                </span>
+              </a>
+            </div>
+            <div class="swiper-slide h-auto">
+              <a class="card border-0 overflow-hidden text-white d-block h-100" href="/listings/restaurants?q=family+dining">
+                <img class="w-100 object-fit-cover" src="/finder/assets/img/monaclick/restaurants/user6.jpg" alt="Family dining" style="height: 260px;">
+                <span class="position-absolute bottom-0 start-0 p-4 w-100" style="background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.76) 100%);">
+                  <span class="h4 text-white d-block mb-1" style="text-shadow:0 4px 14px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.85);">Family Dining</span>
+                  <span class="text-white-50" style="text-shadow:0 4px 14px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.85);">Comfort food and weekend specials</span>
+                </span>
+              </a>
+            </div>
+            <div class="swiper-slide h-auto">
+              <a class="card border-0 overflow-hidden text-white d-block h-100" href="/listings/restaurants?q=rooftop">
+                <img class="w-100 object-fit-cover" src="/finder/assets/img/monaclick/restaurants/user3.jpg" alt="Rooftop dining" style="height: 260px;">
+                <span class="position-absolute bottom-0 start-0 p-4 w-100" style="background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.76) 100%);">
+                  <span class="h4 text-white d-block mb-1" style="text-shadow:0 4px 14px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.85);">Rooftop Dining</span>
+                  <span class="text-white-50" style="text-shadow:0 4px 14px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.85);">Evening ambiance and city views</span>
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+<section class="container py-5 cv-auto">
+        <div class="d-flex align-items-center justify-content-between mb-4">
           <h2 class="h1 mb-0">Top offers</h2>
           <div class="d-flex gap-2">
             <button class="btn btn-icon btn-lg btn-outline-secondary rounded-circle" type="button" id="topOffersPrev"><i class="fi-chevron-left"></i></button>
@@ -329,6 +383,40 @@
         </div>
         <div class="swiper" id="homeProjectsSwiper">
           <div class="swiper-wrapper" id="contractorHomeList"></div>
+        </div>
+      </section>
+
+      
+
+      <section class="bg-body-tertiary py-5 cv-auto">
+        <div class="container">
+          <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="h1 mb-0">Top restaurants by city</h2>
+            <div class="d-flex gap-2">
+              <button class="btn btn-icon btn-lg btn-outline-secondary rounded-circle" type="button" id="combinedRestaurantCitiesPrev"><i class="fi-chevron-left"></i></button>
+              <button class="btn btn-icon btn-lg btn-outline-secondary rounded-circle" type="button" id="combinedRestaurantCitiesNext"><i class="fi-chevron-right"></i></button>
+            </div>
+          </div>
+          <div class="swiper" data-swiper='{
+            "slidesPerView": 1.1,
+            "spaceBetween": 24,
+            "navigation": {
+              "prevEl": "#combinedRestaurantCitiesPrev",
+              "nextEl": "#combinedRestaurantCitiesNext"
+            },
+            "breakpoints": {
+              "576": { "slidesPerView": 1.6 },
+              "768": { "slidesPerView": 2.2 },
+              "1200": { "slidesPerView": 3.2 }
+            }
+          }'>
+            <div class="swiper-wrapper">
+              <div class="swiper-slide h-auto"><article class="card border-0 shadow-sm h-100"><img class="card-img-top object-fit-cover" src="/finder/assets/img/monaclick/restaurants/user1.jpg" alt="Chicago" style="height: 260px;"><div class="card-body"><div class="text-body-secondary small">Chicago</div><h3 class="h5 mb-1"><a class="stretched-link text-decoration-none" href="/listings/restaurants?q=chicago">Saffron Grill House</a></h3><div class="small text-body-secondary">4.8 rating - Avg $45</div></div></article></div>
+              <div class="swiper-slide h-auto"><article class="card border-0 shadow-sm h-100"><img class="card-img-top object-fit-cover" src="/finder/assets/img/monaclick/restaurants/user2.jpg" alt="New York" style="height: 260px;"><div class="card-body"><div class="text-body-secondary small">New York</div><h3 class="h5 mb-1"><a class="stretched-link text-decoration-none" href="/listings/restaurants?q=new+york">Tokyo Ember Sushi</a></h3><div class="small text-body-secondary">4.9 rating - Avg $52</div></div></article></div>
+              <div class="swiper-slide h-auto"><article class="card border-0 shadow-sm h-100"><img class="card-img-top object-fit-cover" src="/finder/assets/img/monaclick/restaurants/user5.jpg" alt="Dallas" style="height: 260px;"><div class="card-body"><div class="text-body-secondary small">Dallas</div><h3 class="h5 mb-1"><a class="stretched-link text-decoration-none" href="/listings/restaurants?q=dallas">Olive &amp; Thyme Bistro</a></h3><div class="small text-body-secondary">4.6 rating - Avg $32</div></div></article></div>
+              <div class="swiper-slide h-auto"><article class="card border-0 shadow-sm h-100"><img class="card-img-top object-fit-cover" src="/finder/assets/img/monaclick/restaurants/user10.jpg" alt="Los Angeles" style="height: 260px;"><div class="card-body"><div class="text-body-secondary small">Los Angeles</div><h3 class="h5 mb-1"><a class="stretched-link text-decoration-none" href="/listings/restaurants?q=los+angeles">Market Flame Kitchen</a></h3><div class="small text-body-secondary">4.7 rating - Avg $39</div></div></article></div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -409,6 +497,7 @@
                       <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/listings/real-estate">Real estate</a></li>
                       <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/listings/contractors">Contractors</a></li>
                       <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/listings/cars">Cars</a></li>
+                      <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/listings/restaurants">Restaurants</a></li>
                     </ul>
                   </div>
                   <div class="col">
@@ -487,6 +576,7 @@
     <script src="/finder/assets/vendor/swiper/swiper-bundle.min.js"></script>
     <script src="/finder/assets/js/theme.min.js"></script>
     <script src="/finder/assets/js/monaclick-home-combined.js?v=20260304-17"></script>
+      <script src="/finder/assets/js/monaclick-global-footer.js?v=20260305-1"></script>
   </body>
 </html>
 

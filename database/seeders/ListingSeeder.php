@@ -38,6 +38,11 @@ class ListingSeeder extends Seeder
             ['name' => 'Conferences', 'slug' => 'conferences', 'module' => 'events'],
             ['name' => 'Festivals', 'slug' => 'festivals', 'module' => 'events'],
             ['name' => 'Networking', 'slug' => 'networking', 'module' => 'events'],
+            ['name' => 'BBQ', 'slug' => 'bbq', 'module' => 'restaurants'],
+            ['name' => 'Sushi', 'slug' => 'sushi', 'module' => 'restaurants'],
+            ['name' => 'Pizza', 'slug' => 'pizza', 'module' => 'restaurants'],
+            ['name' => 'Steakhouse', 'slug' => 'steakhouse', 'module' => 'restaurants'],
+            ['name' => 'Mediterranean', 'slug' => 'mediterranean', 'module' => 'restaurants'],
         ])->map(fn (array $item) => Category::updateOrCreate(
             [
                 'module' => $item['module'],
@@ -93,6 +98,13 @@ class ListingSeeder extends Seeder
                 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=60',
                 'https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=1200&q=60',
             ],
+            'restaurants' => [
+                'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=60',
+                'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1200&q=60',
+                'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=60',
+                'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=60',
+                'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?auto=format&fit=crop&w=1200&q=60',
+            ],
         ];
 
         $titles = [
@@ -116,11 +128,16 @@ class ListingSeeder extends Seeder
                 'Tech Innovators Conference', 'City Food Carnival', 'Founders Networking Meetup', 'Rock Arena Live',
                 'Creative Design Bootcamp', 'E-Commerce Masterclass', 'Startup Demo Day', 'Community Wellness Expo',
             ],
+            'restaurants' => [
+                'Saffron Grill House', 'Olive & Thyme Bistro', 'Tokyo Ember Sushi', 'Stone Oven Pizza Co.',
+                'Maple Street Steakhouse', 'Blue Harbor Seafood', 'Garden Flame BBQ', 'Urban Noodle Bar',
+                'Copper Table Kitchen', 'Luna Tapas Lounge', 'The Daily Brunch Co.', 'Spice Route Dining',
+            ],
         ];
 
         $rows = collect();
 
-        foreach (['contractors', 'real-estate', 'cars', 'events'] as $module) {
+        foreach (['contractors', 'real-estate', 'cars', 'events', 'restaurants'] as $module) {
             $moduleCategories = $categories->where('module', $module)->values();
             foreach ($titles[$module] as $index => $title) {
                 $category = $moduleCategories[$index % $moduleCategories->count()];
@@ -138,6 +155,8 @@ class ListingSeeder extends Seeder
                         : '$' . number_format(220000 + (($hash % 35) * 9500));
                 } elseif ($module === 'cars') {
                     $price = '$' . number_format(16000 + (($hash % 60) * 1400));
+                } elseif ($module === 'restaurants') {
+                    $price = '$' . number_format(18 + ($hash % 48)) . ' avg';
                 } else {
                     $price = '$' . number_format(25 + ($hash % 120)) . ' Ticket';
                 }
@@ -171,7 +190,7 @@ class ListingSeeder extends Seeder
             };
 
             $features = [];
-            if ($row['module'] === 'contractors') {
+            if (in_array($row['module'], ['contractors', 'restaurants'], true)) {
                 $features[] = 'eco-friendly';
                 $features[] = 'verified-hires';
                 if ($row['hash'] % 2 === 0) $features[] = 'free-consultation';

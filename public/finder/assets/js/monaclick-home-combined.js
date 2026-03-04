@@ -371,7 +371,7 @@
         return;
       }
 
-      const modules = ['contractors', 'real-estate', 'cars', 'events'];
+      const modules = ['contractors', 'real-estate', 'cars', 'events', 'restaurants'];
       const results = await Promise.allSettled(modules.map((module) => fetchListings(module, { q, per_page: '3' })));
 
       const merged = results

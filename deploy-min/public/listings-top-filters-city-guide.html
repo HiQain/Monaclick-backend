@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" data-pwa="true">
+  <head>
+    <meta charset="utf-8">
+
+    <!-- Viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+
+    <!-- SEO Meta Tags -->
+    <title>Monaclick | City Guide - Listings with Top Filters</title>
+    <meta name="description" content="Monaclick - Directory & Listings Bootstrap HTML Template">
+    <meta name="keywords" content="directory, listings, search, car dealer, real estate, city guide, business listings, medical directories, event listings, e-commerce, market, multipurpose, ui kit, light and dark mode, bootstrap, html5, css3, javascript, gallery, slider, mobile, pwa">
+    <meta name="author" content="US Logo and Web">
+
+    <!-- Webmanifest + Favicon / App icons -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="manifest" href="/finder/manifest.json">
+    <link rel="icon" type="image/png" href="/finder/assets/app-icons/icon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/finder/assets/app-icons/icon-180x180.png">
+
+    <!-- Theme switcher (color modes) -->
+    <script src="/finder/assets/js/theme-switcher.js"></script>
+
+    <!-- Preloaded local web font (Inter) -->
+    <link rel="preload" href="/finder/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- Font icons -->
+    <link rel="preload" href="/finder/assets/icons/finder-icons.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/finder/assets/icons/finder-icons.min.css">
+
+    <!-- Vendor styles -->
+    <link rel="stylesheet" href="/finder/assets/vendor/choices.js/public/assets/styles/choices.min.css">
+    <link rel="stylesheet" href="/finder/assets/vendor/nouislider/dist/nouislider.min.css">
+    <link rel="stylesheet" href="/finder/assets/vendor/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="/finder/assets/vendor/leaflet/dist/leaflet.css">
+
+    <!-- Bootstrap + Theme styles -->
+    <link rel="preload" href="/finder/assets/css/theme.min.css" as="style">
+    <link rel="preload" href="/finder/assets/css/theme.rtl.min.css" as="style">
+    <link rel="stylesheet" href="/finder/assets/css/theme.min.css" id="theme-styles">
+
+    <!-- Customizer -->
+    <script src="/finder/assets/js/customizer.min.js"></script>
+  </head>
+
+
+  <!-- Body -->
+  <body>
+
+    <!-- Customizer offcanvas -->
+    <div class="offcanvas offcanvas-end" id="customizer" tabindex="-1">
+      <div class="offcanvas-header border-bottom">
+        <h4 class="h5 offcanvas-title">Customize theme</h4>
+        <button class="btn-close" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+
+        <!-- Customizer settings -->
+        <div class="customizer-collapse collapse show" id="customizerSettings">
+
+          <!-- Colors -->
+          <div class="pb-4 mb-2">
+            <div class="d-flex align-items-center mb-3">
+              <i class="fi-swatches text-body-tertiary fs-5 me-2"></i>
+              <h5 class="fs-lg mb-0">Colors</h5>
+            </div>
+            <div class="row row-cols-2 g-3" id="theme-colors">
+              <div class="col">
+                <h6 class="fs-sm mb-2">Primary</h6>
+                <div class="color-swatch d-flex border rounded gap-3 p-2" id="theme-primary" data-color-labels='["theme-primary", "primary", "primary-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#d85151">
+                  <label for="primary" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #d85151"></label>
+                  <input type="color" class="visually-hidden" id="primary" value="#d85151">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Success</h6>
+                <div class="color-swatch d-flex border rounded gap-3 p-2" id="theme-success" data-color-labels='["theme-success", "success", "success-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#33b36b">
+                  <label for="success" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #33b36b"></label>
+                  <input type="color" class="visually-hidden" id="success" value="#33b36b">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Warning</h6>
+                <div class="color-swatch d-flex border rounded gap-3 p-2" id="theme-warning" data-color-labels='["theme-warning", "warning", "warning-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#fc9231">
+                  <label for="warning" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #fc9231"></label>
+                  <input type="color" class="visually-hidden" id="warning" value="#fc9231">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Danger</h6>
+                <div class="color-swatch d-flex border rounded gap-2 p-2" id="theme-danger" data-color-labels='["theme-danger", "danger", "danger-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#f03d3d">
+                  <label for="danger" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #f03d3d"></label>
+                  <input type="color" class="visually-hidden" id="danger" value="#f03d3d">
+                </div>
+              </div>
+              <div class="col">
+                <h6 class="fs-sm mb-2">Info</h6>
+                <div class="color-swatch d-flex border rounded gap-2 p-2" id="theme-info" data-color-labels='["theme-info", "info", "info-rgb"]'>
+                  <input type="text" class="form-control bg-transparent border-0 rounded-0 p-1" value="#3d7a81">
+                  <label for="info" class="ratio ratio-1x1 flex-shrink-0 w-100 cursor-pointer rounded-circle" style="max-width: 38px; background-color: #3d7a81"></label>
+                  <input type="color" class="visually-hidden" id="info" value="#3d7a81">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direction -->
+          <div class="pb-4 mb-2">
+            <div class="d-flex align-items-center pb-1 mb-2">
+              <i class="fi-sort text-body-tertiary fs-lg me-2" style="transform: rotate(90deg)"></i>
+              <h5 class="fs-lg mb-0">Direction</h5>
+            </div>
+            <div class="d-flex align-items-center justify-content-between border rounded p-3">
+              <div class="me-3">
+                <h6 class="mb-1">RTL</h6>
+                <p class="fs-sm mb-0">Change text direction</p>
+              </div>
+              <div class="form-check form-switch m-0">
+                <input type="checkbox" class="form-check-input" role="switch" id="rtl-switch">
+              </div>
+            </div>
+            <div class="alert alert-info p-2 mt-2 mb-0">
+              <div class="d-flex text-body-emphasis fs-xs py-1 pe-1">
+                <i class="fi-info text-info fs-lg mb-2 mb-sm-0" style="margin-top: .125rem"></i>
+                <div class="ps-2">To switch the text direction of your webpage from LTR to RTL, please consult the detailed instructions provided in the relevant section of our documentation.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Border width -->
+          <div class="pb-4 mb-2">
+            <div class="d-flex align-items-center pb-1 mb-2">
+              <i class="fi-menu text-body-tertiary fs-lg me-2"></i>
+              <h5 class="fs-lg mb-0">Border width, px</h5>
+            </div>
+            <div class="slider-input d-flex align-items-center gap-3 border rounded p-3" id="border-input">
+              <input type="range" class="form-range" min="0" max="10" step="1" value="1">
+              <input type="number" class="form-control" id="border-width" min="0" max="10" value="1" style="max-width: 5.5rem">
+            </div>
+          </div>
+
+          <!-- Rounding -->
+          <div class="d-flex align-items-center pb-1 mb-2">
+            <i class="fi-maximize text-body-tertiary fs-lg me-2"></i>
+            <h5 class="fs-lg mb-0">Rounding, rem</h5>
+          </div>
+          <div class="slider-input d-flex align-items-center gap-3 border rounded p-3">
+            <input type="range" class="form-range" min="0" max="5" step=".05" value="0.5">
+            <input type="number" class="form-control" id="border-radius" min="0" max="5" step=".05" value="0.5" style="max-width: 5.5rem">
+          </div>
+        </div>
+
+        <!-- Customizer code -->
+        <div class="customizer-collapse collapse" id="customizerCode">
+          <div class="nav mb-3">
+            <a class="nav-link position-relative fs-base p-0" href=".customizer-collapse" data-bs-toggle="collapse" aria-expanded="true" aria-controls="customizerSettings customizerCode">
+              <i class="fi-chevron-left fs-lg ms-n1 me-1"></i>
+              <span class="hover-effect-underline stretched-link">Back to settings</span>
+            </a>
+          </div>
+          <p class="fs-sm pb-1">To apply the provided styles to your webpage, enclose them within a <code>&lt;style&gt;</code> tag and insert this tag into the <code>&lt;head&gt;</code> section of your HTML document after the following link to the main stylesheet:<br><code>&lt;link href=&quot;assets/css/theme.min.css&quot;&gt;</code></p>
+          <div class="position-relative bg-body-tertiary rounded overflow-hidden pt-3">
+            <div class="position-absolute top-0 start-0 w-100 p-3">
+              <button type="button" class="btn btn-sm btn-outline-dark w-100" data-copy-text-from="#generated-styles" data-done-label="Code copied">
+                <i class="fi-copy fs-sm me-1"></i>
+                Copy code
+              </button>
+            </div>
+            <pre class="text-wrap bg-transparent border-0 fs-xs text-body-emphasis p-4 pt-5" id="generated-styles"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offcanvas footer (Action buttons) -->
+      <div class="offcanvas-header border-top gap-3 d-none" id="customizer-btns">
+        <button type="button" class="btn btn-lg btn-secondary w-100 fs-sm" id="customizer-reset">
+          <i class="fi-trash fs-lg me-2 ms-n1"></i>
+          Reset
+        </button>
+        <button class="btn btn-lg btn-primary hiding-collapse-toggle w-100 fs-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target=".customizer-collapse" aria-expanded="false" aria-controls="customizerSettings customizerCode">
+          <i class="fi-code fs-lg me-2 ms-n1"></i>
+          Show code
+        </button>
+      </div>
+    </div>
+
+
+    <!-- Map offcanvas -->
+    <div class="offcanvas offcanvas-top h-100" id="map" tabindex="-1">
+      <div class="offcanvas-header justify-content-between border-bottom py-3">
+        <h5 class="offcanvas-title py-1">View on the map</h5>
+        <div class="d-flex align-items-center py-1">
+          <span class="fs-xs ms-auto me-2">[ESC]</span>
+          <button class="btn-close ms-0" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="offcanvas-body position-relative">
+        <div class="position-absolute top-0 start-0 w-100 h-100 bg-body-tertiary" data-map='{
+          "tileLayer": "https://api.maptiler.com/maps/pastel/{z}/{x}/{y}.png?key=rqrCHwDtUZCUA2fCt3vV",
+          "attribution": "© Maptiler © OpenStreetMap contributors",
+          "zoom": 15,
+          "tileSize": 512,
+          "zoomOffset": -1,
+          "templates": {
+            "popup": "<div class=\"card hover-effect-scale bg-transparent border-0\" data-bs-theme=\"light\"><div class=\"card-img-top position-relative bg-body-tertiary overflow-hidden\"><div class=\"ratio\" style=\"--fn-aspect-ratio: calc(128 / 280 * 100%)\"></div><img src=\"{{image}}\" class=\"hover-effect-target position-absolute top-0 start-0 w-100 h-100 object-fit-cover\" alt=\"Image\"></div><div class=\"card-body pt-3 pb-1 px-3\"><span class=\"badge text-body-emphasis bg-secondary-subtle text-decoration-none mb-2\">{{category}}</span><h3 class=\"fs-lg mb-2\"><a class=\"hover-effect-underline stretched-link text-dark-emphasis\" href=\"single-entry-city-guide.html\">{{title}}</a></h3></div><div class=\"card-footer bg-transparent border-0 pt-0 pb-3 px-3\"><div class=\"d-flex align-items-center gap-3\"><div class=\"d-flex align-items-center gap-1\"><i class=\"fi-star-filled text-warning\"></i><span class=\"fs-sm text-secondary-emphasis\">{{rating}}</span><span class=\"fs-xs text-body-secondary align-self-end\">({{reviews}})</span></div><div class=\"d-flex align-items-center gap-1 min-w-0 fs-sm\"><i class=\"fi-map-pin\"></i><span class=\"text-truncate\">{{fromCenter}} km from center</span></div></div><div class=\"h6 pt-3 mb-0\">${{price}}</div></div></div>"
+          }
+        }' data-map-markers="assets/json/map-city-guide.json"></div>
+      </div>
+    </div>
+
+
+    <!-- Filters offcanvas -->
+    <div class="offcanvas offcanvas-end pb-sm-2 px-sm-2" id="filtersOffcanvas" tabindex="-1" aria-labelledby="filtersLabel">
+      <div class="offcanvas-header py-3">
+        <h5 class="offcanvas-title" id="filtersLabel">Filters</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body pt-0">
+
+        <!-- Location -->
+        <div class="position-relative d-sm-none">
+          <i class="fi-map-pin position-absolute top-50 start-0 translate-middle-y z-1"></i>
+          <select class="form-select form-select-lg form-select-flush text-dark-emphasis fw-medium py-3 ps-4 pe-0" data-select='{
+            "classNames": {
+              "containerInner": ["form-select", "form-select-lg", "form-select-flush", "text-dark-emphasis", "fw-medium", "py-3", "ps-4", "pe-0"]
+            },
+            "searchEnabled": true
+          }' aria-label="Location select">
+            <option value="">Any location</option>
+            <option value="Paris">Paris</option>
+            <option value="Rome">Rome</option>
+            <option value="Barcelona" selected>Barcelona</option>
+            <option value="London">London</option>
+            <option value="Amsterdam">Amsterdam</option>
+            <option value="Berlin">Berlin</option>
+            <option value="Prague">Prague</option>
+            <option value="Venice">Venice</option>
+            <option value="Vienna">Vienna</option>
+            <option value="Florence">Florence</option>
+          </select>
+        </div>
+
+        <!-- Date -->
+        <div class="position-relative d-md-none">
+          <i class="fi-calendar position-absolute top-50 start-0 translate-middle-y"></i>
+          <input type="text" class="form-control form-control-lg form-select-flush text-dark-emphasis fw-medium py-3 ps-4 pe-0" data-datepicker='{"dateFormat": "M j, Y"}' placeholder="Choose date">
+        </div>
+
+        <div class="accordion" id="filters">
+
+          <!-- Price -->
+          <div class="accordion-item d-lg-none">
+            <h6 class="accordion-header" id="headingPrice">
+              <button type="button" class="accordion-button fw-medium collapsed" data-bs-toggle="collapse" data-bs-target="#priceFilter" aria-expanded="false" aria-controls="priceFilter">
+                <span class="d-flex align-items-end">
+                  Price
+                  <span class="text-body fs-sm fw-normal ms-1" id="priceCountOffcanvas"></span>
+                </span>
+              </button>
+            </h6>
+            <div class="accordion-collapse collapse" id="priceFilter" aria-labelledby="headingPrice" data-bs-parent="#filters">
+              <div class="accordion-body d-flex flex-column gap-2 px-1">
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="priceOffcanvas-1" onclick="updateFilterCount('priceCountOffcanvas')" data-count-id="priceCountOffcanvas">
+                  <label for="priceOffcanvas-1" class="form-check-label d-flex align-items-end">
+                    $0.00 - 99.99
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">241</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="priceOffcanvas-2" onclick="updateFilterCount('priceCountOffcanvas')" data-count-id="priceCountOffcanvas">
+                  <label for="priceOffcanvas-2" class="form-check-label d-flex align-items-end">
+                    $100.00 - 199.99
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">398</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="priceOffcanvas-3" onclick="updateFilterCount('priceCountOffcanvas')" data-count-id="priceCountOffcanvas">
+                  <label for="priceOffcanvas-3" class="form-check-label d-flex align-items-end">
+                    $200.00 - 299.99
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">253</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="priceOffcanvas-4" onclick="updateFilterCount('priceCountOffcanvas')" data-count-id="priceCountOffcanvas">
+                  <label for="priceOffcanvas-4" class="form-check-label d-flex align-items-end">
+                    $300.00 - 399.99
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">197</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="priceOffcanvas-5" onclick="updateFilterCount('priceCountOffcanvas')" data-count-id="priceCountOffcanvas">
+                  <label for="priceOffcanvas-5" class="form-check-label d-flex align-items-end">
+                    $400.00 - 499.99
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">152</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="priceOffcanvas-6" onclick="updateFilterCount('priceCountOffcanvas')" data-count-id="priceCountOffcanvas">
+                  <label for="priceOffcanvas-6" class="form-check-label d-flex align-items-end">
+                    $500.00 - 599.99
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">138</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="priceOffcanvas-7" onclick="updateFilterCount('priceCountOffcanvas')" data-count-id="priceCountOffcanvas">
+                  <label for="priceOffcanvas-7" class="form-check-label d-flex align-items-end">
+                    $600.00+
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">27</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Number of rooms -->
+          <div class="position-relative">
+            <i class="fi-bed-single position-absolute top-50 start-0 translate-middle-y"></i>
+            <input type="number" class="form-control form-control-lg form-select-flush text-dark-emphasis fw-medium py-3 ps-4 pe-0" min="1" placeholder="Number of rooms">
+          </div>
+
+          <!-- Room facilities -->
+          <div class="accordion-item">
+            <h6 class="accordion-header" id="headingFacilities">
+              <button type="button" class="accordion-button fw-medium collapsed" data-bs-toggle="collapse" data-bs-target="#facilitiesFilter" aria-expanded="false" aria-controls="facilitiesFilter">
+                <span class="d-flex align-items-end">
+                  Room facilities
+                  <span class="text-body fs-sm fw-normal ms-1" id="facilitiesCount"></span>
+                </span>
+              </button>
+            </h6>
+            <div class="accordion-collapse collapse" id="facilitiesFilter" aria-labelledby="headingFacilities" data-bs-parent="#filters">
+              <div class="accordion-body d-flex flex-column gap-2 px-1">
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="kitchen" onclick="updateFilterCount('facilitiesCount')" data-count-id="facilitiesCount">
+                  <label for="kitchen" class="form-check-label d-flex align-items-end">
+                    Kitchen
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">27</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="terrace" onclick="updateFilterCount('facilitiesCount')" data-count-id="facilitiesCount">
+                  <label for="terrace" class="form-check-label d-flex align-items-end">
+                    Terrace
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">89</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="ac" onclick="updateFilterCount('facilitiesCount')" data-count-id="facilitiesCount">
+                  <label for="ac" class="form-check-label d-flex align-items-end">
+                    Air Conditioning
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">145</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="heating" onclick="updateFilterCount('facilitiesCount')" data-count-id="facilitiesCount">
+                  <label for="heating" class="form-check-label d-flex align-items-end">
+                    Heating
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">106</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="desk" onclick="updateFilterCount('facilitiesCount')" data-count-id="facilitiesCount">
+                  <label for="desk" class="form-check-label d-flex align-items-end">
+                    Desk
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">73</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="washing-machine" onclick="updateFilterCount('facilitiesCount')" data-count-id="facilitiesCount">
+                  <label for="washing-machine" class="form-check-label d-flex align-items-end">
+                    Washing Machine
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">67</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="private-bathroom" onclick="updateFilterCount('facilitiesCount')" data-count-id="facilitiesCount">
+                  <label for="private-bathroom" class="form-check-label d-flex align-items-end">
+                    Private Bathroom
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">210</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="laundry" onclick="updateFilterCount('facilitiesCount')" data-count-id="facilitiesCount">
+                  <label for="laundry" class="form-check-label d-flex align-items-end">
+                    Laundry Service
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">132</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Amenities -->
+          <div class="accordion-item">
+            <h6 class="accordion-header" id="headingAmenities">
+              <button type="button" class="accordion-button fw-medium collapsed" data-bs-toggle="collapse" data-bs-target="#amenitiesFilter" aria-expanded="false" aria-controls="amenitiesFilter">
+                <span class="d-flex align-items-end">
+                  Amenities
+                  <span class="text-body fs-sm fw-normal ms-1" id="amenitiesCount"></span>
+                </span>
+              </button>
+            </h6>
+            <div class="accordion-collapse collapse" id="amenitiesFilter" aria-labelledby="headingAmenities" data-bs-parent="#filters">
+              <div class="accordion-body d-flex flex-column gap-2 px-1">
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="room-service" onclick="updateFilterCount('amenitiesCount')" data-count-id="amenitiesCount">
+                  <label for="room-service" class="form-check-label d-flex align-items-end">
+                    Room Service
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">482</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="wifi" onclick="updateFilterCount('amenitiesCount')" data-count-id="amenitiesCount">
+                  <label for="wifi" class="form-check-label d-flex align-items-end">
+                    Free WiFi
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">537</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="restaurant" onclick="updateFilterCount('amenitiesCount')" data-count-id="amenitiesCount">
+                  <label for="restaurant" class="form-check-label d-flex align-items-end">
+                    Restaurant
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">209</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="bar" onclick="updateFilterCount('amenitiesCount')" data-count-id="amenitiesCount">
+                  <label for="bar" class="form-check-label d-flex align-items-end">
+                    Bar
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">182</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="fitness" onclick="updateFilterCount('amenitiesCount')" data-count-id="amenitiesCount">
+                  <label for="fitness" class="form-check-label d-flex align-items-end">
+                    Fitness Center
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">156</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="swimming" onclick="updateFilterCount('amenitiesCount')" data-count-id="amenitiesCount">
+                  <label for="swimming" class="form-check-label d-flex align-items-end">
+                    Swimming Pool
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">75</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="parking" onclick="updateFilterCount('amenitiesCount')" data-count-id="amenitiesCount">
+                  <label for="parking" class="form-check-label d-flex align-items-end">
+                    Parking
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">279</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average rating -->
+          <div class="accordion-item">
+            <h6 class="accordion-header" id="headingRating">
+              <button type="button" class="accordion-button fw-medium collapsed" data-bs-toggle="collapse" data-bs-target="#ratingFilter" aria-expanded="false" aria-controls="ratingFilter">
+                <span class="d-flex align-items-end">
+                  Average rating
+                  <span class="text-body fs-sm fw-normal ms-1" id="ratingCount"></span>
+                </span>
+              </button>
+            </h6>
+            <div class="accordion-collapse collapse" id="ratingFilter" aria-labelledby="headingRating" data-bs-parent="#filters">
+              <div class="accordion-body d-flex flex-column gap-2 px-1">
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="rating-5" onclick="updateFilterCount('ratingCount')" data-count-id="ratingCount" checked>
+                  <label for="rating-5" class="form-check-label d-flex align-items-end">
+                    <span class="d-flex align-items-center gap-1">
+                      5
+                      <i class="fi-star-filled text-warning"></i>
+                    </span>
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">282</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="rating-4" onclick="updateFilterCount('ratingCount')" data-count-id="ratingCount" checked>
+                  <label for="rating-4" class="form-check-label d-flex align-items-end">
+                    <span class="d-flex align-items-center gap-1">
+                      4
+                      <i class="fi-star-filled text-warning"></i>
+                    </span>
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">437</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="rating-3" onclick="updateFilterCount('ratingCount')" data-count-id="ratingCount">
+                  <label for="rating-3" class="form-check-label d-flex align-items-end">
+                    <span class="d-flex align-items-center gap-1">
+                      3
+                      <i class="fi-star-filled text-warning"></i>
+                    </span>
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">319</span>
+                  </label>
+                </div>
+                <div class="form-check m-0">
+                  <input type="checkbox" class="form-check-input fs-base" id="rating-2-1" onclick="updateFilterCount('ratingCount')" data-count-id="ratingCount">
+                  <label for="rating-2-1" class="form-check-label d-flex align-items-end">
+                    <span class="d-flex align-items-center gap-1">
+                      2-1
+                      <i class="fi-star-filled text-warning"></i>
+                    </span>
+                    <span class="fs-xs text-body-secondary ps-2 ms-auto">82</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Navigation bar (Page header) -->
+    <header class="navbar navbar-expand-lg bg-body navbar-sticky sticky-top z-fixed px-0" data-sticky-element>
+      <div class="container">
+        <button type="button" class="navbar-toggler me-3 me-lg-0" data-bs-toggle="offcanvas" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <a class="navbar-brand py-1 py-md-2 py-xl-1 me-2 me-sm-n4 me-md-n5 me-lg-0" href="/combined">
+          <span class="d-none d-sm-flex flex-shrink-0 text-primary rtl-flip me-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="35" height="34"><path d="M34.5 16.894v10.731c0 3.506-2.869 6.375-6.375 6.375H17.5h-.85C7.725 33.575.5 26.138.5 17c0-9.35 7.65-17 17-17s17 7.544 17 16.894z" fill="currentColor"/><g fill-rule="evenodd"><path d="M17.5 13.258c-3.101 0-5.655 2.554-5.655 5.655s2.554 5.655 5.655 5.655 5.655-2.554 5.655-5.655-2.554-5.655-5.655-5.655zm-9.433 5.655c0-5.187 4.246-9.433 9.433-9.433s9.433 4.246 9.433 9.433a9.36 9.36 0 0 1-1.569 5.192l2.397 2.397a1.89 1.89 0 0 1 0 2.671 1.89 1.89 0 0 1-2.671 0l-2.397-2.397a9.36 9.36 0 0 1-5.192 1.569c-5.187 0-9.433-4.246-9.433-9.433z" fill="#000" fill-opacity=".05"/><g fill="#fff"><path d="M17.394 10.153c-3.723 0-6.741 3.018-6.741 6.741s3.018 6.741 6.741 6.741 6.741-3.018 6.741-6.741-3.018-6.741-6.741-6.741zM7.347 16.894A10.05 10.05 0 0 1 17.394 6.847 10.05 10.05 0 0 1 27.44 16.894 10.05 10.05 0 0 1 17.394 26.94 10.05 10.05 0 0 1 7.347 16.894z"/><path d="M23.025 22.525c.645-.645 1.692-.645 2.337 0l3.188 3.188c.645.645.645 1.692 0 2.337s-1.692.645-2.337 0l-3.187-3.187c-.645-.646-.645-1.692 0-2.337z"/></g></g><path d="M23.662 14.663c2.112 0 3.825-1.713 3.825-3.825s-1.713-3.825-3.825-3.825-3.825 1.713-3.825 3.825 1.713 3.825 3.825 3.825z" fill="#fff"/><path fill-rule="evenodd" d="M23.663 8.429a2.41 2.41 0 0 0-2.408 2.408 2.41 2.41 0 0 0 2.408 2.408 2.41 2.41 0 0 0 2.408-2.408 2.41 2.41 0 0 0-2.408-2.408zm-5.242 2.408c0-2.895 2.347-5.242 5.242-5.242s5.242 2.347 5.242 5.242-2.347 5.242-5.242 5.242-5.242-2.347-5.242-5.242z" fill="currentColor"/></svg>
+          </span>
+          Monaclick
+        </a>
+
+        <nav class="offcanvas offcanvas-start" id="navbarNav" tabindex="-1" aria-labelledby="navbarNavLabel">
+          <div class="offcanvas-header py-3">
+            <h5 class="offcanvas-title" id="navbarNavLabel">Browse Monaclick</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body pt-2 pb-4 py-lg-0 mx-lg-auto">
+            <ul class="navbar-nav position-relative">
+              <li class="nav-item py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link active" aria-current="page" href="/combined">Home</a>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="/listings/contractors" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Listings</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="/listings/contractors">Contractors</a></li>
+                  <li><a class="dropdown-item" href="/listings/real-estate">Real Estate</a></li>
+                  <li><a class="dropdown-item" href="/listings/cars">Cars</a></li>
+                  <li><a class="dropdown-item" href="/listings/events">Events</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" data-bs-auto-close="outside" aria-expanded="false">Account</a>
+                <ul class="dropdown-menu">
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Auth Pages</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="/signin">Sign In</a></li>
+                      <li><a class="dropdown-item" href="/signup">Sign Up</a></li>
+                      <li><a class="dropdown-item" href="/password-recovery">Password Recovery</a></li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item" href="/account/profile">My Profile</a></li>
+                  <li><a class="dropdown-item" href="/account/settings">Account Settings</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="/about" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">About</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="/about">About</a></li>
+                  <li><a class="dropdown-item" href="/blog">Blog</a></li>
+                  <li><a class="dropdown-item" href="/contact">Contact</a></li>
+                  <li><a class="dropdown-item" href="/terms-and-conditions">Terms &amp; Conditions</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <div class="d-flex gap-sm-1">
+          <div class="dropdown">
+            <button type="button" class="theme-switcher btn btn-icon btn-outline-secondary fs-lg border-0 animate-scale" data-bs-toggle="dropdown" data-bs-display="dynamic" aria-expanded="false" aria-label="Toggle theme (light)">
+              <span class="theme-icon-active d-flex animate-target">
+                <i class="fi-sun"></i>
+              </span>
+            </button>
+            <ul class="dropdown-menu start-50 translate-middle-x" style="--fn-dropdown-min-width: 9rem; --fn-dropdown-spacer: .5rem">
+              <li>
+                <button type="button" class="dropdown-item active" data-bs-theme-value="light" aria-pressed="true">
+                  <span class="theme-icon d-flex fs-base me-2"><i class="fi-sun"></i></span>
+                  <span class="theme-label">Light</span>
+                  <i class="item-active-indicator fi-check ms-auto"></i>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item" data-bs-theme-value="dark" aria-pressed="false">
+                  <span class="theme-icon d-flex fs-base me-2"><i class="fi-moon"></i></span>
+                  <span class="theme-label">Dark</span>
+                  <i class="item-active-indicator fi-check ms-auto"></i>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item" data-bs-theme-value="auto" aria-pressed="false">
+                  <span class="theme-icon d-flex fs-base me-2"><i class="fi-auto"></i></span>
+                  <span class="theme-label">Auto</span>
+                  <i class="item-active-indicator fi-check ms-auto"></i>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <a class="btn btn-icon btn-outline-secondary fs-lg border-0 animate-shake me-2" href="/signin" aria-label="Sign in to account">
+            <i class="fi-user animate-target"></i>
+          </a>
+
+          <a class="btn btn-primary animate-scale" href="/add-listing">
+            <i class="fi-plus fs-lg animate-target ms-n2 me-1 me-sm-2"></i>
+            Join<span class="d-none d-xl-inline ms-1">Pro Network</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+
+    <!-- Page content -->
+    <main class="content-wrapper">
+      <div class="container pt-4 pb-5 mb-xxl-3">
+
+        <!-- Breadcrumb -->
+        <nav class="position-relative" aria-label="breadcrumb" style="z-index: 1021">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="home-city-guide.html">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Accomodation</li>
+          </ol>
+        </nav>
+
+
+        <!-- Filters -->
+        <div class="sticky-top bg-body mb-3 mb-sm-2" style="margin-top: -76px">
+          <div class="d-md-none" style="height: 64px"></div>
+          <div class="d-none d-md-block d-lg-none" style="height: 72px"></div>
+          <div class="d-none d-lg-block" style="height: 76px"></div>
+          <div class="row align-items-center py-2 py-sm-3">
+
+            <div class="col-7 col-sm-9 col-lg-10">
+              <div class="row row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 g-xl-4">
+
+                <!-- Type -->
+                <div class="col">
+                  <div class="dropdown">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle filter-select justify-content-between w-100 text-body fw-normal rounded-pill px-3" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+                      <i class="fi-home fs-base me-2"></i>
+                      Type <span class="ms-1 me-auto" id="typeCount"></span>
+                    </button>
+                    <div class="dropdown-menu w-100 p-3">
+                      <div class="d-flex flex-column gap-2">
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="apartments" checked onclick="updateFilterCount('typeCount')" data-count-id="typeCount">
+                          <label for="apartments" class="form-check-label d-flex align-items-end">
+                            Apartments
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">621</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="hotels" checked onclick="updateFilterCount('typeCount')" data-count-id="typeCount">
+                          <label for="hotels" class="form-check-label d-flex align-items-end">
+                            Hotels
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">57</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="hostels" onclick="updateFilterCount('typeCount')" data-count-id="typeCount">
+                          <label for="hostels" class="form-check-label d-flex align-items-end">
+                            Hostels
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">83</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="bb" onclick="updateFilterCount('typeCount')" data-count-id="typeCount">
+                          <label for="bb" class="form-check-label d-flex align-items-end">
+                            Bed and Breakfasts
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">46</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="resorts" checked onclick="updateFilterCount('typeCount')" data-count-id="typeCount">
+                          <label for="resorts" class="form-check-label d-flex align-items-end">
+                            Resorts
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">19</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="motels" onclick="updateFilterCount('typeCount')" data-count-id="typeCount">
+                          <label for="motels" class="form-check-label d-flex align-items-end">
+                            Motels
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">10</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="cabins" checked onclick="updateFilterCount('typeCount')" data-count-id="typeCount">
+                          <label for="cabins" class="form-check-label d-flex align-items-end">
+                            Cabins or Cottages
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">24</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="villas" onclick="updateFilterCount('typeCount')" data-count-id="typeCount">
+                          <label for="villas" class="form-check-label d-flex align-items-end">
+                            Villas
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">98</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Location -->
+                <div class="col d-none d-sm-block">
+                  <div class="position-relative">
+                    <i class="fi-map-pin position-absolute top-50 start-0 translate-middle-y z-1 ms-3"></i>
+                    <select class="form-select filter-select form-icon-start rounded-pill" data-select='{
+                      "classNames": {
+                        "containerInner": ["form-select", "filter-select", "form-icon-start", "rounded-pill"]
+                      },
+                      "searchEnabled": true
+                    }' aria-label="Location select">
+                      <option value="">Any location</option>
+                      <option value="Paris">Paris</option>
+                      <option value="Rome">Rome</option>
+                      <option value="Barcelona" selected>Barcelona</option>
+                      <option value="London">London</option>
+                      <option value="Amsterdam">Amsterdam</option>
+                      <option value="Berlin">Berlin</option>
+                      <option value="Prague">Prague</option>
+                      <option value="Venice">Venice</option>
+                      <option value="Vienna">Vienna</option>
+                      <option value="Florence">Florence</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Date -->
+                <div class="col d-none d-md-block">
+                  <div class="position-relative">
+                    <i class="fi-calendar position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                    <input type="text" class="form-control filter-select form-icon-start rounded-pill" data-datepicker='{"dateFormat": "M j, Y"}' placeholder="Choose date">
+                  </div>
+                </div>
+
+                <!-- Price range -->
+                <div class="col d-none d-lg-block">
+                  <div class="dropdown">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle filter-select justify-content-between w-100 text-body fw-normal rounded-pill px-3" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+                      <i class="fi-dollar-sign fs-base me-2"></i>
+                      Price range <span class="ms-1 me-auto" id="priceCount"></span>
+                    </button>
+                    <div class="dropdown-menu w-100 p-3">
+                      <div class="d-flex flex-column gap-2">
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="price-1" onclick="updateFilterCount('priceCount')" data-count-id="priceCount">
+                          <label for="price-1" class="form-check-label d-flex align-items-end">
+                            $0.00 - 99.99
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">241</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="price-2" onclick="updateFilterCount('priceCount')" data-count-id="priceCount">
+                          <label for="price-2" class="form-check-label d-flex align-items-end">
+                            $100.00 - 199.99
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">398</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="price-3" onclick="updateFilterCount('priceCount')" data-count-id="priceCount">
+                          <label for="price-3" class="form-check-label d-flex align-items-end">
+                            $200.00 - 299.99
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">253</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="price-4" onclick="updateFilterCount('priceCount')" data-count-id="priceCount">
+                          <label for="price-4" class="form-check-label d-flex align-items-end">
+                            $300.00 - 399.99
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">197</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="price-5" onclick="updateFilterCount('priceCount')" data-count-id="priceCount">
+                          <label for="price-5" class="form-check-label d-flex align-items-end">
+                            $400.00 - 499.99
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">152</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="price-6" onclick="updateFilterCount('priceCount')" data-count-id="priceCount">
+                          <label for="price-6" class="form-check-label d-flex align-items-end">
+                            $500.00 - 599.99
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">138</span>
+                          </label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input type="checkbox" class="form-check-input fs-base" id="price-7" onclick="updateFilterCount('priceCount')" data-count-id="priceCount">
+                          <label for="price-7" class="form-check-label d-flex align-items-end">
+                            $600.00+
+                            <span class="fs-xs text-body-secondary ps-2 ms-auto">27</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- More / All filters offcanvas toggle button -->
+            <div class="col-5 col-sm-3 col-lg-2">
+              <div class="nav">
+                <a class="nav-link position-relative text-nowrap p-0" href="#filtersOffcanvas" data-bs-toggle="offcanvas" aria-controls="filtersOffcanvas">
+                  <i class="fi-plus fs-lg me-2"></i>
+                  <span class="hover-effect-underline stretched-link">More filters</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Active filters -->
+        <div class="d-flex align-items-center gap-3 pb-sm-1 mb-2">
+          <div class="pb-3 overflow-x-auto">
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-secondary rounded-pill">
+                <i class="fi-close fs-sm me-1 ms-n1"></i>
+                Apartments
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary rounded-pill">
+                <i class="fi-close fs-sm me-1 ms-n1"></i>
+                Hotels
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary rounded-pill">
+                <i class="fi-close fs-sm me-1 ms-n1"></i>
+                Resorts
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary rounded-pill">
+                <i class="fi-close fs-sm me-1 ms-n1"></i>
+                Cottages
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary rounded-pill">
+                <i class="fi-close fs-sm me-1 ms-n1"></i>
+                Barcelona
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary rounded-pill">
+                <i class="fi-close fs-sm me-1 ms-n1"></i>
+                5
+                <i class="fi-star-filled text-warning ms-1"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary rounded-pill">
+                <i class="fi-close fs-sm me-1 ms-n1"></i>
+                4
+                <i class="fi-star-filled text-warning ms-1"></i>
+              </button>
+            </div>
+          </div>
+          <div class="nav pb-3">
+            <a class="nav-link fs-xs text-decoration-underline text-nowrap p-0" href="#!">Clear all</a>
+          </div>
+        </div>
+
+
+        <!-- Sort selector + Map view toggle -->
+        <div class="d-flex align-items-center gap-4 pb-3 mb-2 mb-xl-3">
+          <div class="fs-sm text-nowrap d-none d-md-inline">Showing 95 results</div>
+          <div class="position-relative ms-md-auto" style="width: 170px">
+            <i class="fi-sort position-absolute top-50 start-0 translate-middle-y z-1 ms-3"></i>
+            <select class="form-select form-icon-start rounded-pill" data-select='{
+              "removeItemButton": false,
+              "classNames": {
+                "containerInner": ["form-select", "form-icon-start", "rounded-pill"]
+              }
+            }'>
+            <option value="Popular">Popular</option>
+            <option value="Rating">Rating</option>
+            <option value="Price asc">Price asc</option>
+            <option value="Price desc">Price desc</option>
+            </select>
+          </div>
+          <div class="nav ms-auto ms-md-0">
+            <a class="nav-link position-relative p-0" href="#map" data-bs-toggle="offcanvas">
+              <i class="fi-map fs-base me-2"></i>
+              <span class="hover-effect-underline stretched-link">View on <span class="d-none d-sm-inline">the</span> map</span>
+            </a>
+          </div>
+        </div>
+
+
+        <!-- Listings grid -->
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 mb-n2">
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/01.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Barcelona Business Hotel</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.8</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(472)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">0.6 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/02.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Big Tree Cottage</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.5</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(73)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">2.4 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/03.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Grand Resort &amp; Spa</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.6</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(209)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">5.3 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/04.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Serenity Hotel</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.7</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(318)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">1.7 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/05.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Merry Berry Motel</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.3</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(734)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">6.5 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/06.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Repose Hotel</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.8</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(165)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">2.1 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/07.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Tranquil Hotel</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.5</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(96)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">3.8 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/08.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Soothe &amp; Stay</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.4</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(290)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">2.3 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/09.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Best Nest Apartment</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.8</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(37)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">1.6 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/10.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Pine Cottage</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.9</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(135)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">0.8 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/11.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Greenpoint Boutique Hotel</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.2</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(216)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">1.9 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Listing -->
+          <div class="col pb-2">
+            <article class="card h-100 hover-effect-scale hover-effect-opacity bg-transparent border-0">
+              <div class="bg-body-tertiary rounded overflow-hidden">
+                <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(280 / 416 * 100%)">
+                  <img src="/finder/assets/img/listings/city-guide/v2/12.jpg" alt="Image">
+                </div>
+              </div>
+              <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 pt-1 pt-sm-0 pe-1 pe-sm-0 mt-2 mt-sm-3 me-2 me-sm-3">
+                <button type="button" class="btn btn-sm btn-icon btn-light bg-light border-0 rounded-circle animate-pulse" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+              </div>
+              <div class="card-body pt-3 pb-2 px-0">
+                <h3 class="h5 mb-0">
+                  <a class="hover-effect-underline stretched-link" href="single-entry-city-guide.html">Crystal Studio Apartment</a>
+                </h3>
+              </div>
+              <div class="card-footer d-flex align-items-center gap-3 bg-transparent border-0 p-0">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="fi-star-filled text-warning"></i>
+                  <span class="fs-sm text-secondary-emphasis">4.7</span>
+                  <span class="fs-xs text-body-secondary align-self-end">(26)</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 fs-sm">
+                  <i class="fi-credit-card"></i>
+                  $$
+                </div>
+                <div class="d-flex align-items-center gap-1 min-w-0 fs-sm">
+                  <i class="fi-map-pin"></i>
+                  <span class="text-truncate">1.3 km from center</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav class="pt-3 pb-2 pb-sm-3 pb-md-4 pb-lg-5 mt-4" aria-label="Listings pagination">
+          <ul class="pagination pagination-lg">
+            <li class="page-item disabled me-auto">
+              <a class="page-link d-flex align-items-center h-100 fs-lg rounded-pill px-2" href="#!" aria-label="Previous page">
+                <i class="fi-chevron-left mx-1"></i>
+              </a>
+            </li>
+            <li class="page-item active" aria-current="page">
+              <span class="page-link rounded-pill">
+                <span style="margin: 0 1px">1</span>
+                <span class="visually-hidden">(current)</span>
+              </span>
+            </li>
+            <li class="page-item">
+              <a class="page-link rounded-pill" href="#!">2</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link rounded-pill" href="#!">3</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link rounded-pill" href="#!">4</a>
+            </li>
+            <li class="page-item">
+              <span class="page-link px-2 pe-none">...</span>
+            </li>
+            <li class="page-item">
+              <a class="page-link rounded-pill" href="#!">8</a>
+            </li>
+            <li class="page-item ms-auto">
+              <a class="page-link d-flex align-items-center h-100 fs-lg rounded-pill px-2" href="#" aria-label="Next page">
+                <i class="fi-chevron-right mx-1"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </main>
+
+
+    <!-- Page footer -->
+    <footer class="footer bg-body border-top" data-bs-theme="dark">
+      <div class="container pb-md-2">
+        <div class="d-md-flex align-items-center justify-content-between border-bottom pt-5 pb-4 pb-md-5">
+          <div class="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-3 gap-sm-4 mb-4 mb-md-0">
+            <div class="d-flex align-items-center">
+              <i class="fi-mail fs-4 lh-0 text-body d-none d-sm-block me-2"></i>
+              <i class="fi-mail text-body d-sm-none me-2"></i>
+              <h6 class="ps-sm-1 mb-0">
+                <span class="h5 d-none d-sm-block mb-0">Subscribe to our newsletter</span>
+                <span class="d-sm-none">Subscribe to our newsletter</span>
+              </h6>
+            </div>
+            <button type="button" class="btn btn-primary">Subscribe</button>
+          </div>
+          <div class="h5 d-none d-sm-block text-center mb-0">
+            <span class="text-body-secondary fw-normal me-3">Need help?</span>
+            <a class="text-white text-decoration-none hover-effect-underline" href="/contact">Contact us</a>
+          </div>
+          <div class="h6 d-sm-none text-center mb-0">
+            <span class="text-body-secondary fw-normal me-2">Need help?</span>
+            <a class="text-white text-decoration-none hover-effect-underline" href="/contact">Contact us</a>
+          </div>
+        </div>
+
+        <div class="accordion row pt-4 pt-sm-5 mt-3 mt-sm-0" id="footerLinks">
+          <div class="col-md-4 col-lg-5 mb-4 mb-sm-5 mb-md-0">
+            <a class="d-inline-flex align-items-center text-dark-emphasis text-decoration-none mb-3" href="/combined">
+              <span class="flex-shrink-0 text-primary rtl-flip me-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="35" height="34"><path d="M34.5 16.894v10.731c0 3.506-2.869 6.375-6.375 6.375H17.5h-.85C7.725 33.575.5 26.138.5 17c0-9.35 7.65-17 17-17s17 7.544 17 16.894z" fill="currentColor"/><g fill-rule="evenodd"><path d="M17.5 13.258c-3.101 0-5.655 2.554-5.655 5.655s2.554 5.655 5.655 5.655 5.655-2.554 5.655-5.655-2.554-5.655-5.655-5.655zm-9.433 5.655c0-5.187 4.246-9.433 9.433-9.433s9.433 4.246 9.433 9.433a9.36 9.36 0 0 1-1.569 5.192l2.397 2.397a1.89 1.89 0 0 1 0 2.671 1.89 1.89 0 0 1-2.671 0l-2.397-2.397a9.36 9.36 0 0 1-5.192 1.569c-5.187 0-9.433-4.246-9.433-9.433z" fill="#000" fill-opacity=".05"/><g fill="#fff"><path d="M17.394 10.153c-3.723 0-6.741 3.018-6.741 6.741s3.018 6.741 6.741 6.741 6.741-3.018 6.741-6.741-3.018-6.741-6.741-6.741zM7.347 16.894A10.05 10.05 0 0 1 17.394 6.847 10.05 10.05 0 0 1 27.44 16.894 10.05 10.05 0 0 1 17.394 26.94 10.05 10.05 0 0 1 7.347 16.894z"/><path d="M23.025 22.525c.645-.645 1.692-.645 2.337 0l3.188 3.188c.645.645.645 1.692 0 2.337s-1.692.645-2.337 0l-3.187-3.187c-.645-.646-.645-1.692 0-2.337z"/></g></g><path d="M23.662 14.663c2.112 0 3.825-1.713 3.825-3.825s-1.713-3.825-3.825-3.825-3.825 1.713-3.825 3.825 1.713 3.825 3.825 3.825z" fill="#fff"/><path fill-rule="evenodd" d="M23.663 8.429a2.41 2.41 0 0 0-2.408 2.408 2.41 2.41 0 0 0 2.408 2.408 2.41 2.41 0 0 0 2.408-2.408 2.41 2.41 0 0 0-2.408-2.408zm-5.242 2.408c0-2.895 2.347-5.242 5.242-5.242s5.242 2.347 5.242 5.242-2.347 5.242-5.242 5.242-5.242-2.347-5.242-5.242z" fill="currentColor"/></svg>
+              </span>
+              <span class="fs-4 fw-semibold">Monaclick</span>
+            </a>
+            <p class="fs-sm text-body-secondary pt-md-1" style="max-width: 260px">Connecting you with reliable local contractors for all your service needs.</p>
+            <div class="d-flex gap-3 pt-2 pt-md-3">
+              <a class="btn btn-icon btn-sm btn-secondary rounded-circle" href="/about" aria-label="Follow us on Instagram">
+                <i class="fi-instagram fs-sm"></i>
+              </a>
+              <a class="btn btn-icon btn-sm btn-secondary rounded-circle" href="/about" aria-label="Follow us on Facebook">
+                <i class="fi-facebook fs-sm"></i>
+              </a>
+              <a class="btn btn-icon btn-sm btn-secondary rounded-circle" href="/blog" aria-label="Follow us on X (Twitter)">
+                <i class="fi-x fs-sm"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="col-sm-8 col-md-5 col-lg-4">
+            <div class="accordion-item border-0">
+              <h6 class="accordion-header" id="categoryLinksHeading">
+                <span class="h5 d-none d-sm-block">Popular categories</span>
+                <button type="button" class="accordion-button collapsed py-3 d-sm-none" data-bs-toggle="collapse" data-bs-target="#categoryLinks" aria-expanded="false" aria-controls="categoryLinks">Popular categories</button>
+              </h6>
+              <div class="accordion-collapse collapse d-sm-block" id="categoryLinks" aria-labelledby="categoryLinksHeading" data-bs-parent="#footerLinks">
+                <div class="row row-cols-2">
+                  <div class="col">
+                    <ul class="nav flex-column gap-2 pt-sm-1 pt-lg-2 pb-3 pb-sm-0 mt-n1 mb-1 mb-sm-0">
+                      <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/listings/real-estate">Real estate</a></li>
+                      <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/listings/contractors">Contractors</a></li>
+                      <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/listings/cars">Cars</a></li>
+                    </ul>
+                  </div>
+                  <div class="col">
+                    <ul class="nav flex-column gap-2 pt-sm-1 pt-lg-2 pb-3 pb-sm-0 mt-n1 mb-1 mb-sm-0">
+                      <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/listings/events">Events</a></li>
+                      <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/account/profile">My profile</a></li>
+                      <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/admin">Admin</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <hr class="d-sm-none my-0">
+            </div>
+          </div>
+
+          <div class="col-sm-4 col-md-3 col-lg-2 offset-lg-1">
+            <div class="accordion-item border-0">
+              <h6 class="accordion-header" id="companyLinksHeading">
+                <span class="h5 d-none d-sm-block">Company</span>
+                <button type="button" class="accordion-button collapsed py-3 d-sm-none" data-bs-toggle="collapse" data-bs-target="#companyLinks" aria-expanded="false" aria-controls="companyLinks">Company</button>
+              </h6>
+              <div class="accordion-collapse collapse d-sm-block" id="companyLinks" aria-labelledby="companyLinksHeading" data-bs-parent="#footerLinks">
+                <ul class="nav flex-column gap-2 pt-sm-1 pt-lg-2 pb-3 pb-sm-0 mt-n1 mb-1 mb-sm-0">
+                  <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/about">About</a></li>
+                  <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/blog">Press &amp; announcements</a></li>
+                  <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/about">Careers at Monaclick</a></li>
+                  <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/contact">Contact us</a></li>
+                  <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/terms-and-conditions">Terms of use</a></li>
+                  <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/terms-and-conditions">Privacy</a></li>
+                </ul>
+              </div>
+              <hr class="d-sm-none my-0">
+            </div>
+          </div>
+        </div>
+
+        <div class="d-md-flex gap-4 pt-4 pt-sm-5">
+          <h6 class="mt-1 mb-md-0">
+            <span class="h5 text-nowrap d-none d-sm-block mb-0">Top cities</span>
+            <span class="text-nowrap d-sm-none">Top cities</span>
+          </h6>
+          <ul class="nav nav-pills gap-2 gap-md-3">
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=new+york">New York</a></li>
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=chicago">Chicago</a></li>
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=indianapolis">Indianapolis</a></li>
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=boston">Boston</a></li>
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=atlanta">Atlanta</a></li>
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=cincinnati">Cincinnati</a></li>
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=los+angeles">Los Angeles</a></li>
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=dallas">Dallas</a></li>
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=pittsburgh">Pittsburgh</a></li>
+            <li class="nav-item"><a class="nav-link" aria-current="page" href="/listings/contractors?q=tampa">Tampa</a></li>
+          </ul>
+        </div>
+
+        <div class="d-md-flex align-items-center py-4 pt-sm-5 mt-3 mt-sm-0">
+          <div class="d-flex gap-2 gap-sm-3 justify-content-center ms-md-auto mb-4 mb-md-0 order-md-2">
+            <div><img src="/finder/assets/img/payment-methods/visa-dark-mode.svg" alt="Visa"></div>
+            <div><img src="/finder/assets/img/payment-methods/mastercard.svg" alt="Mastercard"></div>
+            <div><img src="/finder/assets/img/payment-methods/paypal-dark-mode.svg" alt="PayPal"></div>
+            <div><img src="/finder/assets/img/payment-methods/google-pay-dark-mode.svg" alt="Google Pay"></div>
+            <div><img src="/finder/assets/img/payment-methods/apple-pay-dark-mode.svg" alt="Apple Pay"></div>
+          </div>
+          <p class="text-body-secondary fs-sm text-center text-md-start mb-0 me-md-4 order-md-1">&copy; All rights reserved. Developed by <span class="text-body fw-medium">US Logo and Web</span></p>
+        </div>
+      </div>
+    </footer>
+
+
+    <!-- Back to top button -->
+    <div class="floating-buttons position-fixed top-50 end-0 z-sticky me-3 me-xl-4 pb-4">
+      <a class="btn-scroll-top btn btn-sm bg-body border-0 rounded-pill shadow animate-slide-end" href="#top">
+        Top
+        <i class="fi-arrow-right fs-base ms-1 me-n1 animate-target"></i>
+        <span class="position-absolute top-0 start-0 w-100 h-100 border rounded-pill z-0"></span>
+        <svg class="position-absolute top-0 start-0 w-100 h-100 z-1" viewBox="0 0 62 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x=".75" y=".75" width="60.5" height="30.5" rx="15.25" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"/>
+        </svg>
+      </a>
+      <a class="btn btn-sm btn-outline-secondary text-uppercase bg-body rounded-pill shadow animate-rotate ms-2 me-n5" href="#customizer" style="font-size: .625rem; letter-spacing: .05rem;" data-bs-toggle="offcanvas" role="button" aria-controls="customizer">
+        Customize<i class="fi-settings fs-base ms-1 me-n2 animate-target"></i>
+      </a>
+    </div>
+
+
+    <!-- Vendor scripts -->
+    <script src="/finder/assets/vendor/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="/finder/assets/vendor/nouislider/dist/nouislider.min.js"></script>
+    <script src="/finder/assets/vendor/flatpickr/dist/flatpickr.min.js"></script>
+    <script src="/finder/assets/vendor/leaflet/dist/leaflet.js"></script>
+
+    <!-- Bootstrap + Theme scripts -->
+    <script src="/finder/assets/js/theme.min.js"></script>
+
+    <!-- Page specific scripts -->
+    <script>
+
+      // Dynamically update count number of selected items inside filter dropdown
+      window.onload = () => {
+        updateFilterCount('typeCount')
+        updateFilterCount('ratingCount')
+      }
+
+      const updateFilterCount = (countId) => {
+        const checkedCheckboxes = document.querySelectorAll(`[data-count-id="${countId}"]:checked`)
+        const countElement = document.getElementById(countId)
+        if (checkedCheckboxes.length > 0) {
+            countElement.textContent = '(' + checkedCheckboxes.length + ')'
+        } else {
+            countElement.textContent = ''
+        }
+      }
+    </script>
+  </body>
+</html>
+
+
+
+
+
+

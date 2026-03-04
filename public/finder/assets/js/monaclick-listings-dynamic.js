@@ -3,7 +3,7 @@
   if (!path.startsWith('/listings')) return;
 
   const moduleFromPath = path.split('/')[2] || 'contractors';
-  const allowedModules = new Set(['contractors', 'real-estate', 'cars', 'events']);
+  const allowedModules = new Set(['contractors', 'real-estate', 'cars', 'events', 'restaurants']);
   const selectedModule = allowedModules.has(moduleFromPath) ? moduleFromPath : 'contractors';
 
   const cleanSearchTerm = (value) =>
@@ -31,7 +31,7 @@
       .replaceAll(/^-|-$/g, '');
 
   const moduleConfig = (() => {
-    if (selectedModule === 'contractors') {
+    if (selectedModule === 'contractors' || selectedModule === 'restaurants') {
       return {
         listContainer: document.querySelector('.col-lg-9 .vstack.gap-4'),
         resultsText: document.querySelector('.col-lg-9 .fs-sm.text-nowrap'),
@@ -211,6 +211,61 @@
     select.innerHTML = options.join('');
   };
 
+  const restaurantFallbackItems = () => [
+    {
+      title: 'Saffron Grill House',
+      slug: 'saffron-grill-house',
+      module: 'restaurants',
+      is_demo: true,
+      price: '$45 avg',
+      rating: 4.8,
+      reviews_count: 126,
+      excerpt: 'Premium BBQ and fusion dining with rooftop seating.',
+      image_url: '/finder/assets/img/home/city-guide/restaurants/01.png',
+      city: { name: 'Chicago', slug: 'chicago' },
+      category: { name: 'BBQ', slug: 'bbq' },
+    },
+    {
+      title: 'Olive & Thyme Bistro',
+      slug: 'olive-thyme-bistro',
+      module: 'restaurants',
+      is_demo: true,
+      price: '$32 avg',
+      rating: 4.6,
+      reviews_count: 94,
+      excerpt: 'Mediterranean menu, handcrafted drinks, family-friendly.',
+      image_url: '/finder/assets/img/home/city-guide/restaurants/03-light.png',
+      city: { name: 'Dallas', slug: 'dallas' },
+      category: { name: 'Mediterranean', slug: 'mediterranean' },
+    },
+    {
+      title: 'Tokyo Ember Sushi',
+      slug: 'tokyo-ember-sushi',
+      module: 'restaurants',
+      is_demo: true,
+      price: '$52 avg',
+      rating: 4.9,
+      reviews_count: 201,
+      excerpt: 'Signature omakase and premium sushi platters.',
+      image_url: '/finder/assets/img/home/city-guide/restaurants/06.png',
+      city: { name: 'New York', slug: 'new-york' },
+      category: { name: 'Sushi', slug: 'sushi' },
+    },
+    {
+      title: 'Stone Oven Pizza Co.',
+      slug: 'stone-oven-pizza-co',
+      module: 'restaurants',
+      is_demo: true,
+      price: '$27 avg',
+      rating: 4.5,
+      reviews_count: 78,
+      excerpt: 'Wood-fired pizzas and fast pickup for busy evenings.',
+      image_url: '/finder/assets/img/home/city-guide/restaurants/08.png',
+      city: { name: 'Boston', slug: 'boston' },
+      category: { name: 'Pizza', slug: 'pizza' },
+    },
+  ];
+
   const applyStateToUrl = () => {
     const params = new URLSearchParams();
     state.q = cleanSearchTerm(state.q);
@@ -243,7 +298,12 @@
     return `${window.location.pathname}${qs ? `?${qs}` : ''}`;
   };
 
-  const detailUrl = (item) => `/entry/${encodeURIComponent(item.module)}?slug=${encodeURIComponent(item.slug)}`;
+  const detailUrl = (item) => {
+    if (item?.is_demo) {
+      return `/entry/${encodeURIComponent(item.module)}`;
+    }
+    return `/entry/${encodeURIComponent(item.module)}?slug=${encodeURIComponent(item.slug)}`;
+  };
 
   const wireDeadPlaceholderLinks = () => {
     const target = `/listings/${selectedModule}`;
@@ -254,13 +314,44 @@
     });
   };
 
+  const restaurantCardImages = [
+    '/finder/assets/img/monaclick/restaurants/user8.webp',
+    '/finder/assets/img/monaclick/restaurants/user9.webp',
+    '/finder/assets/img/monaclick/restaurants/user7.jpg',
+    '/finder/assets/img/monaclick/restaurants/user4.jpg',
+    '/finder/assets/img/monaclick/restaurants/user6.jpg',
+    '/finder/assets/img/monaclick/restaurants/user3.jpg',
+    '/finder/assets/img/monaclick/restaurants/user2.jpg',
+    '/finder/assets/img/monaclick/restaurants/user1.jpg',
+  ];
+
+  const stableHash = (value) => {
+    const input = String(value || '');
+    let hash = 0;
+    for (let i = 0; i < input.length; i += 1) {
+      hash = ((hash << 5) - hash) + input.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  };
+
+  const listingImageForCard = (item) => {
+    if (selectedModule !== 'restaurants') {
+      return item.image_url || '/finder/assets/img/placeholders/preview-square.svg';
+    }
+
+    const key = item?.slug || item?.title || '';
+    const index = stableHash(key) % restaurantCardImages.length;
+    return restaurantCardImages[index];
+  };
+
   const contractorCard = (item) => {
     const title = escapeHtml(item.title);
     const excerpt = escapeHtml(item.excerpt || '');
     const category = escapeHtml(item.category?.name || 'Category');
     const city = escapeHtml(item.city?.name || 'City');
     const price = escapeHtml(item.price || '');
-    const image = escapeHtml(item.image_url || '/finder/assets/img/placeholders/preview-square.svg');
+    const image = escapeHtml(listingImageForCard(item));
     const rating = Number(item.rating || 0).toFixed(1);
     const reviews = Number(item.reviews_count || 0);
     const url = detailUrl(item);
@@ -380,7 +471,7 @@
   };
 
   const renderCards = (items) => {
-    if (selectedModule === 'contractors') {
+    if (selectedModule === 'contractors' || selectedModule === 'restaurants') {
       listContainer.innerHTML = items.map(contractorCard).join('');
       return;
     }
@@ -585,7 +676,7 @@
     fetch(`/api/monaclick/listings?${apiQuery.toString()}`)
       .then((res) => res.json())
       .then((payload) => {
-        const items = Array.isArray(payload?.data) ? payload.data : [];
+        let items = Array.isArray(payload?.data) ? payload.data : [];
         const meta = payload?.meta || { total: 0, current_page: 1, last_page: 1 };
         const filters = payload?.filters || {};
         lastFilters = {
@@ -599,8 +690,13 @@
           syncControlsFromState();
         }
 
+        if (selectedModule === 'restaurants' && !items.length) {
+          items = restaurantFallbackItems();
+        }
+
         if (resultsNode) {
-          resultsNode.textContent = `Showing ${meta.total} results`;
+          const total = selectedModule === 'restaurants' && meta.total === 0 ? items.length : meta.total;
+          resultsNode.textContent = `Showing ${total} results`;
         }
         renderCategoryFilter(lastFilters.categories);
         renderActivePills();

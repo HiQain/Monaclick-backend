@@ -29,6 +29,8 @@ class ModuleCountsWidget extends StatsOverviewWidget
                 ->color('warning'),
             Stat::make('Events', (string) ($counts['events'] ?? 0))
                 ->color('primary'),
+            Stat::make('Restaurants', (string) ($counts['restaurants'] ?? 0))
+                ->color('danger'),
         ];
     }
 }

@@ -34,7 +34,7 @@ class ListingForm
                     ->live()
                     ->afterStateUpdated(function (Set $set, ?string $state): void {
                         $set('category_id', null);
-                        if ($state !== 'contractors') {
+                        if (! in_array($state, ['contractors', 'restaurants'], true)) {
                             $set('features', []);
                         }
                     }),
@@ -101,7 +101,7 @@ class ListingForm
                         'verified-hires' => 'Verified hires',
                         'weekend-consultations' => 'Weekend consultations',
                     ])
-                    ->visible(fn (Get $get): bool => $get('module') === 'contractors')
+                    ->visible(fn (Get $get): bool => in_array($get('module'), ['contractors', 'restaurants'], true))
                     ->columns(2),
                 TextInput::make('rating')
                     ->required()

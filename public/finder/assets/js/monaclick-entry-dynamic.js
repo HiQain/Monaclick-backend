@@ -3,8 +3,26 @@
   if (!path.startsWith('/entry/')) return;
 
   const moduleFromPath = path.split('/')[2] || 'contractors';
-  const allowedModules = new Set(['contractors', 'real-estate', 'cars', 'events']);
+  const allowedModules = new Set(['contractors', 'real-estate', 'cars', 'events', 'restaurants']);
   const selectedModule = allowedModules.has(moduleFromPath) ? moduleFromPath : 'contractors';
+  const params = new URLSearchParams(window.location.search);
+  const wireDeadPlaceholderLinks = () => {
+    const target = `/listings/${selectedModule}`;
+    document.querySelectorAll('a[href="#!"], a[href="#"]').forEach((link) => {
+      const isUiToggle = link.hasAttribute('data-bs-toggle') || link.getAttribute('role') === 'button';
+      if (isUiToggle) return;
+      link.setAttribute('href', target);
+    });
+  };
+
+  wireDeadPlaceholderLinks();
+
+  if (selectedModule === 'restaurants' && !params.get('slug')) {
+    if (document.body?.classList.contains('monaclick-entry-shell')) {
+      document.body.setAttribute('data-entry-ready', '1');
+    }
+    return;
+  }
 
   const container = document.querySelector('main.content-wrapper > .container');
   if (!container) {
@@ -21,7 +39,6 @@
     </div>
   `;
 
-  const params = new URLSearchParams(window.location.search);
   const apiQuery = new URLSearchParams({ module: selectedModule });
   if (params.get('slug')) apiQuery.set('slug', params.get('slug'));
 
@@ -45,6 +62,7 @@
     'real-estate': 'Real Estate',
     cars: 'Cars',
     events: 'Events',
+    restaurants: 'Restaurants',
   }[value] || 'Listings');
 
   const detailList = (item) => {

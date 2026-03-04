@@ -9,9 +9,14 @@ use Illuminate\Support\Facades\Route;
 $serve = static function (string $file) {
     $path = public_path($file);
     abort_unless(file_exists($path), 404);
+    $html = file_get_contents($path);
+    $html = str_replace('data-pwa="true"', 'data-pwa="false"', $html);
 
-    return response(file_get_contents($path), 200)
-        ->header('Content-Type', 'text/html; charset=UTF-8');
+    return response($html, 200)
+        ->header('Content-Type', 'text/html; charset=UTF-8')
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
 };
 
 // Public frontend: exact Finder pages (1:1 look)
@@ -21,21 +26,25 @@ Route::get('/contractors', fn () => $serve('home-contractors.html'));
 Route::get('/real-estate', fn () => $serve('home-real-estate.html'));
 Route::get('/cars', fn () => $serve('home-cars.html'));
 Route::get('/events', fn () => $serve('home-events.html'));
+Route::get('/restaurants', fn () => $serve('home-restaurants.html'));
 
 Route::get('/listings', fn () => $serve('listings-contractors.html'))->name('listings.index');
 Route::get('/listings/contractors', fn () => $serve('listings-contractors.html'))->name('listings.module');
 Route::get('/listings/real-estate', fn () => $serve('listings-real-estate.html'));
 Route::get('/listings/cars', fn () => $serve('listings-grid-cars.html'));
 Route::get('/listings/events', fn () => $serve('listings-events.html'));
+Route::get('/listings/restaurants', fn () => $serve('listings-restaurants.html'));
 
 Route::get('/entry/contractors', fn () => $serve('single-entry-contractors.html'))->name('finder.entry');
 Route::get('/entry/real-estate', fn () => $serve('single-entry-real-estate.html'));
 Route::get('/entry/cars', fn () => $serve('single-entry-cars.html'));
 Route::get('/entry/events', fn () => $serve('single-entry-events.html'));
+Route::get('/entry/restaurants', fn () => $serve('single-entry-restaurants.html'));
 Route::get('/add-listing', fn () => $serve('add-listing.html'));
 Route::get('/add-property', fn () => $serve('add-property-type.html'));
 Route::get('/add-contractor', fn () => $serve('add-contractor-location.html'));
 Route::get('/sell-car', fn () => $serve('add-car.html'));
+Route::get('/add-restaurant', fn () => $serve('add-restaurant.html'));
 Route::get('/add-contractor-location', fn () => $serve('add-contractor-location.html'));
 Route::get('/about', fn () => $serve('about-v2.html'));
 Route::get('/blog', fn () => $serve('blog-layout-v1.html'));
@@ -56,7 +65,7 @@ Route::prefix('app')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('app.home');
     Route::get('/listings', [ListingController::class, 'index'])->name('app.listings.index');
     Route::get('/listings/{module}', [ListingController::class, 'index'])
-        ->whereIn('module', ['contractors', 'real-estate', 'cars', 'events'])
+        ->whereIn('module', ['contractors', 'real-estate', 'cars', 'events', 'restaurants'])
         ->name('app.listings.module');
     Route::get('/entry/{listing:slug}', [ListingController::class, 'show'])->name('app.listings.show');
 });

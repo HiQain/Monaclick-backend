@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Categories\Schemas;
 
+use App\Models\Listing;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -32,12 +33,7 @@ class CategoryForm
                     ->helperText('Leave as-is to auto-update from name. You can also set custom slug.'),
                 Select::make('module')
                     ->required()
-                    ->options([
-                        'contractors' => 'Contractors',
-                        'real-estate' => 'Real Estate',
-                        'cars' => 'Cars',
-                        'events' => 'Events',
-                    ]),
+                    ->options(Listing::MODULE_OPTIONS),
                 TextInput::make('icon')
                     ->maxLength(100)
                     ->helperText('Optional icon class, e.g. fi fi-tools'),

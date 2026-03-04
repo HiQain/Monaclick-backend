@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Categories\Tables;
 
+use App\Models\Listing;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -54,12 +55,7 @@ class CategoriesTable
             ])
             ->filters([
                 SelectFilter::make('module')
-                    ->options([
-                        'contractors' => 'Contractors',
-                        'real-estate' => 'Real Estate',
-                        'cars' => 'Cars',
-                        'events' => 'Events',
-                    ]),
+                    ->options(Listing::MODULE_OPTIONS),
                 TernaryFilter::make('is_active'),
             ])
             ->recordActions([

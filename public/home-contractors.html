@@ -215,10 +215,11 @@
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
                 <a class="nav-link dropdown-toggle" href="/listings/contractors" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Listings</a>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="/listings/contractors">Contractors</a></li>
-                  <li><a class="dropdown-item" href="/listings/real-estate">Real Estate</a></li>
-                  <li><a class="dropdown-item" href="/listings/cars">Cars</a></li>
-                  <li><a class="dropdown-item" href="/listings/events">Events</a></li>
+                  <li><a class="dropdown-item" href="/contractors">Contractors</a></li>
+                  <li><a class="dropdown-item" href="/real-estate">Real Estate</a></li>
+                  <li><a class="dropdown-item" href="/cars">Cars</a></li>
+                  <li><a class="dropdown-item" href="/events">Events</a></li>
+                  <li><a class="dropdown-item" href="/restaurants">Restaurants</a></li>
                 </ul>
               </li>
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
@@ -695,11 +696,15 @@
       <section class="container py-2 py-sm-3 py-md-4 py-lg-5 my-xxl-3">
         <div class="d-flex align-items-start justify-content-between gap-4 pb-3 mb-2 mb-sm-3 mb-lg-4">
           <h2 class="mb-0">Popular home projects</h2>
-          <div class="nav">
+          <div class="d-flex align-items-center gap-3">
             <a class="nav-link position-relative fs-base text-nowrap py-1 px-0" href="#!">
               <span class="hover-effect-underline stretched-link me-1">View all</span>
               <i class="fi-chevron-right fs-lg"></i>
             </a>
+            <div class="d-flex gap-2">
+              <button class="btn btn-lg rounded-circle" style="width:44px;height:44px;background:#d85151;color:#fff;border:0;" type="button" id="contractorProjectsPrev" aria-label="Previous home project"><span aria-hidden="true">&#8249;</span></button>
+              <button class="btn btn-lg rounded-circle" style="width:44px;height:44px;background:#d85151;color:#fff;border:0;" type="button" id="contractorProjectsNext" aria-label="Next home project"><span aria-hidden="true">&#8250;</span></button>
+            </div>
           </div>
         </div>
 
@@ -707,9 +712,9 @@
         <div class="swiper pb-5" data-swiper='{
           "slidesPerView": 1,
           "spaceBetween": 24,
-          "pagination": {
-            "el": ".swiper-pagination",
-            "clickable": true
+          "navigation": {
+            "prevEl": "#contractorProjectsPrev",
+            "nextEl": "#contractorProjectsNext"
           },
           "breakpoints": {
             "650": {
@@ -810,8 +815,6 @@
             </div>
           </div>
 
-          <!-- Pagination (Bullets) -->
-          <div class="swiper-pagination position-static mt-3"></div>
         </div>
       </section>
 
@@ -1290,8 +1293,8 @@
 
     <!-- Vendor scripts -->
     <script src="/finder/assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260305-1"></script>
 
-    <!-- Bootstrap + Theme scripts -->
     <script src="/finder/assets/js/theme.min.js"></script>
     <script src="/finder/assets/js/monaclick-home-dynamic.js?v=20260304-2"></script>
   </body>
