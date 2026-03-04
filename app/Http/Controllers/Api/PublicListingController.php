@@ -39,11 +39,29 @@ class PublicListingController extends Controller
         }
 
         if ($request->filled('q')) {
-            $term = $request->string('q')->toString();
-            $query->where(function ($builder) use ($term): void {
-                $builder->where('title', 'like', "%{$term}%")
-                    ->orWhere('excerpt', 'like', "%{$term}%");
-            });
+            $term = trim($request->string('q')->toString());
+
+            if ($term !== '') {
+                $query->where(function ($builder) use ($term): void {
+                    $builder->where('title', 'like', "%{$term}%")
+                        ->orWhere('excerpt', 'like', "%{$term}%")
+                        ->orWhere('price', 'like', "%{$term}%")
+                        ->orWhereHas('city', function ($cityQuery) use ($term): void {
+                            $cityQuery->where('name', 'like', "%{$term}%")
+                                ->orWhere('slug', 'like', "%{$term}%");
+                        })
+                        ->orWhereHas('category', function ($categoryQuery) use ($term): void {
+                            $categoryQuery->where('name', 'like', "%{$term}%")
+                                ->orWhere('slug', 'like', "%{$term}%");
+                        })
+                        ->orWhereHas('contractorDetail', function ($detailQuery) use ($term): void {
+                            $detailQuery->where('service_area', 'like', "%{$term}%");
+                        })
+                        ->orWhereHas('eventDetail', function ($detailQuery) use ($term): void {
+                            $detailQuery->where('venue', 'like', "%{$term}%");
+                        });
+                });
+            }
         }
 
         $ratingValues = collect(explode(',', $request->string('ratings')->toString()))

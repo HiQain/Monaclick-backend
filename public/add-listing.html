@@ -3,32 +3,22 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
-    <title>Finder Docs | Navbar with offcanvas menu</title>
+    <title>Monaclick | Add Listing</title>
+    <meta name="description" content="Choose what you want to add on Monaclick.">
 
-    <!-- Theme switcher (color modes) -->
-    <script src="../assets/js/theme-switcher.js"></script>
+    <link rel="manifest" href="/finder/manifest.json">
+    <link rel="icon" type="image/png" href="/finder/assets/app-icons/icon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/finder/assets/app-icons/icon-180x180.png">
 
-    <!-- Webmanifest + Favicon / App icons -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <link rel="manifest" href="../manifest.json">
-    <link rel="icon" type="image/png" href="../assets/app-icons/icon-32x32.png" sizes="32x32">
-    <link rel="apple-touch-icon" href="../assets/app-icons/icon-180x180.png">
-
-    <!-- Preloaded local web font (Inter) -->
-    <link rel="preload" href="../assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
-
-    <!-- Bootstrap + Theme styles -->
-    <link rel="preload" href="../assets/css/theme.min.css" as="style">
-    <link rel="preload" href="../assets/css/theme.rtl.min.css" as="style">
-    <link rel="stylesheet" href="../assets/css/theme.min.css" id="theme-styles">
+    <script src="/finder/assets/js/theme-switcher.js"></script>
+    <link rel="preload" href="/finder/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/finder/assets/icons/finder-icons.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/finder/assets/icons/finder-icons.min.css">
+    <link rel="stylesheet" href="/finder/assets/css/theme.min.css" id="theme-styles">
+    <link rel="stylesheet" href="/finder/assets/css/monaclick-finder-colors.css">
+    <script src="/finder/assets/js/monaclick-theme-lock.js"></script>
   </head>
-
-
-  <!-- Body -->
   <body>
-
-    <!-- Navigation bar (Site header) -->
     <header class="navbar navbar-expand-lg bg-body navbar-sticky sticky-top z-fixed px-0" data-sticky-element>
       <div class="container">
         <button type="button" class="navbar-toggler me-3 me-lg-0" data-bs-toggle="offcanvas" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-label="Toggle navigation">
@@ -133,16 +123,49 @@
       </div>
     </header>
 
+    <main class="container py-5">
+      <div class="text-center mb-5">
+        <h1 class="display-6 mb-2">What would you like to add?</h1>
+        <p class="text-body-secondary mb-0">Choose one option to continue.</p>
+      </div>
 
-    <!-- Page content -->
-    <div class="container p-4">
-      <h1 class="h3">Offcanvas menu example</h1>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
-      <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.</p>
-    </div>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <a class="card h-100 text-decoration-none" href="/add-property">
+            <div class="card-body p-4 text-center">
+              <div class="btn btn-icon btn-lg btn-outline-secondary rounded-circle mb-3" aria-hidden="true">
+                <i class="fi-home fs-4"></i>
+              </div>
+              <h2 class="h4 mb-2">Add a Property</h2>
+              <p class="text-body-secondary mb-0">Create a real estate listing.</p>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-4">
+          <a class="card h-100 text-decoration-none" href="/add-contractor">
+            <div class="card-body p-4 text-center">
+              <div class="btn btn-icon btn-lg btn-outline-secondary rounded-circle mb-3" aria-hidden="true">
+                <i class="fi-tool fs-4"></i>
+              </div>
+              <h2 class="h4 mb-2">Add a Contractor</h2>
+              <p class="text-body-secondary mb-0">Create a contractor service listing.</p>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-4">
+          <a class="card h-100 text-decoration-none" href="/sell-car">
+            <div class="card-body p-4 text-center">
+              <div class="btn btn-icon btn-lg btn-outline-secondary rounded-circle mb-3" aria-hidden="true">
+                <i class="fi-car fs-4"></i>
+              </div>
+              <h2 class="h4 mb-2">Add (Sell) a Car</h2>
+              <p class="text-body-secondary mb-0">Post your car for sale.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </main>
 
-    <!-- Bootstrap + Theme scripts -->
-    <script src="../assets/js/theme.min.js"></script>
+    <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>

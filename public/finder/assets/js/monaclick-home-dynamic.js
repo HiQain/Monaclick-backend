@@ -2,13 +2,28 @@
   const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
   const moduleByPath = {
     '/': 'contractors',
+    '/index.html': 'contractors',
     '/contractors': 'contractors',
+    '/home-contractors.html': 'contractors',
     '/real-estate': 'real-estate',
+    '/home-real-estate.html': 'real-estate',
     '/cars': 'cars',
+    '/home-cars.html': 'cars',
     '/events': 'events',
+    '/home-events.html': 'events',
   };
 
-  const selectedModule = moduleByPath[normalizedPath];
+  const inferModuleFromPath = (path) => {
+    const p = String(path || '').toLowerCase();
+    if (moduleByPath[p]) return moduleByPath[p];
+    if (p.includes('real-estate')) return 'real-estate';
+    if (p.includes('contractors')) return 'contractors';
+    if (p.includes('cars')) return 'cars';
+    if (p.includes('events')) return 'events';
+    return '';
+  };
+
+  const selectedModule = inferModuleFromPath(normalizedPath);
   if (!selectedModule) return;
 
   const detailUrl = (item) => `/entry/${encodeURIComponent(item.module)}?slug=${encodeURIComponent(item.slug)}`;
@@ -603,7 +618,9 @@
 
   const hydrateListingAnchors = (feed) => {
     const anchors = Array.from(
-      document.querySelectorAll(`main a[href="/entry/${selectedModule}"], main a[href^="/entry/${selectedModule}?"]`)
+      document.querySelectorAll(
+        `main a[href="/entry/${selectedModule}"], main a[href^="/entry/${selectedModule}?"], main a[href="/listings/${selectedModule}"], main a[href^="/listings/${selectedModule}?"]`
+      )
     );
     if (!anchors.length) return;
 
@@ -699,6 +716,16 @@
         if (newest?.slug) usedSlugs.add(newest.slug);
         sectionPool.push(newest);
       }
+      // Keep newest real-estate listing visible in recent sections.
+      if (
+        selectedModule === 'real-estate' &&
+        (heading.includes('added today') || heading.includes('recently added') || heading.includes('recent')) &&
+        latest.length
+      ) {
+        const newestProperty = latest[0];
+        if (newestProperty?.slug) usedSlugs.add(newestProperty.slug);
+        sectionPool.push(newestProperty);
+      }
       // Keep newest event visible in "Upcoming Online Events" section.
       if (selectedModule === 'events' && heading.includes('upcoming online events') && latest.length) {
         const newestEvent = latest[0];
@@ -718,9 +745,14 @@
         if (!item) return;
 
         const entryHref = detailUrl(item);
-        card.querySelectorAll(`a[href="/entry/${selectedModule}"], a[href^="/entry/${selectedModule}?"]`).forEach((a) => {
-          a.setAttribute('href', entryHref);
-        });
+        card
+          .querySelectorAll(
+            `a[href="/entry/${selectedModule}"], a[href^="/entry/${selectedModule}?"], a[href="/listings/${selectedModule}"], a[href^="/listings/${selectedModule}?"], a[href="#!"], a[href="#"]`
+          )
+          .forEach((a) => {
+            const isUiToggle = a.hasAttribute('data-bs-toggle') || a.getAttribute('role') === 'button';
+            if (!isUiToggle) a.setAttribute('href', entryHref);
+          });
 
         const image = card.querySelector('img');
         if (image && item.image_url) {
@@ -801,26 +833,31 @@
   safeRun(wireNonDeadLinks);
   safeRun(() => syncStateLinks(persistedState));
 
-  Promise.all([
+  Promise.allSettled([
     fetchJsonWithTimeout(`/api/monaclick/listings?module=${encodeURIComponent(selectedModule)}&per_page=24&sort=rating`),
     fetchJsonWithTimeout(`/api/monaclick/listings?module=${encodeURIComponent(selectedModule)}&per_page=24`),
-  ])
-    .then(([popularPayload, latestPayload]) => {
-      const popular = Array.isArray(popularPayload?.data) ? popularPayload.data : [];
-      const latest = Array.isArray(latestPayload?.data) ? latestPayload.data : [];
-      availableFilters = {
-        categories: Array.isArray(popularPayload?.filters?.categories)
-          ? popularPayload.filters.categories
-          : (Array.isArray(latestPayload?.filters?.categories) ? latestPayload.filters.categories : []),
-        cities: Array.isArray(popularPayload?.filters?.cities)
-          ? popularPayload.filters.cities
-          : (Array.isArray(latestPayload?.filters?.cities) ? latestPayload.filters.cities : []),
-      };
-      safeRun(hydrateDynamicFilters);
-      safeRun(() => syncUpcomingDateRail(latest));
-      safeRun(() => hydrateListingAnchors({ popular, latest }));
-    })
-    .catch(() => {
-      // Keep static Finder content as fallback.
-    });
+  ]).then(([popularResult, latestResult]) => {
+    const popularPayload = popularResult.status === 'fulfilled' ? popularResult.value : null;
+    const latestPayload = latestResult.status === 'fulfilled' ? latestResult.value : null;
+
+    const popular = Array.isArray(popularPayload?.data) ? popularPayload.data : [];
+    const latest = Array.isArray(latestPayload?.data) ? latestPayload.data : [];
+
+    if (!popular.length && !latest.length) {
+      // Keep static Finder content as fallback when both endpoints fail.
+      return;
+    }
+
+    availableFilters = {
+      categories: Array.isArray(popularPayload?.filters?.categories)
+        ? popularPayload.filters.categories
+        : (Array.isArray(latestPayload?.filters?.categories) ? latestPayload.filters.categories : []),
+      cities: Array.isArray(popularPayload?.filters?.cities)
+        ? popularPayload.filters.cities
+        : (Array.isArray(latestPayload?.filters?.cities) ? latestPayload.filters.cities : []),
+    };
+    safeRun(hydrateDynamicFilters);
+    safeRun(() => syncUpcomingDateRail(latest));
+    safeRun(() => hydrateListingAnchors({ popular, latest }));
+  });
 })();

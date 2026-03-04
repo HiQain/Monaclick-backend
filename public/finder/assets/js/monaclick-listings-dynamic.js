@@ -36,7 +36,9 @@
         listContainer: document.querySelector('.col-lg-9 .vstack.gap-4'),
         resultsText: document.querySelector('.col-lg-9 .fs-sm.text-nowrap'),
         paginationNav: document.querySelector('.col-lg-9 nav[aria-label="Listings pagination"]'),
-        searchInput: document.querySelector('.project-search.form-control'),
+        // Contractors sidebar "Project type > Search" is only for filtering category checkboxes.
+        // It should not map to API q/title search.
+        searchInput: null,
         citySelect: document.querySelector('select[aria-label="Car location select"]'),
         categoryList: document.querySelector('.project-list'),
         sortSelect: document.querySelector('.col-lg-9 .position-relative.ms-auto select'),
