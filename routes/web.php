@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\PublicListingController;
 use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -21,7 +22,8 @@ $serve = static function (string $file) {
     $html = str_replace('data-pwa="true"', 'data-pwa="false"', $html);
     $html = str_replace('__CSRF_TOKEN__', csrf_token(), $html);
     $accountAuthPage = str_starts_with($file, 'account-') && Auth::check();
-    if ($accountAuthPage) {
+    $noFlashPage = $accountAuthPage || str_starts_with($file, 'add-');
+    if ($noFlashPage) {
         $noFlashStyles = <<<'HTML'
 <style id="account-noflash-style">
 .content-wrapper{opacity:0;transition:opacity .12s ease}
@@ -75,11 +77,15 @@ HTML;
         $html = str_replace('</body>', $authNavScript . '</body>', $html);
 
         if (str_starts_with($file, 'account-')) {
+            $authAvatar = (string) (Auth::user()?->avatar_url ?? '');
+            $authAvatarJson = json_encode($authAvatar, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
             $avatarAndDefaultsStripScript = <<<'HTML'
 <script>
 (() => {
-  const avatar = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22%3E%3Ccircle cx=%2260%22 cy=%2260%22 r=%2260%22 fill=%22%23e9ecef%22/%3E%3Cpath d=%22M60 62c-14 0-25-11-25-25s11-25 25-25 25 11 25 25-11 25-25 25zm0 8c22 0 40 12 40 28v10H20V98c0-16 18-28 40-28z%22 fill=%22%239aa4b2%22/%3E%3C/svg%3E';
-  document.querySelectorAll('img[src*="/finder/assets/img/account/avatar"], img[src*="/finder/assets/img/avatar"]').forEach((img) => {
+  const defaultAvatar = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22%3E%3Ccircle cx=%2260%22 cy=%2260%22 r=%2260%22 fill=%22%23e9ecef%22/%3E%3Cpath d=%22M60 62c-14 0-25-11-25-25s11-25 25-25 25 11 25 25-11 25-25 25zm0 8c22 0 40 12 40 28v10H20V98c0-16 18-28 40-28z%22 fill=%22%239aa4b2%22/%3E%3C/svg%3E';
+  const authAvatar = __AUTH_AVATAR__;
+  const avatar = authAvatar || defaultAvatar;
+  document.querySelectorAll('#accountSidebar img, #personal-info img, .offcanvas-body img.rounded-circle, img[src*="/finder/assets/img/account/avatar"], img[src*="/finder/assets/img/avatar"]').forEach((img) => {
     img.src = avatar;
   });
 
@@ -100,6 +106,7 @@ HTML;
 })();
 </script>
 HTML;
+            $avatarAndDefaultsStripScript = str_replace('__AUTH_AVATAR__', $authAvatarJson ?: "''", $avatarAndDefaultsStripScript);
             $html = str_replace('</body>', $avatarAndDefaultsStripScript . '</body>', $html);
         }
     }
@@ -108,6 +115,15 @@ HTML;
         $user = Auth::user();
         $name = htmlspecialchars((string) ($user?->name ?? 'Monaclick User'), ENT_QUOTES, 'UTF-8');
         $email = htmlspecialchars((string) ($user?->email ?? ''), ENT_QUOTES, 'UTF-8');
+        $avatarUrl = (string) ($user?->avatar_url ?? '');
+        if ($avatarUrl !== '') {
+            $avatarEsc = htmlspecialchars($avatarUrl, ENT_QUOTES, 'UTF-8');
+            $html = preg_replace(
+                '~src="(?:/finder/assets/img/account/avatar(?:-lg)?\.jpg|/finder/assets/img/avatar[^"]*)"~',
+                'src="' . $avatarEsc . '"',
+                $html
+            ) ?? $html;
+        }
         $namePlaceholders = [
             'Jerome Bell',
             'Michael Williams',
@@ -133,9 +149,17 @@ HTML;
         $isNewUser = $listingCount === 0 && $reviewCount === 0 && $favoriteCount === 0;
 
         if (in_array($file, ['account-profile.html', 'account-listings.html'], true)) {
+            $profileName = trim((string) (($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')));
+            if ($profileName === '') {
+                $profileName = (string) ($user?->name ?? 'User');
+            }
             $profilePayload = [
-                'name' => (string) ($user?->name ?? 'User'),
+                'name' => $profileName,
                 'email' => (string) ($user?->email ?? ''),
+                'phone' => (string) ($user?->phone ?? ''),
+                'address' => (string) ($user?->address ?? ''),
+                'bio' => (string) ($user?->bio ?? ''),
+                'avatar' => (string) ($user?->avatar_url ?? ''),
             ];
             $listingsPayload = $userListings->map(function (Listing $listing) {
                 return [
@@ -209,17 +233,6 @@ HTML;
   if (location.pathname === '/account/profile') {
     const root = document.querySelector('.col-lg-9');
     if (!root) return;
-    const listingsHtml = listings.length
-      ? listings.slice(0, 3).map((item) => card(item, true)).join('')
-      : `
-        <div class="card border-0 bg-body-tertiary">
-          <div class="card-body py-5 text-center">
-            <h3 class="h5 mb-2">No listings yet</h3>
-            <p class="text-body-secondary mb-4">You have not added any listings yet.</p>
-            <a class="btn btn-primary" href="/add-listing">Add your first listing</a>
-          </div>
-        </div>
-      `;
     root.innerHTML = `
       <h1 class="h2 pb-2 pb-lg-3">My profile</h1>
       <section class="pb-5 mb-md-3">
@@ -230,13 +243,11 @@ HTML;
             <div class="text-body-secondary">${esc(profile.email)}</div>
           </div>
         </div>
-      </section>
-      <section class="pb-5 mb-md-3">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <h2 class="h4 mb-0">My listings</h2>
-          <a class="text-decoration-none" href="/account/listings">View all</a>
+        <div class="vstack gap-2 fs-5">
+          ${profile.phone ? `<div><strong>Phone:</strong> ${esc(profile.phone)}</div>` : ''}
+          ${profile.address ? `<div><strong>Address:</strong> ${esc(profile.address)}</div>` : ''}
+          ${profile.bio ? `<div><strong>About:</strong> ${esc(profile.bio)}</div>` : ''}
         </div>
-        ${listingsHtml}
       </section>
     `;
   }
@@ -247,7 +258,7 @@ HTML;
     root.innerHTML = `
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-2 pb-lg-3">
         <h1 class="h2 mb-0">My listings</h1>
-        <a class="btn btn-primary" href="/add-listing">Add new listing</a>
+        ${listings.length ? '<a class="btn btn-primary" href="/add-listing">Add new listing</a>' : ''}
       </div>
       ${listings.length ? listings.map((item) => card(item)).join('') : `
         <div class="card border-0 bg-body-tertiary">
@@ -351,34 +362,6 @@ HTML;
                 $html = str_replace('</body>', $emptyProfileScript . '</body>', $html);
             }
 
-            if ($file === 'account-listings.html') {
-                $emptyListingsScript = <<<'HTML'
-<script>
-(() => {
-  const listingsRoot = document.querySelector('.col-lg-9');
-  if (!listingsRoot) return;
-
-  const navPills = listingsRoot.querySelector('.nav.overflow-x-auto.mb-2');
-  const tabContent = listingsRoot.querySelector('.tab-content');
-  if (navPills) navPills.remove();
-  if (tabContent) tabContent.remove();
-
-  const emptyCard = document.createElement('div');
-  emptyCard.className = 'card border-0 bg-body-tertiary mt-3';
-  emptyCard.innerHTML = `
-    <div class="card-body py-5 text-center">
-      <h3 class="h5 mb-2">No listings yet</h3>
-      <p class="text-body-secondary mb-4">Your listings will appear here after you publish them.</p>
-      <a class="btn btn-primary" href="/add-listing">Add your first listing</a>
-    </div>
-  `;
-  listingsRoot.appendChild(emptyCard);
-})();
-</script>
-HTML;
-                $html = str_replace('</body>', $emptyListingsScript . '</body>', $html);
-            }
-
             if ($file === 'account-reviews.html') {
                 $emptyReviewsScript = <<<'HTML'
 <script>
@@ -422,107 +405,6 @@ HTML;
                 $html = str_replace('</body>', $emptyFavoritesScript . '</body>', $html);
             }
 
-            if ($file === 'account-settings.html') {
-                $emailVerified = ($user && method_exists($user, 'hasVerifiedEmail') && $user->hasVerifiedEmail()) ? 'true' : 'false';
-                $emptySettingsScript = <<<'HTML'
-<script>
-(() => {
-  const emailVerified = __EMAIL_VERIFIED__;
-  const root = document.querySelector('.col-lg-9');
-  if (!root) return;
-
-  const textInputs = root.querySelectorAll('input[type="text"], input[type="tel"], input[type="date"]');
-  textInputs.forEach((input) => {
-    if (!input.name || input.type !== 'email') input.value = '';
-  });
-
-  const textareas = root.querySelectorAll('textarea');
-  textareas.forEach((ta) => ta.value = '');
-
-  const selects = root.querySelectorAll('select');
-  selects.forEach((select) => {
-    select.selectedIndex = 0;
-    select.dispatchEvent(new Event('change', { bubbles: true }));
-  });
-
-  root.querySelectorAll('.badge').forEach((badge) => {
-    if ((badge.textContent || '').toLowerCase().includes('verified') || (badge.textContent || '').toLowerCase().includes('verify email')) {
-      badge.remove();
-    }
-  });
-
-  const avatarImgs = document.querySelectorAll('img[src*="/finder/assets/img/account/avatar"], img[src*="/finder/assets/img/avatar"]');
-  avatarImgs.forEach((img) => {
-    img.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22%3E%3Ccircle cx=%2260%22 cy=%2260%22 r=%2260%22 fill=%22%23e9ecef%22/%3E%3Cpath d=%22M60 62c-14 0-25-11-25-25s11-25 25-25 25 11 25 25-11 25-25 25zm0 8c22 0 40 12 40 28v10H20V98c0-16 18-28 40-28z%22 fill=%22%239aa4b2%22/%3E%3C/svg%3E';
-  });
-
-  const completionFields = [
-    root.querySelector('#fn'),
-    root.querySelector('#ln'),
-    root.querySelector('#phone'),
-    root.querySelector('select[data-select]'),
-    root.querySelector('#birth-date'),
-    root.querySelector('#address'),
-    root.querySelector('#user-info')
-  ].filter(Boolean);
-
-  const completed = completionFields.reduce((count, field) => {
-    if (field.tagName === 'SELECT') {
-      const value = (field.value || '').trim();
-      return count + (value && !/select/i.test(value) ? 1 : 0);
-    }
-    return count + (((field.value || '').trim().length > 0) ? 1 : 0);
-  }, 0);
-
-  const total = completionFields.length || 1;
-  const percent = Math.round((completed / total) * 100);
-  const progressCard = root.querySelector('.card.bg-warning-subtle');
-  const progressRing = progressCard?.querySelector('.circular-progress');
-  const progressLabel = progressRing?.querySelector('h5');
-  if (progressRing) {
-    progressRing.style.setProperty('--fn-progress', `${percent}`);
-    progressRing.setAttribute('aria-valuenow', `${percent}`);
-  }
-  if (progressLabel) progressLabel.textContent = `${percent}%`;
-
-  const checklistItems = Array.from(progressCard?.querySelectorAll('ul li') || []);
-  const languageItem = checklistItems.find((li) => /languages/i.test(li.textContent || ''));
-  const verifyItem = checklistItems.find((li) => /verify your email/i.test(li.textContent || ''));
-  const dobItem = checklistItems.find((li) => /date of birth/i.test(li.textContent || ''));
-
-  const setItemState = (item, done) => {
-    if (!item) return;
-    const icon = item.querySelector('i');
-    if (done) {
-      item.classList.add('text-success');
-      if (icon) {
-        icon.className = 'fi-check fs-base me-2';
-      }
-    } else {
-      item.classList.remove('text-success');
-      if (icon) {
-        icon.className = 'fi-plus fs-base me-2';
-      }
-    }
-  };
-
-  const languageSelect = root.querySelector('select[data-select]');
-  const dobInput = root.querySelector('#birth-date');
-  const hasLanguage = languageSelect ? ((languageSelect.value || '').trim() !== '' && !/select/i.test(languageSelect.value || '')) : false;
-  const hasDob = dobInput ? (dobInput.value || '').trim().length > 0 : false;
-  setItemState(languageItem, hasLanguage);
-  setItemState(verifyItem, emailVerified);
-  setItemState(dobItem, hasDob);
-
-  languageItem?.addEventListener('click', () => languageSelect?.focus());
-  verifyItem?.addEventListener('click', () => root.querySelector('#email')?.focus());
-  dobItem?.addEventListener('click', () => dobInput?.focus());
-})();
-</script>
-HTML;
-                $emptySettingsScript = str_replace('__EMAIL_VERIFIED__', $emailVerified, $emptySettingsScript);
-                $html = str_replace('</body>', $emptySettingsScript . '</body>', $html);
-            }
         }
     }
 
@@ -534,15 +416,6 @@ HTML;
   const email = params.get('email') || '';
   const input = document.querySelector('input[type="email"], input[name="email"]');
   if (input && email) input.value = email;
-
-  if (params.get('created') === '1') {
-    const form = document.querySelector('form');
-    form?.insertAdjacentHTML('afterbegin', '<div class="alert alert-success">Account created successfully. Please sign in.</div>');
-  }
-  if (params.get('error') === 'invalid') {
-    const form = document.querySelector('form');
-    form?.insertAdjacentHTML('afterbegin', '<div class="alert alert-danger">Invalid email or password.</div>');
-  }
 })();
 </script>
 HTML;
@@ -594,6 +467,211 @@ HTML;
         $html = str_replace('</body>', $recoveryAuditScript . '</body>', $html);
     }
 
+    if ($file === 'account-settings.html' && Auth::check()) {
+        $settingsPayload = [
+            'first_name' => (string) (Auth::user()?->first_name ?? ''),
+            'last_name' => (string) (Auth::user()?->last_name ?? ''),
+            'email' => (string) (Auth::user()?->email ?? ''),
+            'phone' => (string) (Auth::user()?->phone ?? ''),
+            'birth_date' => (string) (Auth::user()?->birth_date ?? ''),
+            'address' => (string) (Auth::user()?->address ?? ''),
+            'bio' => (string) (Auth::user()?->bio ?? ''),
+            'avatar' => (string) (Auth::user()?->avatar_url ?? ''),
+        ];
+        $settingsJson = json_encode($settingsPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+        $settingsScript = <<<'HTML'
+<script>
+(() => {
+  const profile = __PROFILE_DATA__ || {};
+  const params = new URLSearchParams(window.location.search);
+  const csrf = '__SCRIPT_CSRF__';
+
+  const showNotice = (message, type = 'success') => {
+    const root = document.querySelector('.col-lg-9');
+    if (!root) return;
+    const old = root.querySelector('.monaclick-settings-notice');
+    if (old) old.remove();
+    const note = document.createElement('div');
+    note.className = `alert alert-${type} monaclick-settings-notice`;
+    note.textContent = message;
+    root.prepend(note);
+  };
+
+  if (params.get('settings') === 'updated') showNotice('Profile updated successfully.', 'success');
+  if (params.get('password') === 'updated') showNotice('Password updated successfully.', 'success');
+  if (params.get('error') === 'password') showNotice('Current password is invalid or new password confirmation failed.', 'danger');
+
+  const setVal = (selector, value) => {
+    const el = document.querySelector(selector);
+    if (el && typeof value === 'string') el.value = value;
+  };
+
+  setVal('#fn', profile.first_name || '');
+  setVal('#ln', profile.last_name || '');
+  setVal('#email', profile.email || '');
+  setVal('#phone', profile.phone || '');
+  setVal('#birth-date', profile.birth_date || '');
+  setVal('#address', profile.address || '');
+  setVal('#user-info', profile.bio || '');
+
+  const progressRoot = document.querySelector('#personal-info .card.bg-warning-subtle');
+  const progressRing = progressRoot?.querySelector('.circular-progress');
+  const progressLabel = progressRing?.querySelector('h5');
+  const computeProgress = () => {
+    const fields = [
+      document.querySelector('#fn'),
+      document.querySelector('#ln'),
+      document.querySelector('#email'),
+      document.querySelector('#phone'),
+      document.querySelector('#birth-date'),
+      document.querySelector('#address'),
+      document.querySelector('#user-info'),
+    ].filter(Boolean);
+    const total = fields.length || 1;
+    const done = fields.filter((el) => String(el.value || '').trim() !== '').length;
+    const percent = Math.round((done / total) * 100);
+    if (progressRing) {
+      progressRing.style.setProperty('--fn-progress', String(percent));
+      progressRing.setAttribute('aria-valuenow', String(percent));
+    }
+    if (progressLabel) progressLabel.textContent = `${percent}%`;
+  };
+  ['#fn', '#ln', '#email', '#phone', '#birth-date', '#address', '#user-info'].forEach((selector) => {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.addEventListener('input', computeProgress);
+    el.addEventListener('change', computeProgress);
+  });
+  computeProgress();
+
+  const securityEmail = document.querySelector('#security p span.fw-medium.text-primary');
+  if (securityEmail && profile.email) securityEmail.textContent = profile.email;
+  const sidebarName = document.querySelector('#accountSidebar h6.mb-1');
+  if (sidebarName) sidebarName.textContent = profile.first_name || profile.last_name
+    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
+    : (profile.email || 'Monaclick User');
+  const sidebarEmail = document.querySelector('#accountSidebar .offcanvas-body .fs-sm');
+  if (sidebarEmail && profile.email) sidebarEmail.textContent = profile.email;
+
+  const deviceHistoryHeading = Array.from(document.querySelectorAll('#security h3')).find((h) => (h.textContent || '').trim().toLowerCase() === 'device history');
+  if (deviceHistoryHeading) {
+    const cardGrid = deviceHistoryHeading.nextElementSibling;
+    if (cardGrid) cardGrid.remove();
+    const signOutAll = deviceHistoryHeading.nextElementSibling;
+    if (signOutAll) signOutAll.remove();
+    deviceHistoryHeading.remove();
+  }
+
+  const avatarImages = Array.from(document.querySelectorAll('#personal-info img, #accountSidebar img, .offcanvas-body img.rounded-circle, img[alt*="Avatar"], img[alt*="photo"]'))
+    .filter((img) => img && img.tagName === 'IMG');
+  avatarImages.forEach((img) => {
+    if (profile.avatar) img.src = profile.avatar;
+  });
+
+  const personalForm = document.querySelector('#personal-info form.needs-validation');
+  if (personalForm) {
+    personalForm.method = 'post';
+    personalForm.action = '/account/settings';
+    personalForm.enctype = 'multipart/form-data';
+
+    const ensureHidden = (name, value) => {
+      let field = personalForm.querySelector(`input[type="hidden"][name="${name}"]`);
+      if (!field) {
+        field = document.createElement('input');
+        field.type = 'hidden';
+        field.name = name;
+        personalForm.prepend(field);
+      }
+      field.value = value;
+    };
+
+    ensureHidden('_token', csrf);
+    ensureHidden('_method', 'POST');
+
+    const mapName = (selector, name) => {
+      const el = personalForm.querySelector(selector);
+      if (el) el.name = name;
+    };
+    mapName('#fn', 'first_name');
+    mapName('#ln', 'last_name');
+    mapName('#email', 'email');
+    mapName('#phone', 'phone');
+    mapName('#birth-date', 'birth_date');
+    mapName('#address', 'address');
+    mapName('#user-info', 'bio');
+
+    let avatarInput = personalForm.querySelector('input[type="file"][name="avatar"]');
+    if (!avatarInput) {
+      avatarInput = document.createElement('input');
+      avatarInput.type = 'file';
+      avatarInput.name = 'avatar';
+      avatarInput.accept = 'image/*';
+      avatarInput.className = 'd-none';
+      personalForm.appendChild(avatarInput);
+    }
+
+    const updatePhotoBtn = Array.from(document.querySelectorAll('#personal-info button, #personal-info a'))
+      .find((el) => (el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase() === 'update photo');
+    if (updatePhotoBtn) {
+      updatePhotoBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        avatarInput.click();
+      });
+      avatarInput.addEventListener('change', () => {
+        const file = avatarInput.files && avatarInput.files[0];
+        if (!file) return;
+        const src = URL.createObjectURL(file);
+        avatarImages.forEach((img) => { img.src = src; });
+        const fd = new FormData();
+        fd.append('_token', csrf);
+        fd.append('avatar', file);
+        fetch('/account/avatar', { method: 'POST', body: fd, credentials: 'same-origin' })
+          .then((r) => r.ok ? r.json() : Promise.reject(new Error('upload failed')))
+          .then((res) => {
+            if (res && res.avatar_url) {
+              avatarImages.forEach((img) => { img.src = res.avatar_url; });
+            }
+            showNotice('Profile photo updated successfully.', 'success');
+          })
+          .catch(() => {
+            showNotice('Photo upload failed. Please try again.', 'danger');
+          });
+      });
+    }
+  }
+
+  const passwordForm = document.querySelector('#security form.needs-validation');
+  if (passwordForm) {
+    passwordForm.method = 'post';
+    passwordForm.action = '/account/password';
+    const ensureHidden = (name, value) => {
+      let field = passwordForm.querySelector(`input[type="hidden"][name="${name}"]`);
+      if (!field) {
+        field = document.createElement('input');
+        field.type = 'hidden';
+        field.name = name;
+        passwordForm.prepend(field);
+      }
+      field.value = value;
+    };
+    ensureHidden('_token', csrf);
+    ensureHidden('_method', 'POST');
+
+    const current = passwordForm.querySelector('#current-password');
+    const next = passwordForm.querySelector('#new-password');
+    const confirm = passwordForm.querySelector('#confirm-new-password');
+    if (current) current.name = 'current_password';
+    if (next) next.name = 'password';
+    if (confirm) confirm.name = 'password_confirmation';
+  }
+})();
+</script>
+HTML;
+        $settingsScript = str_replace('__PROFILE_DATA__', $settingsJson ?: '{}', $settingsScript);
+        $settingsScript = str_replace('__SCRIPT_CSRF__', csrf_token(), $settingsScript);
+        $html = str_replace('</body>', $settingsScript . '</body>', $html);
+    }
+
     if ($file === 'account-reviews.html') {
         $forceEmptyReviewsScript = <<<'HTML'
 <script>
@@ -635,37 +713,6 @@ HTML;
 </script>
 HTML;
         $html = str_replace('</body>', $forceEmptyFavoritesScript . '</body>', $html);
-    }
-
-    if ($file === 'account-settings.html') {
-        $forceCleanSettingsScript = <<<'HTML'
-<script>
-(() => {
-  const root = document.querySelector('.col-lg-9');
-  if (!root) return;
-
-  root.querySelectorAll('input[type="text"], input[type="tel"], input[type="date"], textarea').forEach((el) => {
-    el.value = '';
-  });
-  root.querySelectorAll('input[type="email"]').forEach((el) => {
-    // keep signed-in email
-  });
-  root.querySelectorAll('.badge').forEach((badge) => {
-    const t = (badge.textContent || '').toLowerCase();
-    if (t.includes('verified') || t.includes('verify email')) badge.remove();
-  });
-
-  const progress = root.querySelector('.circular-progress');
-  const label = progress?.querySelector('h5');
-  if (progress) {
-    progress.style.setProperty('--fn-progress', '0');
-    progress.setAttribute('aria-valuenow', '0');
-  }
-  if (label) label.textContent = '0%';
-})();
-</script>
-HTML;
-        $html = str_replace('</body>', $forceCleanSettingsScript . '</body>', $html);
     }
 
     if ($file === 'add-property-type.html') {
@@ -804,6 +851,18 @@ HTML;
     if (!m) return;
     btn.setAttribute('href', withEdit(`/add-property-${m[1].toLowerCase()}`));
   });
+
+  if (window.location.pathname === '/add-property-contact-info') {
+    const actions = document.querySelector('.pt-5.d-flex.flex-wrap.gap-3.align-items-center');
+    const promotionBtn = actions?.querySelector('a.btn.btn-lg.btn-dark');
+    if (actions && promotionBtn && !actions.querySelector('.js-save-publish-free')) {
+      const publishBtn = document.createElement('a');
+      publishBtn.className = 'btn btn-lg btn-primary js-save-publish-free';
+      publishBtn.href = withEdit('/add-property-promotion');
+      publishBtn.textContent = 'Save & publish';
+      actions.insertBefore(publishBtn, promotionBtn.nextSibling);
+    }
+  }
 })();
 </script>
 HTML;
@@ -959,6 +1018,11 @@ HTML;
   );
   if (!uploadCol) return;
 
+  // Remove template default photos; keep only upload tile.
+  Array.from(grid.children).forEach((col) => {
+    if (col !== uploadCol) col.remove();
+  });
+
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*,video/*';
@@ -1025,15 +1089,6 @@ HTML;
 (() => {
   const search = new URLSearchParams(window.location.search);
   const editId = (search.get('edit') || '').trim();
-
-  const saveDraftBtn = Array.from(document.querySelectorAll('button.btn.btn-lg.btn-outline-secondary'))
-    .find((btn) => (btn.textContent || '').trim().toLowerCase() === 'save draft');
-  if (saveDraftBtn) {
-    saveDraftBtn.addEventListener('click', (event) => {
-      event.preventDefault();
-      window.location.href = '/account/listings';
-    });
-  }
 
   const publishBtn = Array.from(document.querySelectorAll('a.btn.btn-lg.btn-primary[href]'))
     .find((btn) => (btn.textContent || '').trim().toLowerCase().includes('publish property listing'));
@@ -1350,20 +1405,47 @@ HTML;
             $editListing = $editQuery->first();
 
             if ($editListing) {
-                $titleParts = preg_split('/\s+/', (string) $editListing->title) ?: [];
+                $title = trim((string) $editListing->title);
+                $yearFromDetail = (string) ($editListing->carDetail?->year ?? '');
+                $titleWithoutYear = $title;
+                if ($yearFromDetail !== '' && str_ends_with($titleWithoutYear, ' ' . $yearFromDetail)) {
+                    $titleWithoutYear = trim(substr($titleWithoutYear, 0, -1 * (strlen($yearFromDetail) + 1)));
+                }
+                $titleParts = preg_split('/\s+/', $titleWithoutYear) ?: [];
                 $carEditPayload = [
                     'id' => $editListing->id,
-                    'title' => (string) $editListing->title,
-                    'brand' => (string) ($titleParts[0] ?? ''),
-                    'model' => (string) ($titleParts[1] ?? ''),
+                    'slug' => (string) $editListing->slug,
+                    'title' => $title,
+                    'brand' => (string) ($editListing->carDetail?->brand ?: ($titleParts[0] ?? '')),
+                    'model' => (string) ($editListing->carDetail?->model ?: trim(implode(' ', array_slice($titleParts, 1)))),
+                    'condition' => (string) ($editListing->carDetail?->condition ?? ''),
                     'year' => (string) ($editListing->carDetail?->year ?? ''),
                     'city' => (string) ($editListing->city?->name ?? ''),
                     'mileage' => (string) ($editListing->carDetail?->mileage ?? ''),
+                    'radius' => (string) ($editListing->carDetail?->radius ?? ''),
+                    'drive_type' => (string) ($editListing->carDetail?->drive_type ?? ''),
+                    'engine' => (string) ($editListing->carDetail?->engine ?? ''),
                     'fuel_type' => (string) ($editListing->carDetail?->fuel_type ?? ''),
                     'transmission' => (string) ($editListing->carDetail?->transmission ?? ''),
                     'body_type' => (string) ($editListing->carDetail?->body_type ?? ''),
+                    'city_mpg' => (string) ($editListing->carDetail?->city_mpg ?? ''),
+                    'highway_mpg' => (string) ($editListing->carDetail?->highway_mpg ?? ''),
+                    'exterior_color' => (string) ($editListing->carDetail?->exterior_color ?? ''),
+                    'interior_color' => (string) ($editListing->carDetail?->interior_color ?? ''),
+                    'description' => (string) ($editListing->excerpt ?? ''),
+                    'seller_type' => (string) ($editListing->carDetail?->seller_type ?? ''),
+                    'contact_first_name' => (string) ($editListing->carDetail?->contact_first_name ?? ''),
+                    'contact_last_name' => (string) ($editListing->carDetail?->contact_last_name ?? ''),
+                    'contact_email' => (string) ($editListing->carDetail?->contact_email ?? ''),
+                    'contact_phone' => (string) ($editListing->carDetail?->contact_phone ?? ''),
+                    'negotiated' => (bool) ($editListing->carDetail?->negotiated ?? false),
+                    'installments' => (bool) ($editListing->carDetail?->installments ?? false),
+                    'exchange' => (bool) ($editListing->carDetail?->exchange ?? false),
+                    'uncleared' => (bool) ($editListing->carDetail?->uncleared ?? false),
+                    'dealer_ready' => (bool) ($editListing->carDetail?->dealer_ready ?? false),
                     'price' => (string) ($editListing->price ?? ''),
                     'image' => (string) $editListing->image_url,
+                    'features' => array_values($editListing->features ?? []),
                 ];
             }
         }
@@ -1374,7 +1456,8 @@ HTML;
 (() => {
   const form = document.getElementById('addCarForm');
   if (!form) return;
-  const editData = __CAR_EDIT_DATA__;
+  let editData = __CAR_EDIT_DATA__;
+  const editIdFromUrl = new URLSearchParams(window.location.search).get('edit');
 
   const photosSection = Array.from(form.querySelectorAll('section'))
     .find((section) => (section.querySelector('h2')?.textContent || '').toLowerCase().includes('photos / videos'));
@@ -1401,6 +1484,8 @@ HTML;
   const previewMileage = footerCols[1];
   const previewFuel = footerCols[2];
   const previewTransmission = footerCols[3];
+  const detailPreviewBtn = Array.from(document.querySelectorAll('a.btn, button.btn'))
+    .find((el) => ((el.textContent || '').trim().toLowerCase() === 'detailed preview'));
 
   const defaultImage = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 640 427%22%3E%3Crect width=%22640%22 height=%22427%22 fill=%22%23eef2f6%22/%3E%3Cpath d=%22M183 260h274l35 47H148l35-47zm74-57h126l26 39H231l26-39z%22 fill=%22%23c6d0db%22/%3E%3Ccircle cx=%22223%22 cy=%22322%22 r=%2228%22 fill=%22%2398a6b6%22/%3E%3Ccircle cx=%22417%22 cy=%22322%22 r=%2228%22 fill=%22%2398a6b6%22/%3E%3Ctext x=%2250%25%22 y=%2248%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23808da0%22 font-size=%2232%22 font-family=%22Arial,sans-serif%22%3ENo image%3C/text%3E%3C/svg%3E';
 
@@ -1414,6 +1499,41 @@ HTML;
   if (previewMileage) previewMileage.innerHTML = '<i class="fi-tachometer"></i> -';
   if (previewFuel) previewFuel.innerHTML = '<i class="fi-gas-pump"></i> -';
   if (previewTransmission) previewTransmission.innerHTML = '<i class="fi-gearbox"></i> -';
+  if (detailPreviewBtn) {
+    detailPreviewBtn.setAttribute('type', 'button');
+    if (detailPreviewBtn.tagName === 'A') detailPreviewBtn.setAttribute('href', '/entry/cars?preview=1&module=cars');
+    if (detailPreviewBtn.tagName === 'BUTTON') detailPreviewBtn.setAttribute('formaction', '/entry/cars?preview=1&module=cars');
+  }
+
+  const stripTemplateSelectedDefaults = () => {
+    form.querySelectorAll('select').forEach((select) => {
+      Array.from(select.options).forEach((opt, idx) => {
+        if (idx > 0) opt.removeAttribute('selected');
+      });
+      if (!(editData && editData.id)) {
+        select.selectedIndex = 0;
+      }
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  };
+
+  stripTemplateSelectedDefaults();
+
+  if (!(editData && editData.id)) {
+    form.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], input[type="number"]').forEach((el) => {
+      el.value = '';
+    });
+    form.querySelectorAll('select').forEach((el) => {
+      el.selectedIndex = 0;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    form.querySelectorAll('input[type="checkbox"]').forEach((el) => {
+      el.checked = false;
+    });
+    form.querySelectorAll('input[type="radio"]').forEach((el) => {
+      el.checked = false;
+    });
+  }
 
   const createPhotoCard = (src) => {
     const col = document.createElement('div');
@@ -1434,8 +1554,17 @@ HTML;
     return col;
   };
 
-  const selectedOptionText = (selector) => {
-    const select = form.querySelector(selector);
+  const pickSelect = (selectors) => {
+    const list = Array.isArray(selectors) ? selectors : [selectors];
+    for (const selector of list) {
+      const select = form.querySelector(selector);
+      if (select) return select;
+    }
+    return null;
+  };
+
+  const selectedOptionText = (selectors) => {
+    const select = pickSelect(selectors);
     if (!select) return '';
     const option = select.options?.[select.selectedIndex];
     const text = (option?.textContent || '').trim();
@@ -1455,12 +1584,21 @@ HTML;
     return '$' + num.toLocaleString();
   };
 
-  const setSelectByText = (selector, value) => {
+  const selectedConditionValue = () => {
+    const checked = form.querySelector('input[name="condition"]:checked');
+    return String(checked?.value || selectedRadioLabel('condition') || '').trim();
+  };
+
+  const setSelectByText = (selectors, value) => {
     const normalized = String(value || '').trim().toLowerCase();
     if (!normalized) return;
-    const select = form.querySelector(selector);
+    const select = pickSelect(selectors);
     if (!select) return;
-    let option = Array.from(select.options).find((opt) => ((opt.textContent || '').trim().toLowerCase() === normalized));
+    let option = Array.from(select.options).find((opt) => {
+      const txt = (opt.textContent || '').trim().toLowerCase();
+      const val = String(opt.value || '').trim().toLowerCase();
+      return txt === normalized || val === normalized;
+    });
     if (!option) {
       option = document.createElement('option');
       option.value = String(value).trim();
@@ -1491,6 +1629,36 @@ HTML;
     }
   };
 
+  const setRadioById = (name, idValue) => {
+    const wanted = String(idValue || '').trim().toLowerCase();
+    if (!wanted) return;
+    const radio = form.querySelector(`input[name="${name}"][id="${wanted}"]`);
+    if (!radio) return;
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+
+  const setCheckboxById = (idValue, checked) => {
+    const id = String(idValue || '').trim();
+    if (!id) return;
+    const el = form.querySelector(`input[type="checkbox"]#${id}`);
+    if (!el) return;
+    el.checked = !!checked;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+
+  const setCheckedByIdList = (ids) => {
+    if (!Array.isArray(ids)) return;
+    const wanted = new Set(ids.map((v) => String(v || '').trim()).filter(Boolean));
+    if (!wanted.size) return;
+    Array.from(form.querySelectorAll('input[type="checkbox"][id]')).forEach((el) => {
+      if (wanted.has(el.id)) {
+        el.checked = true;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+  };
+
   const applyEditData = () => {
     if (!editData || !editData.id) return;
 
@@ -1506,18 +1674,60 @@ HTML;
     const heading = document.querySelector('h1.h2');
     if (heading) heading.textContent = 'Edit car';
 
+    form.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], input[type="number"], textarea').forEach((el) => {
+      el.value = '';
+    });
+    form.querySelectorAll('select').forEach((el) => {
+      el.selectedIndex = 0;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    form.querySelectorAll('input[type="checkbox"]').forEach((el) => {
+      el.checked = false;
+    });
+    form.querySelectorAll('input[type="radio"]').forEach((el) => {
+      el.checked = false;
+    });
+
     const mileageInput = form.querySelector('#mileage');
     const priceInput = form.querySelector('#price');
+    const cityMpgInput = form.querySelector('#city-mpg');
+    const highwayMpgInput = form.querySelector('#highway-mpg');
+    const exteriorColorInput = form.querySelector('#exterior-color');
+    const interiorColorInput = form.querySelector('#interior-color');
+    const descriptionInput = form.querySelector('#description');
+    const firstNameInput = form.querySelector('#fn');
+    const lastNameInput = form.querySelector('#ln');
+    const emailInput = form.querySelector('#email');
+    const phoneInput = form.querySelector('#phone');
     if (mileageInput) mileageInput.value = String(editData.mileage || '');
     if (priceInput) priceInput.value = String(editData.price || '').replace(/[^\d]/g, '');
+    if (cityMpgInput) cityMpgInput.value = String(editData.city_mpg || '');
+    if (highwayMpgInput) highwayMpgInput.value = String(editData.highway_mpg || '');
+    if (exteriorColorInput) exteriorColorInput.value = String(editData.exterior_color || '');
+    if (interiorColorInput) interiorColorInput.value = String(editData.interior_color || '');
+    if (descriptionInput) descriptionInput.value = String(editData.description || '');
+    if (firstNameInput) firstNameInput.value = String(editData.contact_first_name || '');
+    if (lastNameInput) lastNameInput.value = String(editData.contact_last_name || '');
+    if (emailInput) emailInput.value = String(editData.contact_email || '');
+    if (phoneInput) phoneInput.value = String(editData.contact_phone || '');
 
-    setSelectByText('select[aria-label="Car brand select"]', editData.brand);
-    setSelectByText('select[aria-label="Car model select"]', editData.model);
-    setSelectByText('select[aria-label="Manufacturing year select"]', editData.year);
-    setSelectByText('select[aria-label="Location select"]', editData.city);
-    setSelectByText('select[aria-label="Fuel select"]', editData.fuel_type);
-    setSelectByText('select[aria-label="Transmission select"]', editData.transmission);
+    setSelectByText(['select[aria-label="Car brand select"]', 'select[name="brand"]'], editData.brand);
+    setSelectByText(['select[aria-label="Car model select"]', 'select[name="model"]'], editData.model);
+    setSelectByText(['select[aria-label="Manufacturing year select"]', 'select[name="year"]'], editData.year);
+    setSelectByText(['select[aria-label="Location select"]', 'select[name="city"]'], editData.city);
+    setSelectByText(['select[aria-label="Radius select"]', 'select[name="radius"]'], editData.radius);
+    setSelectByText(['select[aria-label="Drive type select"]', 'select[name="drive_type"]'], editData.drive_type);
+    setSelectByText(['select[aria-label="Engine select"]', 'select[name="engine"]'], editData.engine);
+    setSelectByText(['select[aria-label="Fuel select"]', 'select[name="fuel_type"]'], editData.fuel_type);
+    setSelectByText(['select[aria-label="Transmission select"]', 'select[name="transmission"]'], editData.transmission);
+    setRadioByLabel('condition', editData.condition);
     setRadioByLabel('body', editData.body_type);
+    setRadioById('seller', editData.seller_type || 'private');
+    setCheckboxById('negotiated', !!editData.negotiated);
+    setCheckboxById('installments', !!editData.installments);
+    setCheckboxById('exchange', !!editData.exchange);
+    setCheckboxById('uncleared', !!editData.uncleared);
+    setCheckboxById('dealer-ready', !!editData.dealer_ready);
 
     if (editData.image && galleryGrid && uploadTile) {
       const alreadyInserted = Array.from(galleryGrid.querySelectorAll('img')).some((img) => (img.getAttribute('src') || '').includes(editData.image));
@@ -1536,13 +1746,23 @@ HTML;
     if (previewPrice && editData.price) {
       previewPrice.textContent = String(editData.price);
     }
+    setCheckedByIdList(editData.features || []);
+  };
+
+  const forceApplyEditData = () => {
+    if (!(editData && editData.id)) return;
+    applyEditData();
+    [120, 450, 900, 1500, 2200].forEach((ms) => setTimeout(applyEditData, ms));
+    let retries = 0;
+    const hardSync = setInterval(() => {
+      applyEditData();
+      retries += 1;
+      if (retries >= 12) clearInterval(hardSync);
+    }, 500);
   };
 
   if (editData && editData.id) {
-    applyEditData();
-    // Choices/theme scripts may re-render controls after load; re-apply persisted values.
-    setTimeout(applyEditData, 120);
-    setTimeout(applyEditData, 450);
+    forceApplyEditData();
 
     const actions = form.querySelector('section.d-flex.flex-column.flex-sm-row.justify-content-between.gap-3.mt-4');
     if (actions && !actions.querySelector('.js-delete-listing-btn')) {
@@ -1561,26 +1781,50 @@ HTML;
       actions.appendChild(deleteForm);
     }
   } else {
-    const editIdFromUrl = new URLSearchParams(window.location.search).get('edit');
     if (editIdFromUrl) {
-      let hiddenId = form.querySelector('input[name="listing_id"]');
-      if (!hiddenId) {
-        hiddenId = document.createElement('input');
-        hiddenId.type = 'hidden';
-        hiddenId.name = 'listing_id';
-        form.appendChild(hiddenId);
+      // Invalid / missing backend record: prevent template defaults from looking like saved data.
+      form.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], input[type="number"], textarea').forEach((el) => {
+        el.value = '';
+      });
+      form.querySelectorAll('select').forEach((el) => {
+        el.selectedIndex = 0;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      form.querySelectorAll('input[type="checkbox"]').forEach((el) => { el.checked = false; });
+      form.querySelectorAll('input[type="radio"]').forEach((el) => { el.checked = false; });
+      const root = document.querySelector('main .container');
+      if (root && !root.querySelector('.monaclick-edit-missing')) {
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-warning monaclick-edit-missing';
+        alert.textContent = 'Listing not found for this edit link. Please open edit from My listings.';
+        root.prepend(alert);
       }
-      hiddenId.value = editIdFromUrl;
     }
   }
 
+  if (editIdFromUrl) {
+    fetch(`/account/cars/${encodeURIComponent(editIdFromUrl)}/edit-data`, { credentials: 'same-origin' })
+      .then((r) => r.ok ? r.json() : Promise.reject(new Error('no edit payload')))
+      .then((payload) => {
+        const fresh = payload && payload.data ? payload.data : null;
+        if (!fresh || !fresh.id) return;
+        editData = fresh;
+        forceApplyEditData();
+        updatePreview();
+        syncPreviewImage();
+      })
+      .catch(() => {
+        // no-op
+      });
+  }
+
   const updatePreview = () => {
-    const brand = selectedOptionText('select[aria-label="Car brand select"]');
-    const model = selectedOptionText('select[aria-label="Car model select"]');
-    const year = selectedOptionText('select[aria-label="Manufacturing year select"]');
-    const city = selectedOptionText('select[aria-label="Location select"]');
-    const fuel = selectedOptionText('select[aria-label="Fuel select"]');
-    const transmission = selectedOptionText('select[aria-label="Transmission select"]');
+    const brand = selectedOptionText(['select[aria-label="Car brand select"]', 'select[name="brand"]']);
+    const model = selectedOptionText(['select[aria-label="Car model select"]', 'select[name="model"]']);
+    const year = selectedOptionText(['select[aria-label="Manufacturing year select"]', 'select[name="year"]']);
+    const city = selectedOptionText(['select[aria-label="Location select"]', 'select[name="city"]']);
+    const fuel = selectedOptionText(['select[aria-label="Fuel select"]', 'select[name="fuel_type"]']);
+    const transmission = selectedOptionText(['select[aria-label="Transmission select"]', 'select[name="transmission"]']);
     const condition = selectedRadioLabel('condition');
     const mileage = (form.querySelector('#mileage')?.value || '').trim();
     const price = (form.querySelector('#price')?.value || '').trim();
@@ -1600,6 +1844,31 @@ HTML;
       previewBadge.textContent = condition || 'Car';
       previewBadge.className = 'badge text-bg-warning';
     }
+    if (detailPreviewBtn && detailPreviewBtn.tagName === 'A') {
+      detailPreviewBtn.setAttribute('href', buildDetailedPreviewUrl());
+    }
+
+    const qualityBox = previewCard?.parentElement?.querySelector('.position-relative.bg-body.rounded');
+    const qualityValue = qualityBox?.querySelector('.fs-sm.text-end.mb-2');
+    const qualityBar = qualityBox?.querySelector('.progress .progress-bar');
+    const requiredSelectors = [
+      'select[name="brand"]',
+      'select[name="model"]',
+      'select[name="year"]',
+      '#mileage',
+      '#price',
+      'select[name="city"]',
+      'select[name="fuel_type"]',
+      'select[name="transmission"]',
+    ];
+    const done = requiredSelectors.filter((selector) => {
+      const el = form.querySelector(selector);
+      const value = String(el?.value || '').trim();
+      return value !== '' && !/^select/i.test(value);
+    }).length;
+    const percent = Math.min(100, Math.round((done / requiredSelectors.length) * 100));
+    if (qualityValue) qualityValue.textContent = `${percent}%`;
+    if (qualityBar) qualityBar.style.width = `${percent}%`;
   };
 
   const syncPreviewImage = () => {
@@ -1611,9 +1880,103 @@ HTML;
     previewImage.src = firstUploaded ? firstUploaded.src : defaultImage;
   };
 
+  const buildDetailedPreviewUrl = () => {
+    const brand = selectedOptionText(['select[aria-label="Car brand select"]', 'select[name="brand"]']);
+    const model = selectedOptionText(['select[aria-label="Car model select"]', 'select[name="model"]']);
+    const year = selectedOptionText(['select[aria-label="Manufacturing year select"]', 'select[name="year"]']);
+    const city = selectedOptionText(['select[aria-label="Location select"]', 'select[name="city"]']);
+    const fuel = selectedOptionText(['select[aria-label="Fuel select"]', 'select[name="fuel_type"]']);
+    const transmission = selectedOptionText(['select[aria-label="Transmission select"]', 'select[name="transmission"]']);
+    const body = selectedRadioLabel('body');
+    const condition = selectedConditionValue();
+    const mileage = (form.querySelector('#mileage')?.value || '').trim();
+    const price = normalizePrice((form.querySelector('#price')?.value || '').trim());
+    const title = [brand, model, year].filter(Boolean).join(' ').trim() || 'Car listing';
+    const image = previewImage?.getAttribute('src') || defaultImage;
+
+    const qs = new URLSearchParams();
+    qs.set('preview', '1');
+    qs.set('module', 'cars');
+    if (editData?.slug) qs.set('slug', String(editData.slug));
+    qs.set('title', title);
+    qs.set('city', city || '');
+    qs.set('price', price || '$0');
+    qs.set('image', image);
+    qs.set('year', year || '');
+    qs.set('mileage', mileage || '');
+    qs.set('fuel_type', fuel || '');
+    qs.set('transmission', transmission || '');
+    qs.set('body_type', body || '');
+    qs.set('condition', condition || '');
+
+    return '/entry/cars?' + qs.toString();
+  };
+
+  if (detailPreviewBtn) {
+    const openDetailedPreview = (event) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const targetUrl = buildDetailedPreviewUrl();
+      window.open(targetUrl, '_blank', 'noopener');
+    };
+
+    detailPreviewBtn.addEventListener('click', openDetailedPreview);
+    if (detailPreviewBtn.tagName === 'A') {
+      detailPreviewBtn.setAttribute('href', buildDetailedPreviewUrl());
+    }
+  }
+
   form.querySelectorAll('input, select, textarea').forEach((el) => {
     el.addEventListener('input', updatePreview);
     el.addEventListener('change', updatePreview);
+  });
+
+  form.addEventListener('submit', () => {
+    const ensureHidden = (name, value) => {
+      let field = form.querySelector(`input[type="hidden"][name="${name}"]`);
+      if (!field) {
+        field = document.createElement('input');
+        field.type = 'hidden';
+        field.name = name;
+        form.appendChild(field);
+      }
+      field.value = String(value ?? '').trim();
+    };
+
+    const sellerChecked = form.querySelector('input[name="seller"]:checked');
+    ensureHidden('condition', selectedConditionValue());
+    ensureHidden('radius', selectedOptionText(['select[aria-label="Radius select"]', 'select[name="radius"]']));
+    ensureHidden('drive_type', selectedOptionText(['select[aria-label="Drive type select"]', 'select[name="drive_type"]']));
+    ensureHidden('engine', selectedOptionText(['select[aria-label="Engine select"]', 'select[name="engine"]']));
+    ensureHidden('city_mpg', form.querySelector('#city-mpg')?.value || '');
+    ensureHidden('highway_mpg', form.querySelector('#highway-mpg')?.value || '');
+    ensureHidden('exterior_color', form.querySelector('#exterior-color')?.value || '');
+    ensureHidden('interior_color', form.querySelector('#interior-color')?.value || '');
+    ensureHidden('description', form.querySelector('#description')?.value || '');
+    ensureHidden('seller_type', sellerChecked?.id || 'private');
+    ensureHidden('contact_first_name', form.querySelector('#fn')?.value || '');
+    ensureHidden('contact_last_name', form.querySelector('#ln')?.value || '');
+    ensureHidden('contact_email', form.querySelector('#email')?.value || '');
+    ensureHidden('contact_phone', form.querySelector('#phone')?.value || '');
+    ensureHidden('negotiated', form.querySelector('#negotiated')?.checked ? '1' : '0');
+    ensureHidden('installments', form.querySelector('#installments')?.checked ? '1' : '0');
+    ensureHidden('exchange', form.querySelector('#exchange')?.checked ? '1' : '0');
+    ensureHidden('uncleared', form.querySelector('#uncleared')?.checked ? '1' : '0');
+    ensureHidden('dealer_ready', form.querySelector('#dealer-ready')?.checked ? '1' : '0');
+
+    const selectedFeatures = Array.from(form.querySelectorAll('input[type="checkbox"][id]:checked'))
+      .map((el) => el.id)
+      .filter((id) => !['negotiated', 'installments', 'exchange', 'uncleared', 'dealer-ready'].includes(id));
+    let hidden = form.querySelector('input[type="hidden"][name="features_json"]');
+    if (!hidden) {
+      hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'features_json';
+      form.appendChild(hidden);
+    }
+    hidden.value = JSON.stringify(selectedFeatures);
   });
 
   if (galleryGrid) {
@@ -1631,7 +1994,7 @@ HTML;
         $html = str_replace('</body>', $carPreviewScript . '</body>', $html);
     }
 
-    if ($accountAuthPage) {
+    if ($noFlashPage) {
         $revealScript = <<<'HTML'
 <script>
 (() => {
@@ -1692,8 +2055,40 @@ Route::get('/add-contractor-services', fn () => $serve('add-contractor-services.
 Route::get('/add-contractor-price-hours', fn () => $serve('add-contractor-price-hours.html'));
 Route::get('/add-contractor-project', fn () => $serve('add-contractor-project.html'));
 Route::get('/add-contractor-profile', fn () => $serve('add-contractor-profile.html'));
-Route::get('/sell-car', fn () => $serve('add-car.html'));
-Route::get('/add-car', fn () => $serve('add-car.html'));
+Route::get('/sell-car', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'cars')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-car.html');
+});
+Route::get('/add-car', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'cars')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-car.html');
+});
 Route::match(['get', 'post'], '/submit/car', CarListingSubmissionController::class);
 Route::match(['get', 'post'], '/submit/property', [ListingSubmissionController::class, 'property']);
 Route::match(['get', 'post'], '/submit/contractor', [ListingSubmissionController::class, 'contractor']);
@@ -1779,6 +2174,64 @@ Route::middleware('auth')->group(function () use ($serve) {
     Route::get('/account/reviews', fn () => $serve('account-reviews.html'));
     Route::get('/account/favorites', fn () => $serve('account-favorites.html'));
     Route::get('/account/payment', fn () => $serve('account-payment.html'));
+    Route::get('/account/cars/{listing}/edit-data', function (int $listing) {
+        $editListing = Listing::query()
+            ->with(['carDetail', 'city'])
+            ->where('id', $listing)
+            ->where('module', 'cars')
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (! $editListing) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+
+        $title = trim((string) $editListing->title);
+        $yearFromDetail = (string) ($editListing->carDetail?->year ?? '');
+        $titleWithoutYear = $title;
+        if ($yearFromDetail !== '' && str_ends_with($titleWithoutYear, ' ' . $yearFromDetail)) {
+            $titleWithoutYear = trim(substr($titleWithoutYear, 0, -1 * (strlen($yearFromDetail) + 1)));
+        }
+        $titleParts = preg_split('/\s+/', $titleWithoutYear) ?: [];
+
+        return response()->json([
+            'data' => [
+                'id' => $editListing->id,
+                'slug' => (string) $editListing->slug,
+                'title' => $title,
+                'brand' => (string) ($editListing->carDetail?->brand ?: ($titleParts[0] ?? '')),
+                'model' => (string) ($editListing->carDetail?->model ?: trim(implode(' ', array_slice($titleParts, 1)))),
+                'condition' => (string) ($editListing->carDetail?->condition ?? ''),
+                'year' => (string) ($editListing->carDetail?->year ?? ''),
+                'city' => (string) ($editListing->city?->name ?? ''),
+                'mileage' => (string) ($editListing->carDetail?->mileage ?? ''),
+                'radius' => (string) ($editListing->carDetail?->radius ?? ''),
+                'drive_type' => (string) ($editListing->carDetail?->drive_type ?? ''),
+                'engine' => (string) ($editListing->carDetail?->engine ?? ''),
+                'fuel_type' => (string) ($editListing->carDetail?->fuel_type ?? ''),
+                'transmission' => (string) ($editListing->carDetail?->transmission ?? ''),
+                'body_type' => (string) ($editListing->carDetail?->body_type ?? ''),
+                'city_mpg' => (string) ($editListing->carDetail?->city_mpg ?? ''),
+                'highway_mpg' => (string) ($editListing->carDetail?->highway_mpg ?? ''),
+                'exterior_color' => (string) ($editListing->carDetail?->exterior_color ?? ''),
+                'interior_color' => (string) ($editListing->carDetail?->interior_color ?? ''),
+                'description' => (string) ($editListing->excerpt ?? ''),
+                'seller_type' => (string) ($editListing->carDetail?->seller_type ?? ''),
+                'contact_first_name' => (string) ($editListing->carDetail?->contact_first_name ?? ''),
+                'contact_last_name' => (string) ($editListing->carDetail?->contact_last_name ?? ''),
+                'contact_email' => (string) ($editListing->carDetail?->contact_email ?? ''),
+                'contact_phone' => (string) ($editListing->carDetail?->contact_phone ?? ''),
+                'negotiated' => (bool) ($editListing->carDetail?->negotiated ?? false),
+                'installments' => (bool) ($editListing->carDetail?->installments ?? false),
+                'exchange' => (bool) ($editListing->carDetail?->exchange ?? false),
+                'uncleared' => (bool) ($editListing->carDetail?->uncleared ?? false),
+                'dealer_ready' => (bool) ($editListing->carDetail?->dealer_ready ?? false),
+                'price' => (string) ($editListing->price ?? ''),
+                'image' => (string) $editListing->image_url,
+                'features' => array_values($editListing->features ?? []),
+            ],
+        ]);
+    });
     Route::post('/account/listings/delete', function (Request $request) {
         $listingId = (int) $request->input('listing_id', 0);
         if ($listingId <= 0) {
@@ -1826,6 +2279,86 @@ Route::middleware('auth')->group(function () use ($serve) {
         $listing->save();
 
         return redirect('/account/listings');
+    });
+    Route::post('/account/settings', function (Request $request) {
+        $validated = $request->validate([
+            'first_name' => ['nullable', 'string', 'max:100'],
+            'last_name' => ['nullable', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . Auth::id()],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'birth_date' => ['nullable', 'string', 'max:100'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'bio' => ['nullable', 'string', 'max:2000'],
+            'avatar' => ['nullable', 'image', 'max:4096'],
+        ]);
+
+        $user = Auth::user();
+        if (! $user) {
+            return redirect('/signin');
+        }
+
+        $user->first_name = trim((string) ($validated['first_name'] ?? ''));
+        $user->last_name = trim((string) ($validated['last_name'] ?? ''));
+        $user->name = trim(($user->first_name . ' ' . $user->last_name)) ?: ($user->name ?: 'User');
+        $user->email = strtolower((string) ($validated['email'] ?? $user->email));
+        $user->phone = trim((string) ($validated['phone'] ?? ''));
+        $user->birth_date = trim((string) ($validated['birth_date'] ?? ''));
+        $user->address = trim((string) ($validated['address'] ?? ''));
+        $user->bio = trim((string) ($validated['bio'] ?? ''));
+
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')?->store('profiles', 'public');
+            if ($path) {
+                $user->avatar_path = $path;
+            }
+        }
+
+        $user->save();
+
+        return redirect('/account/settings?settings=updated');
+    });
+    Route::post('/account/avatar', function (Request $request) {
+        $validated = $request->validate([
+            'avatar' => ['required', 'image', 'max:4096'],
+        ]);
+
+        $user = Auth::user();
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $path = $request->file('avatar')?->store('profiles', 'public');
+        if (! $path) {
+            return response()->json(['message' => 'Upload failed'], 422);
+        }
+
+        $user->avatar_path = $path;
+        $user->save();
+
+        return response()->json([
+            'ok' => true,
+            'avatar_url' => $user->avatar_url,
+        ]);
+    });
+    Route::post('/account/password', function (Request $request) {
+        $user = Auth::user();
+        if (! $user) {
+            return redirect('/signin');
+        }
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', Password::defaults(), 'confirmed'],
+        ]);
+
+        if (! Hash::check((string) $validated['current_password'], (string) $user->password)) {
+            return redirect('/account/settings?error=password');
+        }
+
+        $user->password = Hash::make((string) $validated['password']);
+        $user->save();
+
+        return redirect('/account/settings?password=updated');
     });
 });
 

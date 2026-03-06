@@ -27,7 +27,7 @@ class CarListingSubmissionController extends Controller
             $title = 'Car Listing';
         }
 
-        $bodyType = trim((string) $request->input('body_type', ''));
+        $bodyType = trim((string) $request->input('body_type', $request->input('body', '')));
         $categorySlug = Str::slug($bodyType);
         $category = Category::query()
             ->where('module', 'cars')
@@ -66,6 +66,16 @@ class CarListingSubmissionController extends Controller
 
         $priceRaw = trim((string) $request->input('price', ''));
         $price = Listing::normalizePrice($priceRaw !== '' ? $priceRaw : null);
+        $featuresRaw = (string) $request->input('features_json', '[]');
+        $features = json_decode($featuresRaw, true);
+        if (! is_array($features)) {
+            $features = [];
+        }
+        $features = collect($features)
+            ->map(fn ($feature) => trim((string) $feature))
+            ->filter()
+            ->values()
+            ->all();
 
         $amount = (int) preg_replace('/[^\d]/', '', (string) $priceRaw);
         $budgetTier = match (true) {
@@ -102,11 +112,11 @@ class CarListingSubmissionController extends Controller
             'module' => 'cars',
             'title' => $title,
             'slug' => $slug,
-            'excerpt' => 'User submitted car listing from frontend form.',
+            'excerpt' => trim((string) $request->input('description', '')),
             'price' => $price,
             'budget_tier' => $budgetTier,
             'availability_now' => true,
-            'features' => [],
+            'features' => $features,
             'rating' => 0,
             'reviews_count' => 0,
             'image' => $coverImage,
@@ -126,16 +136,36 @@ class CarListingSubmissionController extends Controller
         CarDetail::query()->updateOrCreate(
             ['listing_id' => $listing->id],
             [
+                'brand' => $brand !== '' ? $brand : null,
+                'model' => $model !== '' ? $model : null,
+                'condition' => trim((string) $request->input('condition', '')) ?: null,
                 'year' => (int) $request->input('year'),
                 'mileage' => (int) preg_replace('/[^\d]/', '', (string) $request->input('mileage')),
+                'radius' => trim((string) $request->input('radius', '')) ?: null,
+                'drive_type' => trim((string) $request->input('drive_type', '')) ?: null,
+                'engine' => trim((string) $request->input('engine', '')) ?: null,
                 'fuel_type' => Str::lower((string) $request->input('fuel_type')),
                 'transmission' => Str::lower((string) $request->input('transmission')),
-                'body_type' => (string) $request->input('body_type'),
+                'body_type' => $bodyType !== '' ? $bodyType : null,
+                'city_mpg' => (int) preg_replace('/[^\d]/', '', (string) $request->input('city_mpg')),
+                'highway_mpg' => (int) preg_replace('/[^\d]/', '', (string) $request->input('highway_mpg')),
+                'exterior_color' => trim((string) $request->input('exterior_color', '')) ?: null,
+                'interior_color' => trim((string) $request->input('interior_color', '')) ?: null,
+                'seller_type' => trim((string) $request->input('seller_type', $request->input('seller', ''))) ?: null,
+                'contact_first_name' => trim((string) $request->input('contact_first_name', '')) ?: null,
+                'contact_last_name' => trim((string) $request->input('contact_last_name', '')) ?: null,
+                'contact_email' => trim((string) $request->input('contact_email', '')) ?: null,
+                'contact_phone' => trim((string) $request->input('contact_phone', '')) ?: null,
+                'negotiated' => $request->boolean('negotiated'),
+                'installments' => $request->boolean('installments'),
+                'exchange' => $request->boolean('exchange'),
+                'uncleared' => $request->boolean('uncleared'),
+                'dealer_ready' => $request->boolean('dealer_ready'),
             ]
         );
 
         if ($status === 'draft') {
-            return redirect('/add-car?saved=draft');
+            return redirect('/account/listings?saved=draft&edit=' . $listing->id);
         }
 
         return redirect('/listings/cars?created=1&q=' . urlencode($title));

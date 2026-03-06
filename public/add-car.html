@@ -410,11 +410,11 @@
                   <label class="form-label pb-1 mb-2">Condition of the car *</label>
                   <div class="nav nav-pills flex-wrap gap-3">
                     <div>
-                      <input type="radio" class="btn-check" id="new" name="condition">
+                      <input type="radio" class="btn-check" id="new" name="condition" value="New car">
                       <label class="nav-link" for="new">New car</label>
                     </div>
                     <div>
-                      <input type="radio" class="btn-check" id="used" name="condition" checked>
+                      <input type="radio" class="btn-check" id="used" name="condition" value="Used car">
                       <label class="nav-link" for="used">Used car</label>
                     </div>
                   </div>
@@ -427,10 +427,10 @@
                         "containerInner": ["form-select", "form-select-lg"]
                       },
                       "searchEnabled": true
-                    }' aria-label="Car brand select" required>
+                    }' aria-label="Car brand select" name="brand" required>
                       <option value="">Select brand</option>
                       <option value="Toyota">Toyota</option>
-                      <option value="Mercedes-Benz" selected>Mercedes-Benz</option>
+                      <option value="Mercedes-Benz">Mercedes-Benz</option>
                       <option value="BMW">BMW</option>
                       <option value="Honda">Honda</option>
                       <option value="Ford">Ford</option>
@@ -448,13 +448,13 @@
                         "containerInner": ["form-select", "form-select-lg"]
                       },
                       "searchEnabled": true
-                    }' aria-label="Car model select" required>
+                    }' aria-label="Car model select" name="model" required>
                       <option value="">Select model</option>
                       <option value="A-Class">A-Class</option>
                       <option value="C-Class">C-Class</option>
                       <option value="E-Class">E-Class</option>
                       <option value="S-Class">S-Class</option>
-                      <option value="A205" selected>A205</option>
+                      <option value="A205">A205</option>
                       <option value="GLA">GLA</option>
                       <option value="GLC">GLC</option>
                       <option value="GLE">GLE</option>
@@ -470,13 +470,13 @@
                       "classNames": {
                         "containerInner": ["form-select", "form-select-lg"]
                       }
-                    }' aria-label="Manufacturing year select" required>
+                    }' aria-label="Manufacturing year select" name="year" required>
                       <option value="">Select year</option>
                       <option value="2025">2025</option>
                       <option value="2024">2024</option>
                       <option value="2023">2023</option>
                       <option value="2022">2022</option>
-                      <option value="2021" selected>2021</option>
+                      <option value="2021">2021</option>
                       <option value="2020">2020</option>
                       <option value="2019">2019</option>
                       <option value="2018">2018</option>
@@ -487,14 +487,14 @@
                   </div>
                   <div class="col">
                     <label for="mileage" class="form-label">Mileage *</label>
-                    <input type="text" class="form-control form-control-lg" id="mileage" placeholder="K miles" required>
+                    <input type="text" class="form-control form-control-lg" id="mileage" name="mileage" placeholder="K miles" required>
                   </div>
                 </div>
                 <div class="mb-3 mb-md-4">
                   <label class="form-label">Body type *</label>
                   <div class="nav nav-pills row row-cols-2 row-cols-sm-3 row-cols-md-5 gap-0 g-3">
                     <div class="col">
-                      <input type="radio" class="btn-check" id="sedan" name="body">
+                      <input type="radio" class="btn-check" id="sedan" name="body" value="Sedan">
                       <label class="nav-link flex-column w-100 align-items-center gap-2 rounded p-3" for="sedan">
                         <span class="ratio d-block" style="--fn-aspect-ratio: calc(62 / 124 * 100%); max-width: 124px">
                           <img src="/finder/assets/img/home/cars/body-type/sedan.svg" alt="Sedan">
@@ -503,7 +503,7 @@
                       </label>
                     </div>
                     <div class="col">
-                      <input type="radio" class="btn-check" id="convertible" name="body" checked>
+                      <input type="radio" class="btn-check" id="convertible" name="body" value="Convertible">
                       <label class="nav-link flex-column w-100 align-items-center gap-2 rounded p-3" for="convertible">
                         <span class="ratio d-block" style="--fn-aspect-ratio: calc(62 / 124 * 100%); max-width: 124px">
                           <img src="/finder/assets/img/home/cars/body-type/convertible.svg" alt="Convertible">
@@ -512,7 +512,7 @@
                       </label>
                     </div>
                     <div class="col">
-                      <input type="radio" class="btn-check" id="suv" name="body">
+                      <input type="radio" class="btn-check" id="suv" name="body" value="SUV">
                       <label class="nav-link flex-column w-100 align-items-center gap-2 rounded p-3" for="suv">
                         <span class="ratio d-block" style="--fn-aspect-ratio: calc(62 / 124 * 100%); max-width: 124px">
                           <img src="/finder/assets/img/home/cars/body-type/suv.svg" alt="SUV">
@@ -521,7 +521,7 @@
                       </label>
                     </div>
                     <div class="col">
-                      <input type="radio" class="btn-check" id="coupe" name="body">
+                      <input type="radio" class="btn-check" id="coupe" name="body" value="Coupe">
                       <label class="nav-link flex-column w-100 align-items-center gap-2 rounded p-3" for="coupe">
                         <span class="ratio d-block" style="--fn-aspect-ratio: calc(62 / 124 * 100%); max-width: 124px">
                           <img src="/finder/assets/img/home/cars/body-type/coupe.svg" alt="Coupe">
@@ -539,11 +539,11 @@
                         "containerInner": ["form-select", "form-select-lg"]
                       },
                       "searchEnabled": true
-                    }' aria-label="Location select" required>
+                    }' aria-label="Location select" name="city" required>
                       <option value="">Select location</option>
                       <option value="New York">New York</option>
                       <option value="Los Angeles">Los Angeles</option>
-                      <option value="Chicago" selected>Chicago</option>
+                      <option value="Chicago">Chicago</option>
                       <option value="Houston">Houston</option>
                       <option value="Phoenix">Phoenix</option>
                       <option value="Philadelphia">Philadelphia</option>
@@ -559,12 +559,12 @@
                       "classNames": {
                         "containerInner": ["form-select", "form-select-lg"]
                       }
-                    }' aria-label="Radius select">
+                    }' aria-label="Radius select" name="radius">
                       <option value="">Select radius</option>
                       <option value="200 mi">200 mi</option>
                       <option value="150 mi">150 mi</option>
                       <option value="100 mi">100 mi</option>
-                      <option value="50 mi" selected>50 mi</option>
+                      <option value="50 mi">50 mi</option>
                       <option value="25 mi">25 mi</option>
                     </select>
                   </div>
@@ -595,7 +595,7 @@
                       "classNames": {
                         "containerInner": ["form-select", "form-select-lg"]
                       }
-                    }' aria-label="Drive type select" required>
+                    }' aria-label="Drive type select" name="drive_type" required>
                       <option value="">Select drive type</option>
                       <option value="Front-Wheel Drive">Front-Wheel Drive</option>
                       <option value="Rear-Wheel Drive">Rear-Wheel Drive</option>
@@ -609,7 +609,7 @@
                       "classNames": {
                         "containerInner": ["form-select", "form-select-lg"]
                       }
-                    }' aria-label="Engine select" required>
+                    }' aria-label="Engine select" name="engine" required>
                       <option value="">Select engine</option>
                       <option value="Inline-4">Inline-4</option>
                       <option value="Inline-6">Inline-6</option>
@@ -628,14 +628,14 @@
                       "classNames": {
                         "containerInner": ["form-select", "form-select-lg"]
                       }
-                    }' aria-label="Transmission select" required>
+                    }' aria-label="Transmission select" name="transmission" required>
                       <option value="">Select transmission</option>
                       <option value="Manual">Manual</option>
                       <option value="Automatic">Automatic</option>
                       <option value="CVT">CVT</option>
                       <option value="Dual-Clutch">Dual-Clutch</option>
                       <option value="Semi-Automatic">Semi-Automatic</option>
-                      <option value="7-Speed Shiftable Automatic" selected>7-Speed Shiftable Automatic</option>
+                      <option value="7-Speed Shiftable Automatic">7-Speed Shiftable Automatic</option>
                       <option value="8-Speed Automatic">8-Speed Automatic</option>
                       <option value="9-Speed Automatic">9-Speed Automatic</option>
                       <option value="10-Speed Automatic">10-Speed Automatic</option>
@@ -647,9 +647,9 @@
                       "classNames": {
                         "containerInner": ["form-select", "form-select-lg"]
                       }
-                    }' aria-label="Fuel select" required>
+                    }' aria-label="Fuel select" name="fuel_type" required>
                       <option value="">Select fuel type</option>
-                      <option value="Gasoline" selected>Gasoline</option>
+                      <option value="Gasoline">Gasoline</option>
                       <option value="Diesel">Diesel</option>
                       <option value="Electric">Electric</option>
                       <option value="Hybrid">Hybrid</option>
@@ -661,24 +661,24 @@
                   </div>
                   <div class="col">
                     <label for="city-mpg" class="form-label">City MPG</label>
-                    <input type="number" class="form-control form-control-lg" id="city-mpg" min="10" placeholder="Miles per gallon">
+                    <input type="number" class="form-control form-control-lg" id="city-mpg" name="city_mpg" min="10" placeholder="Miles per gallon">
                   </div>
                   <div class="col">
                     <label for="highway-mpg" class="form-label d-flex align-items-center">Highway MPG <i class="fi-info fs-base ms-2" data-bs-toggle="tooltip" title="Measured at a steady pace of 65 mph"></i></label>
-                    <input type="number" class="form-control form-control-lg" id="highway-mpg" min="10" placeholder="Miles per gallon">
+                    <input type="number" class="form-control form-control-lg" id="highway-mpg" name="highway_mpg" min="10" placeholder="Miles per gallon">
                   </div>
                   <div class="col">
                     <label for="exterior-color" class="form-label">Exterior color</label>
-                    <input type="text" class="form-control form-control-lg" id="exterior-color">
+                    <input type="text" class="form-control form-control-lg" id="exterior-color" name="exterior_color">
                   </div>
                   <div class="col">
                     <label for="interior-color" class="form-label">Interior color</label>
-                    <input type="text" class="form-control form-control-lg" id="interior-color">
+                    <input type="text" class="form-control form-control-lg" id="interior-color" name="interior_color">
                   </div>
                 </div>
                 <label for="description" class="form-label fs-6 fw-semibold">Description *</label>
                 <p class="fs-sm mb-2">Here you can let your imagination run wild and describe the car in the best possible way!</p>
-                <textarea class="form-control form-control-lg" rows="5" id="description" placeholder="Maximum 2000 characters" required></textarea>
+                <textarea class="form-control form-control-lg" rows="5" id="description" name="description" placeholder="Maximum 2000 characters" required></textarea>
               </div>
               <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark rounded d-none d-block-dark"></div>
             </section>
@@ -702,13 +702,13 @@
                         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 gy-3 gx-4">
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="led-headlights" checked>
+                              <input type="checkbox" class="form-check-input" id="led-headlights">
                               <label for="led-headlights" class="form-check-label">LED Headlights</label>
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="fog-lights" checked>
+                              <input type="checkbox" class="form-check-input" id="fog-lights">
                               <label for="fog-lights" class="form-check-label">Fog Lights</label>
                             </div>
                           </div>
@@ -720,7 +720,7 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="power-mirrors" checked>
+                              <input type="checkbox" class="form-check-input" id="power-mirrors">
                               <label for="power-mirrors" class="form-check-label">Power Mirrors</label>
                             </div>
                           </div>
@@ -732,13 +732,13 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="rear-spoiler" checked>
+                              <input type="checkbox" class="form-check-input" id="rear-spoiler">
                               <label for="rear-spoiler" class="form-check-label">Rear Spoiler</label>
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="convertible-roof" checked>
+                              <input type="checkbox" class="form-check-input" id="convertible-roof">
                               <label for="convertible-roof" class="form-check-label">Convertible Roof</label>
                             </div>
                           </div>
@@ -750,19 +750,19 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="keyless-entry" checked>
+                              <input type="checkbox" class="form-check-input" id="keyless-entry">
                               <label for="keyless-entry" class="form-check-label">Keyless Entry</label>
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="power-windows" checked>
+                              <input type="checkbox" class="form-check-input" id="power-windows">
                               <label for="power-windows" class="form-check-label">Power Windows</label>
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="daytime-running-lights" checked>
+                              <input type="checkbox" class="form-check-input" id="daytime-running-lights">
                               <label for="daytime-running-lights" class="form-check-label">Daytime Running Lights</label>
                             </div>
                           </div>
@@ -786,7 +786,7 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="power-trunk" checked>
+                              <input type="checkbox" class="form-check-input" id="power-trunk">
                               <label for="power-trunk" class="form-check-label">Power Trunk</label>
                             </div>
                           </div>
@@ -807,13 +807,13 @@
                         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 gy-3 gx-4">
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="ac" checked>
+                              <input type="checkbox" class="form-check-input" id="ac">
                               <label for="ac" class="form-check-label">Multi-Zone A/C</label>
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="heated-front" checked>
+                              <input type="checkbox" class="form-check-input" id="heated-front">
                               <label for="heated-front" class="form-check-label">Heated Front Seats</label>
                             </div>
                           </div>
@@ -825,7 +825,7 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="steering-adjustable" checked>
+                              <input type="checkbox" class="form-check-input" id="steering-adjustable">
                               <label for="steering-adjustable" class="form-check-label">Adjustable Steering Wheel</label>
                             </div>
                           </div>
@@ -837,7 +837,7 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="door-locks" checked>
+                              <input type="checkbox" class="form-check-input" id="door-locks">
                               <label for="door-locks" class="form-check-label">Power Door Locks</label>
                             </div>
                           </div>
@@ -867,7 +867,7 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="visor-mirror" checked>
+                              <input type="checkbox" class="form-check-input" id="visor-mirror">
                               <label for="visor-mirror" class="form-check-label">Passenger Illuminated Visor Mirror</label>
                             </div>
                           </div>
@@ -891,7 +891,7 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="garage-opener" checked>
+                              <input type="checkbox" class="form-check-input" id="garage-opener">
                               <label for="garage-opener" class="form-check-label">Universal Garage Door Opener</label>
                             </div>
                           </div>
@@ -912,13 +912,13 @@
                         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 gy-3 gx-4">
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="airbags" checked>
+                              <input type="checkbox" class="form-check-input" id="airbags">
                               <label for="airbags" class="form-check-label">Airbags</label>
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="anti-lock-brakes" checked>
+                              <input type="checkbox" class="form-check-input" id="anti-lock-brakes">
                               <label for="anti-lock-brakes" class="form-check-label">Anti-lock Brakes (ABS)</label>
                             </div>
                           </div>
@@ -930,19 +930,19 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="stability-control" checked>
+                              <input type="checkbox" class="form-check-input" id="stability-control">
                               <label for="stability-control" class="form-check-label">Stability Control</label>
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="rearview-camera" checked>
+                              <input type="checkbox" class="form-check-input" id="rearview-camera">
                               <label for="rearview-camera" class="form-check-label">Rearview Camera</label>
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="blind-spot-monitor" checked>
+                              <input type="checkbox" class="form-check-input" id="blind-spot-monitor">
                               <label for="blind-spot-monitor" class="form-check-label">Blind Spot Monitor</label>
                             </div>
                           </div>
@@ -966,13 +966,13 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="adaptive-cruise" checked>
+                              <input type="checkbox" class="form-check-input" id="adaptive-cruise">
                               <label for="adaptive-cruise" class="form-check-label">Adaptive Cruise Control</label>
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="child-safety-locks" checked>
+                              <input type="checkbox" class="form-check-input" id="child-safety-locks">
                               <label for="child-safety-locks" class="form-check-label">Child Safety Locks</label>
                             </div>
                           </div>
@@ -996,7 +996,7 @@
                           </div>
                           <div class="col">
                             <div class="form-check mb-0">
-                              <input type="checkbox" class="form-check-input" id="pedestrian-detection" checked>
+                              <input type="checkbox" class="form-check-input" id="pedestrian-detection">
                               <label for="pedestrian-detection" class="form-check-label">Pedestrian Detection</label>
                             </div>
                           </div>
@@ -1017,23 +1017,23 @@
                 <label for="price" class="form-label">Price *</label>
                 <div class="position-relative mb-3 mb-md-4" style="max-width: 390px">
                   <i class="fi-dollar-sign fs-lg position-absolute top-50 start-0 translate-middle-y ms-3"></i>
-                  <input type="number" class="form-control form-control-lg form-icon-start" id="price" min="1000" value="41900" placeholder="Set a fair price" required>
+                  <input type="number" class="form-control form-control-lg form-icon-start" id="price" name="price" min="1000" placeholder="Set a fair price" required>
                 </div>
                 <div class="form-check form-switch mb-3 mb-md-4">
-                  <input type="checkbox" class="form-check-input" role="switch" id="negotiated" checked>
+                  <input type="checkbox" class="form-check-input" role="switch" id="negotiated" name="negotiated" value="1">
                   <label for="negotiated" class="form-check-label fw-medium">Negotiated price</label>
                 </div>
                 <div class="d-flex flex-column gap-3">
                   <div class="form-check mb-0">
-                    <input type="checkbox" class="form-check-input" id="installments" checked>
+                    <input type="checkbox" class="form-check-input" id="installments" name="installments" value="1">
                     <label for="installments" class="form-check-label">Payment in installments is possible</label>
                   </div>
                   <div class="form-check mb-0">
-                    <input type="checkbox" class="form-check-input" id="exchange">
+                    <input type="checkbox" class="form-check-input" id="exchange" name="exchange" value="1">
                     <label for="exchange" class="form-check-label">Exchange for a car is possible</label>
                   </div>
                   <div class="form-check mb-0">
-                    <input type="checkbox" class="form-check-input" id="uncleared">
+                    <input type="checkbox" class="form-check-input" id="uncleared" name="uncleared" value="1">
                     <label for="uncleared" class="form-check-label">Uncleared car</label>
                   </div>
                 </div>
@@ -1048,14 +1048,14 @@
                 <h2 class="h4 mb-3 mb-sm-4">Contacts</h2>
                 <div class="nav nav-pills flex-wrap gap-3 mb-3 mb-sm-4">
                   <div>
-                    <input type="radio" class="btn-check" id="private" name="seller" checked>
+                    <input type="radio" class="btn-check" id="private" name="seller" value="private" checked>
                     <label class="nav-link" for="private">
                       <i class="fi-user fs-base ms-n1 me-2"></i>
                       Private seller
                     </label>
                   </div>
                   <div>
-                    <input type="radio" class="btn-check" id="dealer" name="seller">
+                    <input type="radio" class="btn-check" id="dealer" name="seller" value="dealer">
                     <label class="nav-link" for="dealer">
                       <i class="fi-briefcase fs-base ms-n1 me-2"></i>
                       Dealer
@@ -1065,23 +1065,23 @@
                 <div class="row row-cols-1 row-cols-sm-2 g-3 g-md-4">
                   <div class="col">
                     <label for="fn" class="form-label">First name *</label>
-                    <input type="text" class="form-control form-control-lg" id="fn" required>
+                    <input type="text" class="form-control form-control-lg" id="fn" name="contact_first_name" required>
                   </div>
                   <div class="col">
                     <label for="ln" class="form-label">Last name *</label>
-                    <input type="text" class="form-control form-control-lg" id="ln" required>
+                    <input type="text" class="form-control form-control-lg" id="ln" name="contact_last_name" required>
                   </div>
                   <div class="col">
                     <label for="email" class="form-label">Email *</label>
-                    <input type="email" class="form-control form-control-lg" id="email" required>
+                    <input type="email" class="form-control form-control-lg" id="email" name="contact_email" required>
                   </div>
                   <div class="col">
                     <label for="phone" class="form-label">Phone number *</label>
-                    <input type="tel" class="form-control form-control-lg" id="phone" data-input-format='{"numericOnly": true, "delimiters": ["(", ")", " ", "-", " "], "blocks": [0, 3, 0, 3, 4]}' placeholder="(___) ___-____" required>
+                    <input type="tel" class="form-control form-control-lg" id="phone" name="contact_phone" data-input-format='{"numericOnly": true, "delimiters": ["(", ")", " ", "-", " "], "blocks": [0, 3, 0, 3, 4]}' placeholder="(___) ___-____" required>
                   </div>
                   <div class="col">
                     <div class="form-check mb-0">
-                      <input type="checkbox" class="form-check-input" id="dealer-ready">
+                      <input type="checkbox" class="form-check-input" id="dealer-ready" name="dealer_ready" value="1">
                       <label for="dealer-ready" class="form-check-label">Ready to cooperate with dealers</label>
                     </div>
                   </div>
@@ -1476,24 +1476,8 @@
           const brand = selectedOptionText('select[aria-label="Car brand select"]');
           const model = selectedOptionText('select[aria-label="Car model select"]');
           const year = selectedOptionText('select[aria-label="Manufacturing year select"]');
-          const location = selectedOptionText('select[aria-label="Location select"]');
-          const fuel = selectedOptionText('select[aria-label="Fuel select"]');
-          const transmission = selectedOptionText('select[aria-label="Transmission select"]');
-          const body = selectedRadioLabel('body');
-          const mileage = (form.querySelector('#mileage')?.value || '').trim();
-          const price = (form.querySelector('#price')?.value || '').trim();
           const title = [brand, model, year].filter(Boolean).join(' ').trim() || 'Car Listing';
-
           upsertHidden('title', title);
-          upsertHidden('brand', brand);
-          upsertHidden('model', model);
-          upsertHidden('year', year);
-          upsertHidden('city', location);
-          upsertHidden('fuel_type', fuel);
-          upsertHidden('transmission', transmission);
-          upsertHidden('body_type', body);
-          upsertHidden('mileage', mileage);
-          upsertHidden('price', price);
           upsertHidden('status', submitAction === 'draft' ? 'draft' : 'published');
         });
       })();
@@ -1502,6 +1486,7 @@
     <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>
+
 
 
 

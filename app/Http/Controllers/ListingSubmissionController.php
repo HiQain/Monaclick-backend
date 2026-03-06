@@ -22,7 +22,13 @@ class ListingSubmissionController extends Controller
 
         $categorySlug = $this->mapPropertyCategorySlug((string) ($payload['radio:type'] ?? ''));
         $category = $this->resolveCategory('real-estate', $categorySlug);
-        $city = $this->resolveCity((string) ($payload['select:city-select'] ?? ''));
+        $city = $this->resolveCity($this->firstNonEmpty($payload, [
+            'select:city-select',
+            'select:location-select',
+            'select:city',
+            'city-select',
+            'city',
+        ]));
 
         if (! $category || ! $city) {
             return redirect('/add-property?error=missing-taxonomy');
@@ -41,12 +47,17 @@ class ListingSubmissionController extends Controller
         $listingType = ((string) ($payload['radio:category'] ?? 'sell')) === 'rent' ? 'rent' : 'sale';
         $priceRaw = (string) ($payload['price'] ?? '');
         $price = Listing::normalizePrice($priceRaw !== '' ? $priceRaw : null, $listingType === 'rent');
+        $excerpt = $this->firstNonEmpty($payload, [
+            'user-info',
+            'description',
+            'details',
+        ]);
         $listingData = [
             'category_id' => $category->id,
             'city_id' => $city->id,
             'module' => 'real-estate',
             'title' => $title,
-            'excerpt' => 'User submitted real-estate listing from frontend form.',
+            'excerpt' => $excerpt,
             'price' => $price,
             'budget_tier' => $this->resolveBudgetTier($priceRaw),
             'availability_now' => (bool) ($payload['tour'] ?? false),
@@ -82,7 +93,7 @@ class ListingSubmissionController extends Controller
 
         return $this->redirectAfterSubmission(
             $status,
-            '/add-property',
+            '/account/listings',
             '/listings/real-estate',
             $title,
             $listing->id
@@ -95,10 +106,21 @@ class ListingSubmissionController extends Controller
         $status = $this->resolveStatus($request);
         $editListing = $this->resolveEditableListing($request, 'contractors');
 
-        $selectedCategory = $this->extractFirstValue($payload['select:select-categories'] ?? null);
-        $categorySlug = $this->mapContractorCategorySlug($selectedCategory);
-        $category = $this->resolveCategory('contractors', $categorySlug);
-        $city = $this->resolveCity((string) ($payload['select:city-select'] ?? ''));
+        $selectedCategory = $this->firstNonEmpty($payload, [
+            'select:select-categories',
+            'select:project-type',
+            'project-type',
+            'radio:project-type',
+            'category',
+        ]);
+        $category = $this->resolveCategory('contractors', $selectedCategory !== '' ? $selectedCategory : 'Remodeling');
+        $city = $this->resolveCity($this->firstNonEmpty($payload, [
+            'select:city-select',
+            'select:location-select',
+            'select:city',
+            'city-select',
+            'city',
+        ]));
 
         if (! $category || ! $city) {
             return redirect('/add-contractor?error=missing-taxonomy');
@@ -123,7 +145,11 @@ class ListingSubmissionController extends Controller
             'city_id' => $city->id,
             'module' => 'contractors',
             'title' => $title,
-            'excerpt' => trim((string) ($payload['project-description'] ?? '')) ?: 'User submitted contractor service listing from frontend form.',
+            'excerpt' => $this->firstNonEmpty($payload, [
+                'project-description',
+                'user-info',
+                'description',
+            ]),
             'price' => Listing::normalizePrice($priceRaw !== '' ? "From {$priceRaw}" : null),
             'budget_tier' => $this->resolveBudgetTier($priceRaw),
             'availability_now' => true,
@@ -166,8 +192,8 @@ class ListingSubmissionController extends Controller
             ['listing_id' => $listing->id],
             [
                 'service_area' => $serviceArea !== '' ? $serviceArea : ($city->name . ' Metro'),
-                'license_number' => 'LIC-' . strtoupper(substr(md5($listing->slug), 0, 6)),
-                'is_verified' => true,
+                'license_number' => $this->firstNonEmpty($payload, ['license-number', 'license_number', 'license']) ?: null,
+                'is_verified' => (bool) ($payload['is-verified'] ?? false),
                 'business_hours' => $businessHours,
             ]
         );
@@ -228,7 +254,7 @@ class ListingSubmissionController extends Controller
             'city_id' => $city->id,
             'module' => 'restaurants',
             'title' => $title,
-            'excerpt' => 'User submitted restaurant listing from frontend form.',
+            'excerpt' => trim((string) $request->input('description', $request->input('about', ''))),
             'price' => $price,
             'budget_tier' => $this->resolveRestaurantBudgetTier($priceRange),
             'availability_now' => true,
@@ -396,6 +422,26 @@ class ListingSubmissionController extends Controller
             'painting', 'paiting' => 'painting',
             default => 'remodeling',
         };
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @param array<int, string> $keys
+     */
+    private function firstNonEmpty(array $payload, array $keys): string
+    {
+        foreach ($keys as $key) {
+            $value = $payload[$key] ?? null;
+            if (is_array($value)) {
+                $value = $this->extractFirstValue($value);
+            }
+            $value = trim((string) $value);
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return '';
     }
 
     private function resolveBudgetTier(string $rawAmount): int

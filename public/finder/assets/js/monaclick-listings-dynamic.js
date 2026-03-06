@@ -143,6 +143,12 @@
   const ratingChecks = Array.from(document.querySelectorAll('input[id^="star-"]'));
   const availabilityCheck = document.getElementById('now');
   const budgetChecks = Array.from(document.querySelectorAll('input[id^="budget-"]'));
+  const newCarsBtn = selectedModule === 'cars'
+    ? Array.from(document.querySelectorAll('button, a')).find((el) => (el.textContent || '').trim().toLowerCase() === 'new cars')
+    : null;
+  const usedCarsBtn = selectedModule === 'cars'
+    ? Array.from(document.querySelectorAll('button, a')).find((el) => (el.textContent || '').trim().toLowerCase() === 'used cars')
+    : null;
   const featureChecks = [
     'eco-friendly',
     'free-consultation',
@@ -174,6 +180,7 @@
         .map((v) => v.trim())
         .filter((v) => v.length > 0),
       availability: params.get('availability') === '1',
+      stock: selectedModule === 'cars' ? (params.get('stock') || 'used') : '',
       page: Number.parseInt(params.get('page') || '1', 10) || 1,
     };
   };
@@ -299,6 +306,7 @@
     if (state.budgets.length) params.set('budgets', state.budgets.join(','));
     if (state.features.length) params.set('features', state.features.join(','));
     if (state.availability) params.set('availability', '1');
+    if (selectedModule === 'cars' && state.stock) params.set('stock', state.stock);
     if (state.page > 1) params.set('page', String(state.page));
     const qs = params.toString();
     window.history.replaceState({}, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
@@ -315,6 +323,7 @@
     if (state.budgets.length) params.set('budgets', state.budgets.join(','));
     if (state.features.length) params.set('features', state.features.join(','));
     if (state.availability) params.set('availability', '1');
+    if (selectedModule === 'cars' && state.stock) params.set('stock', state.stock);
     if (targetPage > 1) params.set('page', String(targetPage));
     const qs = params.toString();
     return `${window.location.pathname}${qs ? `?${qs}` : ''}`;
@@ -644,6 +653,10 @@
     if (availabilityCheck) {
       availabilityCheck.checked = !!state.availability;
     }
+    if (selectedModule === 'cars') {
+      if (newCarsBtn) newCarsBtn.classList.toggle('active', state.stock === 'new');
+      if (usedCarsBtn) usedCarsBtn.classList.toggle('active', state.stock !== 'new');
+    }
 
     if (selectedModule === 'events') {
       if (eventsCategorySelect) {
@@ -694,6 +707,7 @@
     if (state.budgets.length) apiQuery.set('budgets', state.budgets.join(','));
     if (state.features.length) apiQuery.set('features', state.features.join(','));
     if (state.availability) apiQuery.set('availability', '1');
+    if (selectedModule === 'cars' && state.stock) apiQuery.set('stock', state.stock);
 
     fetch(`/api/monaclick/listings?${apiQuery.toString()}`)
       .then((res) => res.json())
@@ -839,11 +853,34 @@
   if (clearAllLink) {
     clearAllLink.addEventListener('click', (event) => {
       event.preventDefault();
-      state = { q: '', city: '', category: '', sort: '', ratings: [], budgets: [], features: [], availability: false, page: 1 };
+      state = { q: '', city: '', category: '', sort: '', ratings: [], budgets: [], features: [], availability: false, stock: selectedModule === 'cars' ? 'used' : '', page: 1 };
       syncControlsFromState();
       applyStateToUrl();
       loadListings();
     });
+  }
+
+  if (selectedModule === 'cars') {
+    if (newCarsBtn) {
+      newCarsBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        state.stock = 'new';
+        state.page = 1;
+        applyStateToUrl();
+        syncControlsFromState();
+        loadListings();
+      });
+    }
+    if (usedCarsBtn) {
+      usedCarsBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        state.stock = 'used';
+        state.page = 1;
+        applyStateToUrl();
+        syncControlsFromState();
+        loadListings();
+      });
+    }
   }
 
   ratingChecks.forEach((input) => {

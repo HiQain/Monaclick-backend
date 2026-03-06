@@ -12,16 +12,43 @@ class CarDetail extends Model
 
     protected $fillable = [
         'listing_id',
+        'brand',
+        'model',
+        'condition',
         'year',
         'mileage',
+        'radius',
+        'drive_type',
+        'engine',
         'fuel_type',
         'transmission',
         'body_type',
+        'city_mpg',
+        'highway_mpg',
+        'exterior_color',
+        'interior_color',
+        'seller_type',
+        'contact_first_name',
+        'contact_last_name',
+        'contact_email',
+        'contact_phone',
+        'negotiated',
+        'installments',
+        'exchange',
+        'uncleared',
+        'dealer_ready',
     ];
 
     protected $casts = [
         'year' => 'integer',
         'mileage' => 'integer',
+        'city_mpg' => 'integer',
+        'highway_mpg' => 'integer',
+        'negotiated' => 'boolean',
+        'installments' => 'boolean',
+        'exchange' => 'boolean',
+        'uncleared' => 'boolean',
+        'dealer_ready' => 'boolean',
     ];
 
     public function listing(): BelongsTo

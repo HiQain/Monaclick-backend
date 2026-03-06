@@ -20,6 +20,7 @@ class PublicListingController extends Controller
             ->with([
                 'category:id,name,slug',
                 'city:id,name,slug',
+                'carDetail:listing_id,year',
                 'eventDetail:listing_id,starts_at,ends_at,venue,capacity',
             ])
             ->where('status', 'published');
@@ -36,6 +37,16 @@ class PublicListingController extends Controller
         if ($request->filled('city')) {
             $city = $request->string('city')->toString();
             $query->whereHas('city', fn ($builder) => $builder->where('slug', $city));
+        }
+
+        if ($module === 'cars' && $request->filled('stock')) {
+            $stock = strtolower(trim($request->string('stock')->toString()));
+            $newYearThreshold = (int) now()->format('Y') - 3;
+            if ($stock === 'new') {
+                $query->whereHas('carDetail', fn ($builder) => $builder->where('year', '>=', $newYearThreshold));
+            } elseif ($stock === 'used') {
+                $query->whereHas('carDetail', fn ($builder) => $builder->where('year', '<', $newYearThreshold));
+            }
         }
 
         if ($request->filled('q')) {
@@ -162,6 +173,9 @@ class PublicListingController extends Controller
                     'slug' => $listing->city?->slug,
                 ],
                 'details' => [
+                    'car' => $listing->carDetail ? [
+                        'year' => $listing->carDetail->year,
+                    ] : null,
                     'event' => $listing->eventDetail ? [
                         'starts_at' => optional($listing->eventDetail->starts_at)->toIso8601String(),
                         'ends_at' => optional($listing->eventDetail->ends_at)->toIso8601String(),

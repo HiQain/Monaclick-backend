@@ -451,9 +451,7 @@ const moduleLinks = [
       }
 
       document.body.appendChild(form);
-      if (status !== 'draft') {
-        localStorage.removeItem(storageKey);
-      }
+      localStorage.removeItem(storageKey);
       form.submit();
     };
 
@@ -502,9 +500,12 @@ const moduleLinks = [
   };
 
   const setupProfilePhotoButton = () => {
+    if (path.startsWith('/account')) return;
     const updateBtn = Array.from(document.querySelectorAll('button, a'))
       .find((el) => (el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase() === 'update photo');
     if (!updateBtn) return;
+    if (updateBtn.dataset.monaclickPhotoBound === '1') return;
+    updateBtn.dataset.monaclickPhotoBound = '1';
 
     const section = updateBtn.closest('.d-flex') || updateBtn.closest('.row') || document;
     const avatar = section.querySelector('img.rounded-circle') || section.querySelector('img');
@@ -519,6 +520,8 @@ const moduleLinks = [
       input.className = 'd-none';
       document.body.appendChild(input);
     }
+    if (input.dataset.monaclickPhotoInputBound === '1') return;
+    input.dataset.monaclickPhotoInputBound = '1';
 
     updateBtn.addEventListener('click', (event) => {
       event.preventDefault();
