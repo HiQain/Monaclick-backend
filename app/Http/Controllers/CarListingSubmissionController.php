@@ -15,35 +15,60 @@ class CarListingSubmissionController extends Controller
 {
     public function __invoke(Request $request): RedirectResponse
     {
+        $listingId = (int) $request->input('listing_id', 0);
+        $existingListing = null;
+        if ($listingId > 0 && auth()->check()) {
+            $existingListing = Listing::query()
+                ->with('carDetail')
+                ->where('id', $listingId)
+                ->where('user_id', auth()->id())
+                ->where('module', 'cars')
+                ->first();
+        }
+
+        $existingDetail = $existingListing?->carDetail;
+
+        $brand = $this->stringInputOrExisting($request, 'brand', $existingDetail?->brand);
+        $model = $this->stringInputOrExisting($request, 'model', $existingDetail?->model);
+        $year = $this->stringInputOrExisting($request, 'year', $existingDetail?->year ? (string) $existingDetail->year : null);
         $title = trim((string) $request->input('title', ''));
-        $brand = trim((string) $request->input('brand', ''));
-        $model = trim((string) $request->input('model', ''));
-        $year = trim((string) $request->input('year', ''));
 
         if ($title === '') {
             $title = trim(implode(' ', array_filter([$brand, $model, $year])));
+        }
+        if ($title === '' && $existingListing) {
+            $title = (string) $existingListing->title;
         }
         if ($title === '') {
             $title = 'Car Listing';
         }
 
-        $bodyType = trim((string) $request->input('body_type', $request->input('body', '')));
+        $bodyType = $this->stringInputOrExisting($request, 'body_type', $existingDetail?->body_type, ['body']);
         $categorySlug = Str::slug($bodyType);
         $category = Category::query()
             ->where('module', 'cars')
             ->when($categorySlug !== '', fn ($query) => $query->where('slug', $categorySlug))
             ->first();
 
+        if (! $category && $existingListing) {
+            $category = Category::query()
+                ->where('id', $existingListing->category_id)
+                ->where('module', 'cars')
+                ->first();
+        }
         if (! $category) {
             $category = Category::query()->where('module', 'cars')->orderBy('sort_order')->first();
         }
 
-        $cityRaw = trim((string) $request->input('city', ''));
+        $cityRaw = $this->stringInputOrExisting($request, 'city', $existingListing?->city?->name);
         $citySlug = Str::slug($cityRaw);
         $city = City::query()
             ->when($citySlug !== '', fn ($query) => $query->where('slug', $citySlug))
             ->first();
 
+        if (! $city && $existingListing) {
+            $city = City::query()->where('id', $existingListing->city_id)->first();
+        }
         if (! $city) {
             $city = City::query()->orderBy('sort_order')->first();
         }
@@ -52,38 +77,25 @@ class CarListingSubmissionController extends Controller
             return redirect('/add-car?error=missing-taxonomy');
         }
 
-        $listingId = (int) $request->input('listing_id', 0);
-        $existingListing = null;
-        if ($listingId > 0 && auth()->check()) {
-            $existingListing = Listing::query()
-                ->where('id', $listingId)
-                ->where('user_id', auth()->id())
-                ->where('module', 'cars')
-                ->first();
-        }
-
         $slug = $this->makeUniqueSlug($title, 'car-listing', $existingListing?->id);
 
         $priceRaw = trim((string) $request->input('price', ''));
-        $price = Listing::normalizePrice($priceRaw !== '' ? $priceRaw : null);
-        $featuresRaw = (string) $request->input('features_json', '[]');
-        $features = json_decode($featuresRaw, true);
-        if (! is_array($features)) {
-            $features = [];
-        }
-        $features = collect($features)
-            ->map(fn ($feature) => trim((string) $feature))
-            ->filter()
-            ->values()
-            ->all();
+        $price = $priceRaw !== ''
+            ? Listing::normalizePrice($priceRaw)
+            : ($existingListing?->price ?: null);
+        $features = $this->normalizeFeatures($request, $existingListing?->features ?? []);
 
         $amount = (int) preg_replace('/[^\d]/', '', (string) $priceRaw);
-        $budgetTier = match (true) {
-            $amount <= 100 => 1,
-            $amount <= 1000 => 2,
-            $amount <= 5000 => 3,
-            default => 4,
-        };
+        if ($priceRaw === '' && $existingListing) {
+            $budgetTier = (int) $existingListing->budget_tier;
+        } else {
+            $budgetTier = match (true) {
+                $amount <= 100 => 1,
+                $amount <= 1000 => 2,
+                $amount <= 5000 => 3,
+                default => 4,
+            };
+        }
 
         $status = strtolower((string) $request->input('status', 'published')) === 'draft' ? 'draft' : 'published';
 
@@ -112,7 +124,7 @@ class CarListingSubmissionController extends Controller
             'module' => 'cars',
             'title' => $title,
             'slug' => $slug,
-            'excerpt' => trim((string) $request->input('description', '')),
+            'excerpt' => $this->stringInputOrExisting($request, 'description', $existingListing?->excerpt) ?: '',
             'price' => $price,
             'budget_tier' => $budgetTier,
             'availability_now' => true,
@@ -136,31 +148,31 @@ class CarListingSubmissionController extends Controller
         CarDetail::query()->updateOrCreate(
             ['listing_id' => $listing->id],
             [
-                'brand' => $brand !== '' ? $brand : null,
-                'model' => $model !== '' ? $model : null,
-                'condition' => trim((string) $request->input('condition', '')) ?: null,
-                'year' => (int) $request->input('year'),
-                'mileage' => (int) preg_replace('/[^\d]/', '', (string) $request->input('mileage')),
-                'radius' => trim((string) $request->input('radius', '')) ?: null,
-                'drive_type' => trim((string) $request->input('drive_type', '')) ?: null,
-                'engine' => trim((string) $request->input('engine', '')) ?: null,
-                'fuel_type' => Str::lower((string) $request->input('fuel_type')),
-                'transmission' => Str::lower((string) $request->input('transmission')),
-                'body_type' => $bodyType !== '' ? $bodyType : null,
-                'city_mpg' => (int) preg_replace('/[^\d]/', '', (string) $request->input('city_mpg')),
-                'highway_mpg' => (int) preg_replace('/[^\d]/', '', (string) $request->input('highway_mpg')),
-                'exterior_color' => trim((string) $request->input('exterior_color', '')) ?: null,
-                'interior_color' => trim((string) $request->input('interior_color', '')) ?: null,
-                'seller_type' => trim((string) $request->input('seller_type', $request->input('seller', ''))) ?: null,
-                'contact_first_name' => trim((string) $request->input('contact_first_name', '')) ?: null,
-                'contact_last_name' => trim((string) $request->input('contact_last_name', '')) ?: null,
-                'contact_email' => trim((string) $request->input('contact_email', '')) ?: null,
-                'contact_phone' => trim((string) $request->input('contact_phone', '')) ?: null,
-                'negotiated' => $request->boolean('negotiated'),
-                'installments' => $request->boolean('installments'),
-                'exchange' => $request->boolean('exchange'),
-                'uncleared' => $request->boolean('uncleared'),
-                'dealer_ready' => $request->boolean('dealer_ready'),
+                'brand' => $brand,
+                'model' => $model,
+                'condition' => $this->stringInputOrExisting($request, 'condition', $existingDetail?->condition),
+                'year' => $this->integerInputOrExisting($request, 'year', $existingDetail?->year),
+                'mileage' => $this->integerInputOrExisting($request, 'mileage', $existingDetail?->mileage),
+                'radius' => $this->stringInputOrExisting($request, 'radius', $existingDetail?->radius),
+                'drive_type' => $this->stringInputOrExisting($request, 'drive_type', $existingDetail?->drive_type),
+                'engine' => $this->stringInputOrExisting($request, 'engine', $existingDetail?->engine),
+                'fuel_type' => $this->lowerStringInputOrExisting($request, 'fuel_type', $existingDetail?->fuel_type),
+                'transmission' => $this->lowerStringInputOrExisting($request, 'transmission', $existingDetail?->transmission),
+                'body_type' => $bodyType,
+                'city_mpg' => $this->integerInputOrExisting($request, 'city_mpg', $existingDetail?->city_mpg),
+                'highway_mpg' => $this->integerInputOrExisting($request, 'highway_mpg', $existingDetail?->highway_mpg),
+                'exterior_color' => $this->stringInputOrExisting($request, 'exterior_color', $existingDetail?->exterior_color),
+                'interior_color' => $this->stringInputOrExisting($request, 'interior_color', $existingDetail?->interior_color),
+                'seller_type' => $this->stringInputOrExisting($request, 'seller_type', $existingDetail?->seller_type, ['seller']),
+                'contact_first_name' => $this->stringInputOrExisting($request, 'contact_first_name', $existingDetail?->contact_first_name),
+                'contact_last_name' => $this->stringInputOrExisting($request, 'contact_last_name', $existingDetail?->contact_last_name),
+                'contact_email' => $this->stringInputOrExisting($request, 'contact_email', $existingDetail?->contact_email),
+                'contact_phone' => $this->stringInputOrExisting($request, 'contact_phone', $existingDetail?->contact_phone),
+                'negotiated' => $this->booleanInputOrExisting($request, 'negotiated', (bool) ($existingDetail?->negotiated ?? false)),
+                'installments' => $this->booleanInputOrExisting($request, 'installments', (bool) ($existingDetail?->installments ?? false)),
+                'exchange' => $this->booleanInputOrExisting($request, 'exchange', (bool) ($existingDetail?->exchange ?? false)),
+                'uncleared' => $this->booleanInputOrExisting($request, 'uncleared', (bool) ($existingDetail?->uncleared ?? false)),
+                'dealer_ready' => $this->booleanInputOrExisting($request, 'dealer_ready', (bool) ($existingDetail?->dealer_ready ?? false)),
             ]
         );
 
@@ -192,5 +204,78 @@ class CarListingSubmissionController extends Controller
         }
 
         return $slug;
+    }
+
+    /**
+     * @param array<int, string> $aliases
+     */
+    private function stringInputOrExisting(Request $request, string $key, ?string $existing = null, array $aliases = []): ?string
+    {
+        $keys = array_merge([$key], $aliases);
+        foreach ($keys as $candidate) {
+            if (! $request->exists($candidate)) {
+                continue;
+            }
+            $value = trim((string) $request->input($candidate, ''));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return $existing !== null && trim($existing) !== '' ? trim($existing) : null;
+    }
+
+    private function lowerStringInputOrExisting(Request $request, string $key, ?string $existing = null): ?string
+    {
+        $value = $this->stringInputOrExisting($request, $key, $existing);
+
+        return $value !== null ? Str::lower($value) : null;
+    }
+
+    private function integerInputOrExisting(Request $request, string $key, ?int $existing = null): ?int
+    {
+        if ($request->exists($key)) {
+            $numeric = preg_replace('/[^\d]/', '', (string) $request->input($key, ''));
+            if ($numeric !== '') {
+                return (int) $numeric;
+            }
+        }
+
+        return $existing;
+    }
+
+    private function booleanInputOrExisting(Request $request, string $key, bool $existing = false): bool
+    {
+        if (! $request->exists($key)) {
+            return $existing;
+        }
+
+        return $request->boolean($key);
+    }
+
+    /**
+     * @param array<int, string> $existingFeatures
+     * @return array<int, string>
+     */
+    private function normalizeFeatures(Request $request, array $existingFeatures = []): array
+    {
+        if (! $request->exists('features_json')) {
+            return array_values(array_filter(array_map(
+                fn ($feature) => trim((string) $feature),
+                $existingFeatures
+            )));
+        }
+
+        $featuresRaw = (string) $request->input('features_json', '[]');
+        $features = json_decode($featuresRaw, true);
+        if (! is_array($features)) {
+            return [];
+        }
+
+        return collect($features)
+            ->map(fn ($feature) => trim((string) $feature))
+            ->filter()
+            ->values()
+            ->all();
     }
 }

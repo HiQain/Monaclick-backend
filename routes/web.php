@@ -1571,6 +1571,16 @@ HTML;
     return /^select /i.test(text) ? '' : text;
   };
 
+  const selectedOptionValue = (selectors) => {
+    const select = pickSelect(selectors);
+    if (!select) return '';
+    const option = select.options?.[select.selectedIndex];
+    const text = (option?.textContent || '').trim();
+    const value = String(select.value || '').trim();
+    if (value === '' || /^select /i.test(text)) return '';
+    return value;
+  };
+
   const selectedRadioLabel = (name) => {
     const checked = form.querySelector(`input[name="${name}"]:checked`);
     if (!checked) return '';
@@ -1621,7 +1631,8 @@ HTML;
     for (const radio of radios) {
       const label = form.querySelector(`label[for="${radio.id}"]`);
       const text = (label?.textContent || '').trim().toLowerCase();
-      if (text === normalized) {
+      const radioValue = String(radio.value || '').trim().toLowerCase();
+      if (text === normalized || radioValue === normalized || radio.id.toLowerCase() === normalized) {
         radio.checked = true;
         radio.dispatchEvent(new Event('change', { bubbles: true }));
         break;
@@ -1946,10 +1957,18 @@ HTML;
     };
 
     const sellerChecked = form.querySelector('input[name="seller"]:checked');
+    const bodyChecked = form.querySelector('input[name="body"]:checked');
     ensureHidden('condition', selectedConditionValue());
-    ensureHidden('radius', selectedOptionText(['select[aria-label="Radius select"]', 'select[name="radius"]']));
-    ensureHidden('drive_type', selectedOptionText(['select[aria-label="Drive type select"]', 'select[name="drive_type"]']));
-    ensureHidden('engine', selectedOptionText(['select[aria-label="Engine select"]', 'select[name="engine"]']));
+    ensureHidden('brand', selectedOptionValue(['select[aria-label="Car brand select"]', 'select[name="brand"]']));
+    ensureHidden('model', selectedOptionValue(['select[aria-label="Car model select"]', 'select[name="model"]']));
+    ensureHidden('year', selectedOptionValue(['select[aria-label="Manufacturing year select"]', 'select[name="year"]']));
+    ensureHidden('city', selectedOptionValue(['select[aria-label="Location select"]', 'select[name="city"]']));
+    ensureHidden('radius', selectedOptionValue(['select[aria-label="Radius select"]', 'select[name="radius"]']));
+    ensureHidden('drive_type', selectedOptionValue(['select[aria-label="Drive type select"]', 'select[name="drive_type"]']));
+    ensureHidden('engine', selectedOptionValue(['select[aria-label="Engine select"]', 'select[name="engine"]']));
+    ensureHidden('fuel_type', selectedOptionValue(['select[aria-label="Fuel select"]', 'select[name="fuel_type"]']));
+    ensureHidden('transmission', selectedOptionValue(['select[aria-label="Transmission select"]', 'select[name="transmission"]']));
+    ensureHidden('body_type', String(bodyChecked?.value || selectedRadioLabel('body') || '').trim());
     ensureHidden('city_mpg', form.querySelector('#city-mpg')?.value || '');
     ensureHidden('highway_mpg', form.querySelector('#highway-mpg')?.value || '');
     ensureHidden('exterior_color', form.querySelector('#exterior-color')?.value || '');
