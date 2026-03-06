@@ -35,7 +35,7 @@
 
     <!-- Customizer -->
     <script src="/finder/assets/js/customizer.min.js"></script>
-  </head>
+</head>
 
 
   <!-- Body -->
@@ -217,11 +217,11 @@
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
                 <a class="nav-link dropdown-toggle" href="/listings/contractors" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Listings</a>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="/contractors">Contractors</a></li>
-                  <li><a class="dropdown-item" href="/real-estate">Real Estate</a></li>
-                  <li><a class="dropdown-item" href="/cars">Cars</a></li>
-                  <li><a class="dropdown-item" href="/events">Events</a></li>
-                  <li><a class="dropdown-item" href="/restaurants">Restaurants</a></li>
+                  <li><a class="dropdown-item" href="/listings/contractors">Contractors</a></li>
+                  <li><a class="dropdown-item" href="/listings/real-estate">Real Estate</a></li>
+                  <li><a class="dropdown-item" href="/listings/cars">Cars</a></li>
+                  <li><a class="dropdown-item" href="/listings/events">Events</a></li>
+                  <li><a class="dropdown-item" href="/listings/restaurants">Restaurants</a></li>
                 </ul>
               </li>
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
@@ -299,7 +299,7 @@
           <h1 class="h2 mt-auto">Create an account</h1>
           <div class="nav fs-sm mb-3 mb-lg-4">
             I already have an account
-            <a class="nav-link text-decoration-underline p-0 ms-2" href="/login">Sign in</a>
+            <a class="nav-link text-decoration-underline p-0 ms-2" href="/signin">Sign in</a>
           </div>
           <div class="nav fs-sm mb-4 d-lg-none">
             <span class="me-2">Uncertain about creating an account?</span>
@@ -307,16 +307,17 @@
           </div>
 
           <!-- Form -->
-          <form class="needs-validation" novalidate>
+          <form class="needs-validation" method="post" action="/signup" novalidate>
+            <input type="hidden" name="_token" value="__CSRF_TOKEN__">
             <div class="position-relative mb-4">
               <label for="register-email" class="form-label">Email</label>
-              <input type="email" class="form-control form-control-lg" id="register-email" required>
+              <input type="email" name="email" class="form-control form-control-lg" id="register-email" required>
               <div class="invalid-tooltip bg-transparent py-0">Enter a valid email address!</div>
             </div>
             <div class="mb-4">
               <label for="register-password" class="form-label">Password</label>
               <div class="password-toggle">
-                <input type="password" class="form-control form-control-lg" id="register-password" minlength="8" placeholder="Minimum 8 characters" required>
+                <input type="password" name="password" class="form-control form-control-lg" id="register-password" minlength="8" placeholder="Minimum 8 characters" required>
                 <div class="invalid-tooltip bg-transparent py-0">Password does not meet the required criteria!</div>
                 <label class="password-toggle-button fs-lg" aria-label="Show/hide password">
                   <input type="checkbox" class="btn-check">
@@ -608,11 +609,13 @@
         Customize<i class="fi-settings fs-base ms-1 me-n2 animate-target"></i>
       </a>
     </div>
-    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260305-1"></script>
+    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260306-3"></script>
 
     <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>
+
+
 
 
 

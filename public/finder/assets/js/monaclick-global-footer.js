@@ -2,7 +2,32 @@
   const footer = document.querySelector('footer.footer');
   if (!footer) return;
 
-  const moduleLinks = [
+  const currentPath = window.location.pathname.toLowerCase();
+  const isAuthSplitPage = currentPath === '/signin' || currentPath === '/signup' || currentPath === '/password-recovery';
+
+  const needsVerticalCenter = currentPath === '/signin' || currentPath === '/password-recovery';
+  if (needsVerticalCenter) {
+    const panel = document.querySelector('main.content-wrapper > .d-lg-flex > div.d-flex.flex-column.min-vh-100');
+    if (panel) panel.classList.add('justify-content-center');
+
+    const heading = panel?.querySelector('h1.h2.mt-auto');
+    if (heading) heading.classList.remove('mt-auto');
+  }
+  if (isAuthSplitPage) {
+    const main = document.querySelector('main.content-wrapper');
+    const splitRow = main?.querySelector(':scope > .d-lg-flex');
+    const header = main?.querySelector('header.navbar.navbar-sticky');
+
+    if (main && splitRow && header && header.parentElement !== main) {
+      main.insertBefore(header, splitRow);
+      header.classList.add('mb-2');
+    }
+
+    if (main) {
+      main.insertAdjacentElement('afterend', footer);
+    }
+  }
+const moduleLinks = [
     { href: '/listings/contractors', label: 'Contractors' },
     { href: '/listings/real-estate', label: 'Real Estate' },
     { href: '/listings/cars', label: 'Cars' },
@@ -131,3 +156,424 @@
   `;
 })();
 
+(() => {
+  const path = window.location.pathname.toLowerCase();
+
+  const toSlug = (value) =>
+    String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
+  const isElementInMain = (element) => {
+    const main = element.closest('main');
+    if (!main) return false;
+    if (element.closest('#customizer')) return false;
+    return true;
+  };
+
+  const getFieldKey = (element) => {
+    const id = (element.id || '').trim();
+    if (id) return id;
+    const aria = (element.getAttribute('aria-label') || '').trim();
+    if (aria) return `${element.tagName.toLowerCase()}:${toSlug(aria)}`;
+    return '';
+  };
+
+  const encodePayload = (payload) => {
+    try {
+      const json = JSON.stringify(payload || {});
+      return btoa(unescape(encodeURIComponent(json)));
+    } catch {
+      return '';
+    }
+  };
+
+  const setupRestaurantForm = () => {
+    if (path !== '/add-restaurant' && path !== '/add-restaurant.html') return;
+
+    const form = document.querySelector('main form.card');
+    if (!form) return;
+
+    form.setAttribute('action', '/submit/restaurant');
+    form.setAttribute('method', 'post');
+    form.setAttribute('enctype', 'multipart/form-data');
+
+    const saveDraftBtn = Array.from(form.querySelectorAll('button'))
+      .find((button) => (button.textContent || '').trim().toLowerCase() === 'save draft');
+    if (saveDraftBtn) {
+      saveDraftBtn.setAttribute('type', 'submit');
+      saveDraftBtn.setAttribute('name', 'draft');
+      saveDraftBtn.setAttribute('value', '1');
+      saveDraftBtn.setAttribute('formnovalidate', 'formnovalidate');
+    }
+
+    const publishBtn = Array.from(form.querySelectorAll('button[type="submit"], button'))
+      .find((button) => (button.textContent || '').toLowerCase().includes('submit restaurant listing'));
+    if (publishBtn) {
+      publishBtn.setAttribute('type', 'submit');
+      publishBtn.setAttribute('name', 'publish');
+      publishBtn.setAttribute('value', '1');
+    }
+
+    const ensureHidden = (name, value) => {
+      let field = form.querySelector(`input[type="hidden"][name="${name}"]`);
+      if (!field) {
+        field = document.createElement('input');
+        field.type = 'hidden';
+        field.name = name;
+        form.appendChild(field);
+      }
+      field.value = value;
+    };
+
+    const openingHoursField = form.querySelector('#openingHoursHidden');
+    const composeOpeningHours = () => {
+      const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      const lines = [];
+      days.forEach((day) => {
+        const on = !!form.querySelector(`#${day}`)?.checked;
+        const from = (form.querySelector(`#${day}From`)?.value || '').trim();
+        const to = (form.querySelector(`#${day}To`)?.value || '').trim();
+        const label = day.charAt(0).toUpperCase() + day.slice(1);
+        lines.push(on ? `${label}: ${from || '--:--'} - ${to || '--:--'}` : `${label}: Closed`);
+      });
+      if (openingHoursField) openingHoursField.value = lines.join('\n');
+    };
+
+    const coverInput = form.querySelector('#coverPhoto');
+    const galleryInput = form.querySelector('#galleryPhotos');
+    const uploadTile = form.querySelector('[data-restaurant-upload-tile]');
+    const galleryGrid = form.querySelector('[data-restaurant-upload-grid]');
+    const createCard = (src, isVideo) => {
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.innerHTML = `
+        <div class="hover-effect-opacity position-relative overflow-hidden rounded">
+          <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
+            ${isVideo
+              ? `<video src="${src}" class="w-100 h-100 object-fit-cover" muted controls></video>`
+              : `<img src="${src}" alt="Uploaded media" class="w-100 h-100 object-fit-cover">`}
+          </div>
+          <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
+            <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove"><i class="fi-trash fs-base"></i></button>
+            <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
+          </div>
+        </div>
+      `;
+      return col;
+    };
+
+    if (uploadTile && galleryInput) {
+      uploadTile.addEventListener('click', (event) => {
+        event.preventDefault();
+        galleryInput.click();
+      });
+      galleryInput.addEventListener('change', () => {
+        const files = Array.from(galleryInput.files || []);
+        if (galleryGrid && files.length) {
+          files.forEach((file) => {
+            const src = URL.createObjectURL(file);
+            const card = createCard(src, file.type.startsWith('video/'));
+            const tileCol = uploadTile.closest('.col');
+            if (tileCol) galleryGrid.insertBefore(card, tileCol);
+          });
+        }
+        if (coverInput && files.length && !coverInput.files?.length) {
+          const dt = new DataTransfer();
+          dt.items.add(files[0]);
+          coverInput.files = dt.files;
+        }
+      });
+    }
+
+    if (galleryGrid) {
+      galleryGrid.addEventListener('click', (event) => {
+        const btn = event.target && event.target.closest('button[aria-label="Remove"]');
+        if (!btn) return;
+        event.preventDefault();
+        const col = btn.closest('.col');
+        if (col) col.remove();
+      });
+    }
+
+    const serviceCheckboxes = Array.from(form.querySelectorAll('input[name="services"]'));
+    serviceCheckboxes.forEach((checkbox) => {
+      const label = form.querySelector(`label[for="${checkbox.id}"]`);
+      const value = (label?.textContent || checkbox.id || 'service').trim().toLowerCase();
+      checkbox.value = value;
+    });
+
+    if (saveDraftBtn) {
+      saveDraftBtn.addEventListener('click', () => ensureHidden('draft', '1'));
+    }
+    if (publishBtn) {
+      publishBtn.addEventListener('click', () => {
+        const d = form.querySelector('input[type="hidden"][name="draft"]');
+        if (d) d.remove();
+      });
+    }
+
+    form.addEventListener('submit', () => {
+      composeOpeningHours();
+    });
+  };
+
+  const setupWizardSubmission = () => {
+    const isProperty = path.includes('add-property');
+    const isContractor = path.includes('add-contractor');
+    if (!isProperty && !isContractor) return;
+
+    const storageKey = isProperty ? 'monaclick:add-property' : 'monaclick:add-contractor';
+    const submitPath = isProperty ? '/submit/property' : '/submit/contractor';
+    const finalPath = isProperty ? '/add-property-promotion.html' : '/add-contractor-project.html';
+    const modulePathPrefix = isProperty ? '/add-property' : '/add-contractor';
+
+    const readState = () => {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+      } catch {
+        return {};
+      }
+    };
+
+    const writeState = (state) => {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    };
+
+    const collectState = () => {
+      const state = readState();
+      const fields = Array.from(document.querySelectorAll('input, select, textarea'))
+        .filter((field) => isElementInMain(field))
+        .filter((field) => !field.disabled)
+        .filter((field) => field.type !== 'file')
+        .filter((field) => field.type !== 'range')
+        .filter((field) => field.type !== 'color');
+
+      fields.forEach((field) => {
+        if (field.type === 'radio' && field.name) {
+          const selected = document.querySelector(`input[type="radio"][name="${field.name}"]:checked`);
+          if (selected && isElementInMain(selected)) {
+            state[`radio:${field.name}`] = selected.id || selected.value || '';
+          }
+          return;
+        }
+
+        const key = getFieldKey(field);
+        if (!key) return;
+
+        if (field.type === 'checkbox') {
+          state[key] = !!field.checked;
+          return;
+        }
+
+        if (field.tagName === 'SELECT' && field.multiple) {
+          state[key] = Array.from(field.selectedOptions).map((option) => option.value).filter(Boolean);
+          return;
+        }
+
+        state[key] = field.value;
+      });
+
+      writeState(state);
+      return state;
+    };
+
+    const restoreState = () => {
+      const state = readState();
+      if (!Object.keys(state).length) return;
+
+      Array.from(document.querySelectorAll('input, select, textarea'))
+        .filter((field) => isElementInMain(field))
+        .forEach((field) => {
+          if (field.type === 'radio' && field.name) {
+            const selectedId = state[`radio:${field.name}`];
+            if (selectedId && field.id === selectedId) {
+              field.checked = true;
+            }
+            return;
+          }
+
+          const key = getFieldKey(field);
+          if (!key || !(key in state)) return;
+
+          if (field.type === 'checkbox') {
+            field.checked = !!state[key];
+            return;
+          }
+
+          if (field.tagName === 'SELECT' && field.multiple) {
+            const values = Array.isArray(state[key]) ? state[key] : [];
+            Array.from(field.options).forEach((option) => {
+              option.selected = values.includes(option.value);
+            });
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            return;
+          }
+
+          field.value = state[key] ?? '';
+        });
+    };
+
+    const submitState = (status) => {
+      const state = collectState();
+      const payload = encodePayload(state);
+      if (!payload) return;
+
+      const form = document.createElement('form');
+      form.method = 'get';
+      form.action = submitPath;
+      form.style.display = 'none';
+
+      const payloadInput = document.createElement('input');
+      payloadInput.type = 'hidden';
+      payloadInput.name = 'payload';
+      payloadInput.value = payload;
+      form.appendChild(payloadInput);
+
+      if (status === 'draft') {
+        const draftInput = document.createElement('input');
+        draftInput.type = 'hidden';
+        draftInput.name = 'draft';
+        draftInput.value = '1';
+        form.appendChild(draftInput);
+      } else {
+        const publishInput = document.createElement('input');
+        publishInput.type = 'hidden';
+        publishInput.name = 'publish';
+        publishInput.value = '1';
+        form.appendChild(publishInput);
+      }
+
+      document.body.appendChild(form);
+      if (status !== 'draft') {
+        localStorage.removeItem(storageKey);
+      }
+      form.submit();
+    };
+
+    restoreState();
+
+    const saveHandlers = ['input', 'change', 'blur'];
+    saveHandlers.forEach((eventName) => {
+      document.addEventListener(eventName, (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)) return;
+        if (!isElementInMain(target)) return;
+        collectState();
+      }, true);
+    });
+
+    document.querySelectorAll(`a[href^="${modulePathPrefix}"], a[href^="add-"]`).forEach((link) => {
+      link.addEventListener('click', () => {
+        collectState();
+      });
+    });
+
+    const saveDraftButton = Array.from(document.querySelectorAll('button.btn.btn-lg.btn-outline-secondary'))
+      .find((button) => (button.textContent || '').trim().toLowerCase() === 'save draft');
+
+    if (saveDraftButton) {
+      saveDraftButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        submitState('draft');
+      });
+    }
+
+    if (path.endsWith(finalPath)) {
+      const publishButton = isProperty
+        ? Array.from(document.querySelectorAll('a.btn.btn-lg.btn-primary'))
+            .find((button) => (button.textContent || '').toLowerCase().includes('publish property listing'))
+        : Array.from(document.querySelectorAll('button.btn.btn-lg.btn-primary'))
+            .find((button) => (button.textContent || '').toLowerCase().includes('become a pro'));
+
+      if (publishButton) {
+        publishButton.addEventListener('click', (event) => {
+          event.preventDefault();
+          submitState('publish');
+        });
+      }
+    }
+  };
+
+  const setupProfilePhotoButton = () => {
+    const updateBtn = Array.from(document.querySelectorAll('button, a'))
+      .find((el) => (el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase() === 'update photo');
+    if (!updateBtn) return;
+
+    const section = updateBtn.closest('.d-flex') || updateBtn.closest('.row') || document;
+    const avatar = section.querySelector('img.rounded-circle') || section.querySelector('img');
+    if (!avatar) return;
+
+    let input = document.getElementById('monaclick-profile-photo-input');
+    if (!input) {
+      input = document.createElement('input');
+      input.id = 'monaclick-profile-photo-input';
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.className = 'd-none';
+      document.body.appendChild(input);
+    }
+
+    updateBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      input.click();
+    });
+
+    input.addEventListener('change', () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      avatar.src = URL.createObjectURL(file);
+    });
+  };
+
+  setupRestaurantForm();
+  setupWizardSubmission();
+  setupProfilePhotoButton();
+})();
+
+(() => {
+  const path = window.location.pathname.toLowerCase();
+  if (path !== '/signin' && path !== '/signup' && path !== '/password-recovery') return;
+
+  const form = document.querySelector('main form.needs-validation');
+  if (!form) return;
+
+  const showNotice = (message, type = 'success') => {
+    const old = form.parentElement?.querySelector('.monaclick-auth-notice');
+    if (old) old.remove();
+
+    const note = document.createElement('div');
+    note.className = 'alert alert-' + type + ' monaclick-auth-notice';
+    note.role = 'alert';
+    note.textContent = message;
+    form.parentElement?.insertBefore(note, form);
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('email');
+  if (email) {
+    const emailInput = form.querySelector('input[type="email"]');
+    if (emailInput && !emailInput.value) emailInput.value = email;
+  }
+
+  if (path === '/signin') {
+    if (params.get('created') === '1') showNotice('Account created successfully. Please sign in.', 'success');
+    if (params.get('error') === 'invalid') showNotice('Invalid email or password.', 'danger');
+  }
+
+  if (path === '/signup' && params.get('error') === 'exists') {
+    showNotice('This email is already registered. Please sign in.', 'warning');
+  }
+
+  if (path === '/password-recovery') {
+    if (params.get('status') === 'sent') showNotice('Password reset request received. Please check your email.', 'success');
+    if (params.get('status') === 'missing') showNotice('No account found with this email.', 'warning');
+  }
+})();

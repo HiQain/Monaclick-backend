@@ -217,6 +217,7 @@
                   <li><a class="dropdown-item" href="/listings/real-estate">Real Estate</a></li>
                   <li><a class="dropdown-item" href="/listings/cars">Cars</a></li>
                   <li><a class="dropdown-item" href="/listings/events">Events</a></li>
+                  <li><a class="dropdown-item" href="/listings/restaurants">Restaurants</a></li>
                 </ul>
               </li>
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
@@ -300,6 +301,7 @@
           <!-- Sell car form -->
           <div class="col-lg-8 col-xl-9">
             <h1 class="h2">Sell car</h1>
+            <form id="addCarForm" action="/submit/car" method="get">
 
             <!-- Photos / videos -->
             <section class="position-relative bg-body rounded p-4 mt-4">
@@ -1090,19 +1092,20 @@
 
             <!-- Action buttons -->
             <section class="d-flex flex-column flex-sm-row justify-content-between gap-3 mt-4">
-              <button type="button" class="btn btn-lg btn-outline-secondary bg-body">
+              <button type="submit" class="btn btn-lg btn-outline-secondary bg-body" formaction="/entry/cars" formtarget="_blank" formnovalidate>
                 <i class="fi-eye fs-lg ms-n1 me-2"></i>
                 Detailed preview
               </button>
-              <button type="button" class="btn btn-lg btn-outline-secondary">
+              <button type="submit" class="btn btn-lg btn-outline-secondary" formaction="/submit/car" name="draft" value="1" formnovalidate>
                 <i class="fi-save fs-lg ms-n1 me-2"></i>
                 Save draft
               </button>
-              <button type="button" class="btn btn-lg btn-primary">
+              <button type="submit" class="btn btn-lg btn-primary" formaction="/submit/car" name="publish" value="1">
                 <i class="fi-upload fs-lg ms-n1 me-2"></i>
                 Save and publish
               </button>
             </section>
+            </form>
           </div>
 
 
@@ -1351,8 +1354,150 @@
     <!-- Vendor scripts -->
     <script src="/finder/assets/vendor/cleave.js/dist/cleave.min.js"></script>
     <script src="/finder/assets/vendor/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260305-1"></script>
+    <script>
+      (() => {
+        const form = document.getElementById('addCarForm');
+        if (!form) return;
 
-    <!-- Bootstrap + Theme scripts -->
+        const photosSection = Array.from(form.querySelectorAll('section'))
+          .find((section) => (section.querySelector('h2')?.textContent || '').toLowerCase().includes('photos / videos'));
+        const galleryGrid = photosSection?.querySelector('.row.row-cols-2.row-cols-sm-3.g-2.g-md-4.g-lg-3.g-xl-4');
+        const uploadTile = galleryGrid?.querySelector('.cursor-pointer.bg-body-tertiary.border-dotted')?.closest('.col');
+
+        const ensureCoverBadge = () => {
+          if (!galleryGrid) return;
+          galleryGrid.querySelectorAll('.badge.text-bg-light').forEach((badge) => badge.remove());
+          const cards = Array.from(galleryGrid.children)
+            .filter((col) => col !== uploadTile && col.querySelector('img'));
+          const firstCard = cards[0];
+          if (!firstCard) return;
+          const wrapper = firstCard.querySelector('.hover-effect-opacity.position-relative');
+          if (!wrapper) return;
+          const badge = document.createElement('span');
+          badge.className = 'badge text-bg-light position-absolute top-0 start-0 z-3 mt-2 ms-2';
+          badge.textContent = 'Cover';
+          wrapper.prepend(badge);
+        };
+
+        const createPhotoCard = (src) => {
+          const col = document.createElement('div');
+          col.className = 'col';
+          col.innerHTML = `
+            <div class="hover-effect-opacity position-relative overflow-hidden rounded">
+              <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
+                <img src="${src}" alt="Uploaded image">
+              </div>
+              <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
+                <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove">
+                  <i class="fi-trash fs-base"></i>
+                </button>
+                <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
+              </div>
+            </div>
+          `;
+          return col;
+        };
+
+        if (galleryGrid && uploadTile) {
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/*';
+          fileInput.multiple = true;
+          fileInput.className = 'd-none';
+          form.appendChild(fileInput);
+
+          uploadTile.addEventListener('click', () => fileInput.click());
+          uploadTile.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              fileInput.click();
+            }
+          });
+          uploadTile.setAttribute('tabindex', '0');
+
+          fileInput.addEventListener('change', () => {
+            const files = Array.from(fileInput.files || []);
+            files.forEach((file) => {
+              const objectUrl = URL.createObjectURL(file);
+              const card = createPhotoCard(objectUrl);
+              galleryGrid.insertBefore(card, uploadTile);
+            });
+            fileInput.value = '';
+            ensureCoverBadge();
+          });
+
+          galleryGrid.addEventListener('click', (event) => {
+            const removeBtn = event.target.closest('button[aria-label="Remove"]');
+            if (!removeBtn) return;
+            const col = removeBtn.closest('.col');
+            if (!col || col === uploadTile) return;
+            const img = col.querySelector('img');
+            if (img && img.src.startsWith('blob:')) {
+              URL.revokeObjectURL(img.src);
+            }
+            col.remove();
+            ensureCoverBadge();
+          });
+
+          ensureCoverBadge();
+        }
+
+        const upsertHidden = (name, value) => {
+          let input = form.querySelector(`input[type="hidden"][name="${name}"]`);
+          if (!input) {
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            form.appendChild(input);
+          }
+          input.value = String(value ?? '').trim();
+        };
+
+        const selectedOptionText = (selector) => {
+          const select = form.querySelector(selector);
+          if (!select) return '';
+          const opt = select.options?.[select.selectedIndex];
+          return String(opt?.textContent || '').trim();
+        };
+
+        const selectedRadioLabel = (name) => {
+          const checked = form.querySelector(`input[name="${name}"]:checked`);
+          if (!checked) return '';
+          const label = form.querySelector(`label[for="${checked.id}"]`);
+          return String(label?.textContent || checked.value || '').trim();
+        };
+
+        form.addEventListener('submit', (event) => {
+          const submitter = event.submitter;
+          const submitAction = (submitter?.getAttribute('name') || '').toLowerCase();
+
+          const brand = selectedOptionText('select[aria-label="Car brand select"]');
+          const model = selectedOptionText('select[aria-label="Car model select"]');
+          const year = selectedOptionText('select[aria-label="Manufacturing year select"]');
+          const location = selectedOptionText('select[aria-label="Location select"]');
+          const fuel = selectedOptionText('select[aria-label="Fuel select"]');
+          const transmission = selectedOptionText('select[aria-label="Transmission select"]');
+          const body = selectedRadioLabel('body');
+          const mileage = (form.querySelector('#mileage')?.value || '').trim();
+          const price = (form.querySelector('#price')?.value || '').trim();
+          const title = [brand, model, year].filter(Boolean).join(' ').trim() || 'Car Listing';
+
+          upsertHidden('title', title);
+          upsertHidden('brand', brand);
+          upsertHidden('model', model);
+          upsertHidden('year', year);
+          upsertHidden('city', location);
+          upsertHidden('fuel_type', fuel);
+          upsertHidden('transmission', transmission);
+          upsertHidden('body_type', body);
+          upsertHidden('mileage', mileage);
+          upsertHidden('price', price);
+          upsertHidden('status', submitAction === 'draft' ? 'draft' : 'published');
+        });
+      })();
+    </script>
+
     <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>

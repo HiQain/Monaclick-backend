@@ -35,7 +35,7 @@
 
     <!-- Customizer -->
     <script src="/finder/assets/js/customizer.min.js"></script>
-  </head>
+</head>
 
 
   <!-- Body -->
@@ -298,7 +298,7 @@
           <h1 class="h2 mt-auto">Create an account</h1>
           <div class="nav fs-sm mb-3 mb-lg-4">
             I already have an account
-            <a class="nav-link text-decoration-underline p-0 ms-2" href="/login">Sign in</a>
+            <a class="nav-link text-decoration-underline p-0 ms-2" href="/signin">Sign in</a>
           </div>
           <div class="nav fs-sm mb-4 d-lg-none">
             <span class="me-2">Uncertain about creating an account?</span>
@@ -306,16 +306,17 @@
           </div>
 
           <!-- Form -->
-          <form class="needs-validation" novalidate>
+          <form class="needs-validation" method="post" action="/signup" novalidate>
+            <input type="hidden" name="_token" value="__CSRF_TOKEN__">
             <div class="position-relative mb-4">
               <label for="register-email" class="form-label">Email</label>
-              <input type="email" class="form-control form-control-lg" id="register-email" required>
+              <input type="email" name="email" class="form-control form-control-lg" id="register-email" required>
               <div class="invalid-tooltip bg-transparent py-0">Enter a valid email address!</div>
             </div>
             <div class="mb-4">
               <label for="register-password" class="form-label">Password</label>
               <div class="password-toggle">
-                <input type="password" class="form-control form-control-lg" id="register-password" minlength="8" placeholder="Minimum 8 characters" required>
+                <input type="password" name="password" class="form-control form-control-lg" id="register-password" minlength="8" placeholder="Minimum 8 characters" required>
                 <div class="invalid-tooltip bg-transparent py-0">Password does not meet the required criteria!</div>
                 <label class="password-toggle-button fs-lg" aria-label="Show/hide password">
                   <input type="checkbox" class="btn-check">
@@ -613,6 +614,7 @@
     <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>
+
 
 
 

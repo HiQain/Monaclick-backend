@@ -35,7 +35,7 @@
 
     <!-- Customizer -->
     <script src="/finder/assets/js/customizer.min.js"></script>
-  </head>
+</head>
 
 
   <!-- Body -->
@@ -217,11 +217,11 @@
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
                 <a class="nav-link dropdown-toggle" href="/listings/contractors" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Listings</a>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="/contractors">Contractors</a></li>
-                  <li><a class="dropdown-item" href="/real-estate">Real Estate</a></li>
-                  <li><a class="dropdown-item" href="/cars">Cars</a></li>
-                  <li><a class="dropdown-item" href="/events">Events</a></li>
-                  <li><a class="dropdown-item" href="/restaurants">Restaurants</a></li>
+                  <li><a class="dropdown-item" href="/listings/contractors">Contractors</a></li>
+                  <li><a class="dropdown-item" href="/listings/real-estate">Real Estate</a></li>
+                  <li><a class="dropdown-item" href="/listings/cars">Cars</a></li>
+                  <li><a class="dropdown-item" href="/listings/events">Events</a></li>
+                  <li><a class="dropdown-item" href="/listings/restaurants">Restaurants</a></li>
                 </ul>
               </li>
               <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
@@ -299,18 +299,19 @@
           <h1 class="h2 mt-auto">Welcome back</h1>
           <div class="nav fs-sm mb-4">
             Don't have an account?
-            <a class="nav-link text-decoration-underline p-0 ms-2" href="/register">Create an account</a>
+            <a class="nav-link text-decoration-underline p-0 ms-2" href="/signup">Create an account</a>
           </div>
 
           <!-- Form -->
-          <form class="needs-validation" novalidate>
+          <form class="needs-validation" method="post" action="/signin" novalidate>
+            <input type="hidden" name="_token" value="__CSRF_TOKEN__">
             <div class="position-relative mb-4">
-              <input type="email" class="form-control form-control-lg" placeholder="Email" required>
+              <input type="email" name="email" class="form-control form-control-lg" placeholder="Email" required>
               <div class="invalid-tooltip bg-transparent py-0">Enter a valid email address!</div>
             </div>
             <div class="mb-4">
               <div class="password-toggle">
-                <input type="password" class="form-control form-control-lg" placeholder="Password" required>
+                <input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required>
                 <div class="invalid-tooltip bg-transparent py-0">Password is incorrect!</div>
                 <label class="password-toggle-button fs-lg" aria-label="Show/hide password">
                   <input type="checkbox" class="btn-check">
@@ -319,11 +320,11 @@
             </div>
             <div class="d-flex align-items-center justify-content-between mb-4">
               <div class="form-check me-2">
-                <input type="checkbox" class="form-check-input" id="remember-30">
+                <input type="checkbox" name="remember" class="form-check-input" id="remember-30">
                 <label for="remember-30" class="form-check-label">Remember for 30 days</label>
               </div>
               <div class="nav">
-                <a class="nav-link animate-underline p-0" href="account-password-recovery.html">
+                <a class="nav-link animate-underline p-0" href="/password-recovery">
                   <span class="animate-target">Forgot password?</span>
                 </a>
               </div>
@@ -502,11 +503,13 @@
         Customize<i class="fi-settings fs-base ms-1 me-n2 animate-target"></i>
       </a>
     </div>
-    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260305-1"></script>
+    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260306-3"></script>
 
     <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>
+
+
 
 
 

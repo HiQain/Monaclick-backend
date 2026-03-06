@@ -277,6 +277,7 @@
     'real-estate': '/real-estate',
     cars: '/cars',
     events: '/events',
+    restaurants: '/restaurants',
   }[module] || '/');
 
   const listingsRouteForModule = (module) => ({
@@ -284,6 +285,7 @@
     'real-estate': '/listings/real-estate',
     cars: '/listings/cars',
     events: '/listings/events',
+    restaurants: '/listings/restaurants',
   }[module] || '/listings/contractors');
 
   const normalizeLegacyHref = (href) => {
@@ -297,15 +299,18 @@
       'home-real-estate.html': '/real-estate',
       'home-cars.html': '/cars',
       'home-events.html': '/events',
+      'home-restaurants.html': '/restaurants',
       'listings-contractors.html': '/listings/contractors',
       'listings-real-estate.html': '/listings/real-estate',
       'listings-grid-cars.html': '/listings/cars',
       'listings-list-cars.html': '/listings/cars',
       'listings-events.html': '/listings/events',
+      'listings-restaurants.html': '/listings/restaurants',
       'single-entry-contractors.html': '/entry/contractors',
       'single-entry-real-estate.html': '/entry/real-estate',
       'single-entry-cars.html': '/entry/cars',
       'single-entry-events.html': '/entry/events',
+      'single-entry-restaurants.html': '/entry/restaurants',
     };
 
     if (directMap[clean]) return directMap[clean];
@@ -324,6 +329,7 @@
     if (t.includes('real estate')) return '/real-estate';
     if (t === 'cars' || t.includes('car ')) return '/cars';
     if (t.includes('event')) return '/events';
+    if (t.includes('restaurant')) return '/restaurants';
     if (t.includes('sign in') || t.includes('log in') || t === 'login') return '/login';
     if (t.includes('join') || t.includes('register') || t.includes('sign up')) return '/register';
     if (t.includes('my account') || t.includes('dashboard')) return '/dashboard';
@@ -359,6 +365,27 @@
           link.setAttribute('href', buildFilterHref(listingsRouteForModule(selectedModule)));
         }
       }
+    });
+  };
+
+  const normalizeListingsDropdown = () => {
+    const moduleItems = [
+      { href: '/listings/contractors', label: 'Contractors' },
+      { href: '/listings/real-estate', label: 'Real Estate' },
+      { href: '/listings/cars', label: 'Cars' },
+      { href: '/listings/events', label: 'Events' },
+      { href: '/listings/restaurants', label: 'Restaurants' },
+    ];
+
+    const listingToggles = Array.from(document.querySelectorAll('a.nav-link.dropdown-toggle'))
+      .filter((link) => (link.textContent || '').trim().toLowerCase() === 'listings');
+
+    listingToggles.forEach((toggle) => {
+      const menu = toggle.nextElementSibling;
+      if (!menu || !menu.classList.contains('dropdown-menu')) return;
+      menu.innerHTML = moduleItems
+        .map((item) => `<li><a class="dropdown-item" href="${item.href}">${item.label}</a></li>`)
+        .join('');
     });
   };
 
@@ -836,6 +863,7 @@
   safeRun(wireHeroSearch);
   safeRun(wireViewAllLinks);
   safeRun(wireNonDeadLinks);
+  safeRun(normalizeListingsDropdown);
   safeRun(() => syncStateLinks(persistedState));
 
   Promise.allSettled([

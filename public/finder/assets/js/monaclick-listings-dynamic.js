@@ -6,6 +6,28 @@
   const allowedModules = new Set(['contractors', 'real-estate', 'cars', 'events', 'restaurants']);
   const selectedModule = allowedModules.has(moduleFromPath) ? moduleFromPath : 'contractors';
 
+  const normalizeListingsDropdown = () => {
+    const moduleItems = [
+      { href: '/listings/contractors', label: 'Contractors' },
+      { href: '/listings/real-estate', label: 'Real Estate' },
+      { href: '/listings/cars', label: 'Cars' },
+      { href: '/listings/events', label: 'Events' },
+      { href: '/listings/restaurants', label: 'Restaurants' },
+    ];
+
+    const listingToggles = Array.from(document.querySelectorAll('a.nav-link.dropdown-toggle'))
+      .filter((link) => (link.textContent || '').trim().toLowerCase() === 'listings');
+
+    listingToggles.forEach((toggle) => {
+      const menu = toggle.nextElementSibling;
+      if (!menu || !menu.classList.contains('dropdown-menu')) return;
+      menu.innerHTML = moduleItems
+        .map((item) => `<li><a class="dropdown-item" href="${item.href}">${item.label}</a></li>`)
+        .join('');
+    });
+  };
+  normalizeListingsDropdown();
+
   const cleanSearchTerm = (value) =>
     String(value || '').includes('#!')
       ? ''
@@ -55,11 +77,11 @@
         resultsText,
         paginationNav: document.querySelector('.col-lg-9 nav[aria-label="Listings pagination"]'),
         searchInput: null,
-        citySelect: null,
-        categoryList: null,
+        citySelect: document.querySelector('select[aria-label="Car location select"]'),
+        categoryList: document.querySelector('aside .offcanvas-body [data-simplebar] .d-flex.flex-column.gap-2'),
         sortSelect: document.querySelector('.col-lg-9 .position-relative select'),
-        clearAllLink: null,
-        activePillsWrap: null,
+        clearAllLink: document.querySelector('a.nav-link.fs-xs.text-decoration-underline.text-nowrap.p-0'),
+        activePillsWrap: document.querySelector('.w-100.pb-3.overflow-x-auto .d-flex.gap-2'),
         gridMode: 'cols',
       };
     }

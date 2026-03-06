@@ -121,21 +121,115 @@
               <div class="form-check mt-2"><input class="form-check-input" id="outdoor" name="services" type="checkbox"><label class="form-check-label" for="outdoor">Outdoor seating</label></div>
               <div class="form-check mt-2"><input class="form-check-input" id="familyFriendly" name="services" type="checkbox"><label class="form-check-label" for="familyFriendly">Family friendly</label></div>
             </div>
-            <div class="col-md-4">
-              <label class="form-label" for="openingHours">Opening hours</label>
-              <textarea class="form-control" id="openingHours" name="opening_hours" rows="4" placeholder="Mon-Fri: 11:00 AM - 11:00 PM&#10;Sat-Sun: 10:00 AM - 12:00 AM"></textarea>
+            <div class="col-12">
+              <label class="form-label d-block">Opening hours (day-wise)</label>
+              <input type="hidden" id="openingHoursHidden" name="opening_hours">
+              <div class="vstack gap-2" style="max-width: 760px">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="monday" checked>
+                    <label for="monday" class="form-check-label small">Monday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm" id="mondayFrom" value="09:00">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm" id="mondayTo" value="17:00">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="tuesday" checked>
+                    <label for="tuesday" class="form-check-label small">Tuesday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm" id="tuesdayFrom" value="09:00">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm" id="tuesdayTo" value="17:00">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="wednesday" checked>
+                    <label for="wednesday" class="form-check-label small">Wednesday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm" id="wednesdayFrom" value="09:00">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm" id="wednesdayTo" value="17:00">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="thursday" checked>
+                    <label for="thursday" class="form-check-label small">Thursday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm" id="thursdayFrom" value="11:00">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm" id="thursdayTo" value="16:00">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="friday" checked>
+                    <label for="friday" class="form-check-label small">Friday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm" id="fridayFrom" value="11:00">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm" id="fridayTo" value="16:00">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="saturday">
+                    <label for="saturday" class="form-check-label small">Saturday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm" id="saturdayFrom">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm" id="saturdayTo">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="sunday">
+                    <label for="sunday" class="form-check-label small">Sunday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm" id="sundayFrom">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm" id="sundayTo">
+                </div>
+              </div>
             </div>
 
             <div class="col-12 pt-2">
               <h2 class="h5 mb-0">Media and contact</h2>
             </div>
-            <div class="col-md-6">
-              <label class="form-label" for="coverPhoto">Cover photo</label>
-              <input class="form-control" id="coverPhoto" name="cover_photo" type="file" accept="image/*">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="galleryPhotos">Gallery photos</label>
-              <input class="form-control" id="galleryPhotos" name="gallery_photos" type="file" accept="image/*" multiple>
+            <div class="col-12">
+              <p class="text-body-secondary small mb-2">Upload photos and videos</p>
+              <div class="row row-cols-2 row-cols-sm-3 g-2 g-md-3" data-restaurant-upload-grid>
+                <div class="col">
+                  <div class="hover-effect-opacity position-relative overflow-hidden rounded">
+                    <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
+                      <img src="/finder/assets/img/add-item/contractor/01.jpg" alt="Image">
+                    </div>
+                    <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
+                      <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove"><i class="fi-trash fs-base"></i></button>
+                      <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="hover-effect-opacity position-relative overflow-hidden rounded">
+                    <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
+                      <img src="/finder/assets/img/add-item/contractor/02.jpg" alt="Image">
+                    </div>
+                    <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
+                      <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove"><i class="fi-trash fs-base"></i></button>
+                      <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="d-flex align-items-center justify-content-center position-relative h-100 cursor-pointer bg-body-tertiary border border-2 border-dotted rounded p-3" data-restaurant-upload-tile>
+                    <div class="text-center">
+                      <i class="fi-plus-circle fs-4 text-secondary-emphasis mb-2"></i>
+                      <div class="hover-effect-underline fs-sm fw-medium">Upload photos / videos</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <input class="d-none" id="coverPhoto" name="cover_photo" type="file" accept="image/*">
+              <input class="d-none" id="galleryPhotos" name="gallery_photos[]" type="file" accept="image/*,video/*" multiple>
             </div>
             <div class="col-md-4">
               <label class="form-label" for="contactName">Contact person</label>
@@ -160,6 +254,7 @@
     </main>
 
     <script src="/finder/assets/js/theme.min.js"></script>
-    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260305-1"></script>
+    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260306-3"></script>
   </body>
 </html>
+
