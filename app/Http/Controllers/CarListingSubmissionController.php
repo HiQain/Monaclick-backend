@@ -97,7 +97,9 @@ class CarListingSubmissionController extends Controller
             };
         }
 
-        $status = strtolower((string) $request->input('status', 'published')) === 'draft' ? 'draft' : 'published';
+        $status = $request->boolean('draft')
+            ? 'draft'
+            : (strtolower((string) $request->input('status', 'published')) === 'draft' ? 'draft' : 'published');
 
         $coverImage = (string) ($existingListing?->image ?: '/finder/assets/img/placeholders/preview-square.svg');
         $uploadedImage = $request->file('cover_image');
@@ -145,34 +147,67 @@ class CarListingSubmissionController extends Controller
             $listing = Listing::query()->create($payload);
         }
 
+        $wizardData = [
+            'brand' => $brand,
+            'model' => $model,
+            'condition' => $this->stringInputOrExisting($request, 'condition', $existingDetail?->condition),
+            'year' => $this->integerInputOrExisting($request, 'year', $existingDetail?->year),
+            'city' => (string) ($city->name ?? ''),
+            'mileage' => $this->integerInputOrExisting($request, 'mileage', $existingDetail?->mileage),
+            'radius' => $this->stringInputOrExisting($request, 'radius', $existingDetail?->radius),
+            'drive_type' => $this->stringInputOrExisting($request, 'drive_type', $existingDetail?->drive_type),
+            'engine' => $this->stringInputOrExisting($request, 'engine', $existingDetail?->engine),
+            'fuel_type' => $this->lowerStringInputOrExisting($request, 'fuel_type', $existingDetail?->fuel_type),
+            'transmission' => $this->lowerStringInputOrExisting($request, 'transmission', $existingDetail?->transmission),
+            'body_type' => $bodyType,
+            'city_mpg' => $this->integerInputOrExisting($request, 'city_mpg', $existingDetail?->city_mpg),
+            'highway_mpg' => $this->integerInputOrExisting($request, 'highway_mpg', $existingDetail?->highway_mpg),
+            'exterior_color' => $this->stringInputOrExisting($request, 'exterior_color', $existingDetail?->exterior_color),
+            'interior_color' => $this->stringInputOrExisting($request, 'interior_color', $existingDetail?->interior_color),
+            'description' => $this->stringInputOrExisting($request, 'description', $existingListing?->excerpt) ?: '',
+            'seller_type' => $this->stringInputOrExisting($request, 'seller_type', $existingDetail?->seller_type, ['seller']),
+            'contact_first_name' => $this->stringInputOrExisting($request, 'contact_first_name', $existingDetail?->contact_first_name),
+            'contact_last_name' => $this->stringInputOrExisting($request, 'contact_last_name', $existingDetail?->contact_last_name),
+            'contact_email' => $this->stringInputOrExisting($request, 'contact_email', $existingDetail?->contact_email),
+            'contact_phone' => $this->stringInputOrExisting($request, 'contact_phone', $existingDetail?->contact_phone),
+            'negotiated' => $this->booleanInputOrExisting($request, 'negotiated', (bool) ($existingDetail?->negotiated ?? false)),
+            'installments' => $this->booleanInputOrExisting($request, 'installments', (bool) ($existingDetail?->installments ?? false)),
+            'exchange' => $this->booleanInputOrExisting($request, 'exchange', (bool) ($existingDetail?->exchange ?? false)),
+            'uncleared' => $this->booleanInputOrExisting($request, 'uncleared', (bool) ($existingDetail?->uncleared ?? false)),
+            'dealer_ready' => $this->booleanInputOrExisting($request, 'dealer_ready', (bool) ($existingDetail?->dealer_ready ?? false)),
+            'price' => $priceRaw !== '' ? $priceRaw : preg_replace('/[^\d]/', '', (string) ($existingListing?->price ?? '')),
+            'features' => $features,
+        ];
+
         CarDetail::query()->updateOrCreate(
             ['listing_id' => $listing->id],
             [
-                'brand' => $brand,
-                'model' => $model,
-                'condition' => $this->stringInputOrExisting($request, 'condition', $existingDetail?->condition),
-                'year' => $this->integerInputOrExisting($request, 'year', $existingDetail?->year),
-                'mileage' => $this->integerInputOrExisting($request, 'mileage', $existingDetail?->mileage),
-                'radius' => $this->stringInputOrExisting($request, 'radius', $existingDetail?->radius),
-                'drive_type' => $this->stringInputOrExisting($request, 'drive_type', $existingDetail?->drive_type),
-                'engine' => $this->stringInputOrExisting($request, 'engine', $existingDetail?->engine),
-                'fuel_type' => $this->lowerStringInputOrExisting($request, 'fuel_type', $existingDetail?->fuel_type),
-                'transmission' => $this->lowerStringInputOrExisting($request, 'transmission', $existingDetail?->transmission),
-                'body_type' => $bodyType,
-                'city_mpg' => $this->integerInputOrExisting($request, 'city_mpg', $existingDetail?->city_mpg),
-                'highway_mpg' => $this->integerInputOrExisting($request, 'highway_mpg', $existingDetail?->highway_mpg),
-                'exterior_color' => $this->stringInputOrExisting($request, 'exterior_color', $existingDetail?->exterior_color),
-                'interior_color' => $this->stringInputOrExisting($request, 'interior_color', $existingDetail?->interior_color),
-                'seller_type' => $this->stringInputOrExisting($request, 'seller_type', $existingDetail?->seller_type, ['seller']),
-                'contact_first_name' => $this->stringInputOrExisting($request, 'contact_first_name', $existingDetail?->contact_first_name),
-                'contact_last_name' => $this->stringInputOrExisting($request, 'contact_last_name', $existingDetail?->contact_last_name),
-                'contact_email' => $this->stringInputOrExisting($request, 'contact_email', $existingDetail?->contact_email),
-                'contact_phone' => $this->stringInputOrExisting($request, 'contact_phone', $existingDetail?->contact_phone),
-                'negotiated' => $this->booleanInputOrExisting($request, 'negotiated', (bool) ($existingDetail?->negotiated ?? false)),
-                'installments' => $this->booleanInputOrExisting($request, 'installments', (bool) ($existingDetail?->installments ?? false)),
-                'exchange' => $this->booleanInputOrExisting($request, 'exchange', (bool) ($existingDetail?->exchange ?? false)),
-                'uncleared' => $this->booleanInputOrExisting($request, 'uncleared', (bool) ($existingDetail?->uncleared ?? false)),
-                'dealer_ready' => $this->booleanInputOrExisting($request, 'dealer_ready', (bool) ($existingDetail?->dealer_ready ?? false)),
+                'brand' => $wizardData['brand'],
+                'model' => $wizardData['model'],
+                'condition' => $wizardData['condition'],
+                'year' => $wizardData['year'],
+                'mileage' => $wizardData['mileage'],
+                'radius' => $wizardData['radius'],
+                'drive_type' => $wizardData['drive_type'],
+                'engine' => $wizardData['engine'],
+                'fuel_type' => $wizardData['fuel_type'],
+                'transmission' => $wizardData['transmission'],
+                'body_type' => $wizardData['body_type'],
+                'city_mpg' => $wizardData['city_mpg'],
+                'highway_mpg' => $wizardData['highway_mpg'],
+                'exterior_color' => $wizardData['exterior_color'],
+                'interior_color' => $wizardData['interior_color'],
+                'seller_type' => $wizardData['seller_type'],
+                'contact_first_name' => $wizardData['contact_first_name'],
+                'contact_last_name' => $wizardData['contact_last_name'],
+                'contact_email' => $wizardData['contact_email'],
+                'contact_phone' => $wizardData['contact_phone'],
+                'negotiated' => $wizardData['negotiated'],
+                'installments' => $wizardData['installments'],
+                'exchange' => $wizardData['exchange'],
+                'uncleared' => $wizardData['uncleared'],
+                'dealer_ready' => $wizardData['dealer_ready'],
+                'wizard_data' => $wizardData,
             ]
         );
 

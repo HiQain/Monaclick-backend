@@ -37,6 +37,7 @@ class CarDetail extends Model
         'exchange',
         'uncleared',
         'dealer_ready',
+        'wizard_data',
     ];
 
     protected $casts = [
@@ -49,6 +50,7 @@ class CarDetail extends Model
         'exchange' => 'boolean',
         'uncleared' => 'boolean',
         'dealer_ready' => 'boolean',
+        'wizard_data' => 'array',
     ];
 
     public function listing(): BelongsTo
