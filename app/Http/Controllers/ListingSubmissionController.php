@@ -298,12 +298,12 @@ class ListingSubmissionController extends Controller
             $listingData['slug'] = $this->makeUniqueSlug($title, 'contractor-service', $editListing->id);
             $listingData['image'] = $editListing->image ?: '/finder/assets/img/listings/contractors/03.jpg';
             $editListing->update($listingData);
-            $listing = $editListing->fresh(['city']);
+            $listing = $editListing->fresh(['city', 'images']);
         } else {
             $listingData['slug'] = $this->makeUniqueSlug($title, 'contractor-service');
             $listingData['user_id'] = auth()->id();
             $listingData['image'] = '/finder/assets/img/listings/contractors/03.jpg';
-            $listing = Listing::query()->create($listingData);
+            $listing = Listing::query()->create($listingData)->fresh(['city', 'images']);
         }
 
         $serviceArea = trim(implode(', ', array_filter([
@@ -331,6 +331,52 @@ class ListingSubmissionController extends Controller
                 'business_hours' => $businessHours,
             ]
         );
+
+        $coverPath = null;
+        $profilePhoto = $request->file('profile_photo');
+        if ($profilePhoto instanceof \Illuminate\Http\UploadedFile && $profilePhoto->isValid()) {
+            $coverPath = $profilePhoto->store('listings/contractors/profile', 'public');
+        }
+
+        if ($request->hasFile('photos')) {
+            $files = $request->file('photos');
+            if (! is_array($files)) {
+                $files = [$files];
+            }
+
+            $listing->images()->delete();
+            $stored = [];
+            $sort = 0;
+            foreach ($files as $file) {
+                if (! ($file instanceof \Illuminate\Http\UploadedFile) || ! $file->isValid()) {
+                    continue;
+                }
+                $path = $file->store('listings/contractors/gallery', 'public');
+                $stored[] = $path;
+                ListingImage::query()->create([
+                    'listing_id' => $listing->id,
+                    'image_path' => $path,
+                    'sort_order' => $sort,
+                    'is_cover' => $sort === 0,
+                ]);
+                $sort++;
+            }
+            if (! $coverPath && count($stored) > 0) {
+                $coverPath = $stored[0];
+            }
+        }
+
+        if (! $coverPath) {
+            if ($listing->image) {
+                $coverPath = $listing->image;
+            } else {
+                $firstExisting = $listing->images()->orderBy('sort_order')->first();
+                $coverPath = $firstExisting?->image_path ?: '/finder/assets/img/listings/contractors/03.jpg';
+            }
+        }
+
+        $listing->image = $coverPath;
+        $listing->save();
 
         return $this->redirectAfterSubmission(
             $status,
@@ -366,8 +412,19 @@ class ListingSubmissionController extends Controller
             $services = [$services];
         }
 
+        $serviceAliases = [
+            'dinein' => 'dine-in',
+            'familyfriendly' => 'family-friendly',
+            'outdoor' => 'outdoor-seating',
+            'outdoor seating' => 'outdoor-seating',
+        ];
+
         $serviceValues = collect($services)
-            ->map(fn ($value) => trim((string) $value))
+            ->map(function ($value) use ($serviceAliases) {
+                $raw = trim((string) $value);
+                $normalized = strtolower($raw);
+                return $serviceAliases[$normalized] ?? $raw;
+            })
             ->filter()
             ->values()
             ->all();
@@ -383,12 +440,36 @@ class ListingSubmissionController extends Controller
             $features[] = 'weekend-consultations';
         }
 
+        $serviceValues = array_values(array_unique($serviceValues));
+        $openingHoursRaw = (string) $request->input('opening_hours', '');
+        $openingHours = [];
+        if ($openingHoursRaw !== '') {
+            $decoded = json_decode($openingHoursRaw, true);
+            if (is_array($decoded)) {
+                $openingHours = $decoded;
+            }
+        }
+
+        $restaurantMeta = [
+            '_mc_restaurant_v1' => true,
+            'address' => trim((string) $request->input('address', '')),
+            'zip_code' => trim((string) $request->input('zip_code', '')),
+            'country' => trim((string) $request->input('country', '')),
+            'seating_capacity' => trim((string) $request->input('seating_capacity', '')),
+            'services' => $serviceValues,
+            'opening_hours' => $openingHours,
+            'contact_name' => trim((string) $request->input('contact_name', '')),
+            'phone' => trim((string) $request->input('phone', '')),
+            'email' => trim((string) $request->input('email', '')),
+        ];
+        $restaurantMetaJson = json_encode($restaurantMeta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
         $listingData = [
             'category_id' => $category->id,
             'city_id' => $city->id,
             'module' => 'restaurants',
             'title' => $title,
-            'excerpt' => trim((string) $request->input('description', $request->input('about', ''))),
+            'excerpt' => $restaurantMetaJson ?: '',
             'price' => $price,
             'budget_tier' => $this->resolveRestaurantBudgetTier($priceRange),
             'availability_now' => true,
@@ -408,12 +489,45 @@ class ListingSubmissionController extends Controller
             $listingData['slug'] = $this->makeUniqueSlug($title, 'restaurant-listing', $editListing->id);
             $listingData['image'] = $uploadedImagePath ?: ($editListing->image ?: '/finder/assets/img/monaclick/restaurants/user1.jpg');
             $editListing->update($listingData);
-            $listing = $editListing->fresh(['city']);
+            $listing = $editListing->fresh(['city', 'images']);
         } else {
             $listingData['slug'] = $this->makeUniqueSlug($title, 'restaurant-listing');
             $listingData['user_id'] = auth()->id();
             $listingData['image'] = $uploadedImagePath ?: '/finder/assets/img/monaclick/restaurants/user1.jpg';
-            $listing = Listing::query()->create($listingData);
+            $listing = Listing::query()->create($listingData)->fresh(['city', 'images']);
+        }
+
+        $galleryCover = null;
+        if ($request->hasFile('gallery_photos')) {
+            $files = $request->file('gallery_photos');
+            if (! is_array($files)) {
+                $files = [$files];
+            }
+
+            $hasExistingImages = $listing->images()->exists();
+            $sort = (int) $listing->images()->max('sort_order');
+            $sort = $sort > 0 ? $sort + 1 : 0;
+            foreach ($files as $file) {
+                if (! ($file instanceof \Illuminate\Http\UploadedFile) || ! $file->isValid()) {
+                    continue;
+                }
+                $path = $file->store('listings/restaurants/gallery', 'public');
+                ListingImage::query()->create([
+                    'listing_id' => $listing->id,
+                    'image_path' => $path,
+                    'sort_order' => $sort,
+                    'is_cover' => $sort === 0 && ! $hasExistingImages,
+                ]);
+                if ($sort === 0) {
+                    $galleryCover = $path;
+                }
+                $sort++;
+            }
+        }
+
+        if ($galleryCover && ! $uploadedImagePath) {
+            $listing->image = $galleryCover;
+            $listing->save();
         }
 
         return $this->redirectAfterSubmission(

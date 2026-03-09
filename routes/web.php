@@ -32,10 +32,25 @@ body.account-dom-ready .content-wrapper{opacity:1}
 HTML;
         $html = str_replace('</head>', $noFlashStyles . '</head>', $html);
     }
+    if (str_starts_with($file, 'add-')) {
+        // Keep add flows on native selects to avoid double-rendered dropdown UI.
+        $html = preg_replace(
+            '~<script\s+src="(?:/finder/)?assets/vendor/choices\.js/public/assets/scripts/choices\.min\.js"></script>\s*~i',
+            '',
+            $html
+        ) ?? $html;
+    }
     if (Auth::check()) {
         $authNavScript = <<<'HTML'
 <script>
 (() => {
+  // Signed-in state: remove top Account dropdown completely.
+  document.querySelectorAll('.navbar-nav .nav-item.dropdown').forEach((item) => {
+    const toggle = item.querySelector(':scope > .nav-link.dropdown-toggle');
+    const text = (toggle?.textContent || '').trim().toLowerCase();
+    if (text === 'account') item.remove();
+  });
+
   const accountDropdowns = Array.from(document.querySelectorAll('.dropdown-menu'))
     .filter((menu) => Array.from(menu.querySelectorAll('a.dropdown-item')).some((a) => (a.textContent || '').trim() === 'Auth Pages'));
 
@@ -109,6 +124,24 @@ HTML;
             $avatarAndDefaultsStripScript = str_replace('__AUTH_AVATAR__', $authAvatarJson ?: "''", $avatarAndDefaultsStripScript);
             $html = str_replace('</body>', $avatarAndDefaultsStripScript . '</body>', $html);
         }
+    }
+    if (! Auth::check()) {
+        $guestNavScript = <<<'HTML'
+<script>
+(() => {
+  const accountDropdowns = Array.from(document.querySelectorAll('.dropdown-menu'))
+    .filter((menu) => Array.from(menu.querySelectorAll('a.dropdown-item')).some((a) => (a.textContent || '').trim() === 'Auth Pages'));
+
+  accountDropdowns.forEach((menu) => {
+    menu.innerHTML = `
+      <li><a class="dropdown-item" href="/signin">Sign In</a></li>
+      <li><a class="dropdown-item" href="/signup">Sign Up</a></li>
+    `;
+  });
+})();
+</script>
+HTML;
+        $html = str_replace('</body>', $guestNavScript . '</body>', $html);
     }
 
     if (str_starts_with($file, 'account-') && Auth::check()) {
@@ -1159,140 +1192,13 @@ HTML;
     }
 
     if (str_starts_with($file, 'add-contractor-')) {
-        $contractorWizardScript = <<<'HTML'
+        $contractorCsrfScript = <<<'HTML'
 <script>
-(() => {
-  const search = new URLSearchParams(window.location.search);
-  const editId = (search.get('edit') || '').trim();
-  const withEdit = (url) => (editId ? `${url}?edit=${encodeURIComponent(editId)}` : url);
-  const path = window.location.pathname;
-
-  // Fix typo: Add cart -> Add card
-  document.querySelectorAll('button, a, span, div').forEach((el) => {
-    const text = (el.textContent || '').trim();
-    if (text === 'Add cart') el.textContent = 'Add card';
-  });
-
-  // Make contractor stepper clickable so user can jump to any step.
-  const stepMap = [
-    ['business location', '/add-contractor'],
-    ['choose services', '/add-contractor-services'],
-    ['profile details', '/add-contractor-profile'],
-    ['price and hours', '/add-contractor-price-hours'],
-    ['create first project', '/add-contractor-project'],
-  ];
-  const stepLabels = Array.from(document.querySelectorAll('.fs-sm.fw-semibold'));
-  stepLabels.forEach((label) => {
-    const key = (label.textContent || '').trim().toLowerCase();
-    const target = stepMap.find((row) => key.includes(row[0]));
-    if (!target) return;
-    const clickable = label.closest('.d-flex.align-items-center.gap-2.gap-sm-3.text-nowrap') || label;
-    clickable.style.cursor = 'pointer';
-    clickable.addEventListener('click', () => {
-      window.location.href = withEdit(target[1]);
-    });
-  });
-
-  // Normalize next-step links still pointing to template html names.
-  document.querySelectorAll('a.btn.btn-lg.btn-dark[href], a.btn.btn-lg.btn-primary[href]').forEach((btn) => {
-    const href = (btn.getAttribute('href') || '').trim();
-    const m = href.match(/^add-contractor-([a-z-]+)\.html$/i);
-    if (!m) return;
-    btn.setAttribute('href', withEdit(`/add-contractor-${m[1].toLowerCase()}`));
-  });
-
-  // Save draft from non-location contractor steps should exit to My listings.
-  if (path !== '/add-contractor' && path !== '/add-contractor-location') {
-    Array.from(document.querySelectorAll('button.btn.btn-lg.btn-outline-secondary'))
-      .filter((btn) => (btn.textContent || '').trim().toLowerCase() === 'save draft')
-      .forEach((btn) => {
-        btn.addEventListener('click', (event) => {
-          event.preventDefault();
-          window.location.href = '/account/listings';
-        });
-      });
-  }
-
-  // Profile photo update wiring (preview only in static wizard).
-  const updatePhotoBtn = Array.from(document.querySelectorAll('button, a'))
-    .find((el) => (el.textContent || '').trim().toLowerCase() === 'update photo');
-  if (updatePhotoBtn) {
-    const avatar = updatePhotoBtn.closest('.d-flex')?.querySelector('img') || document.querySelector('img[alt*="Avatar"], img[alt*="photo"]');
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.className = 'd-none';
-    document.body.appendChild(input);
-    updatePhotoBtn.addEventListener('click', (event) => {
-      event.preventDefault();
-      input.click();
-    });
-    input.addEventListener('change', () => {
-      const file = input.files && input.files[0];
-      if (!file || !avatar) return;
-      avatar.src = URL.createObjectURL(file);
-    });
-  }
-
-  // Contractor project images upload/delete.
-  const uploadLabel = Array.from(document.querySelectorAll('.hover-effect-underline'))
-    .find((el) => (el.textContent || '').trim().toLowerCase() === 'upload photos / videos');
-  const uploadCol = uploadLabel ? uploadLabel.closest('.col') : null;
-  const grid = uploadCol ? uploadCol.closest('.row') : null;
-  if (grid && uploadCol) {
-    uploadCol.style.cursor = 'pointer';
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*,video/*';
-    fileInput.multiple = true;
-    fileInput.className = 'd-none';
-    uploadCol.appendChild(fileInput);
-
-    uploadCol.addEventListener('click', (event) => {
-      if (event.target && event.target.closest('button[aria-label="Remove"]')) return;
-      event.preventDefault();
-      fileInput.click();
-    });
-
-    fileInput.addEventListener('change', () => {
-      const files = Array.from(fileInput.files || []);
-      files.forEach((file) => {
-        const src = URL.createObjectURL(file);
-        const col = document.createElement('div');
-        col.className = 'col';
-        col.innerHTML = `
-          <div class="hover-effect-opacity position-relative overflow-hidden rounded">
-            <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
-              ${file.type.startsWith('video/')
-                ? `<video src="${src}" class="w-100 h-100 object-fit-cover" muted controls></video>`
-                : `<img src="${src}" alt="Uploaded image" class="w-100 h-100 object-fit-cover">`}
-            </div>
-            <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
-              <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove">
-                <i class="fi-trash fs-base"></i>
-              </button>
-              <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
-            </div>
-          </div>
-        `;
-        grid.insertBefore(col, uploadCol);
-      });
-      fileInput.value = '';
-    });
-
-    grid.addEventListener('click', (event) => {
-      const btn = event.target && event.target.closest('button[aria-label="Remove"]');
-      if (!btn) return;
-      const col = btn.closest('.col');
-      if (!col || col === uploadCol) return;
-      event.preventDefault();
-      col.remove();
-    });
-  }
-})();
+window.__mcCsrf = '__SCRIPT_CSRF__';
 </script>
 HTML;
-        $html = str_replace('</body>', $contractorWizardScript . '</body>', $html);
+        $contractorCsrfScript = str_replace('__SCRIPT_CSRF__', csrf_token(), $contractorCsrfScript);
+        $html = str_replace('</body>', $contractorCsrfScript . '</body>', $html);
     }
 
     if ($file === 'add-property-photos.html') {
@@ -1628,7 +1534,7 @@ HTML;
         $editId = (int) request()->query('edit', 0);
         if ($editId > 0) {
             $editQuery = Listing::query()
-                ->with(['city', 'category'])
+                ->with(['city', 'category', 'images'])
                 ->where('id', $editId)
                 ->where('module', 'restaurants');
             if (Auth::check()) {
@@ -1636,12 +1542,35 @@ HTML;
             }
             $editListing = $editQuery->first();
             if ($editListing) {
+                $meta = [];
+                $excerptRaw = (string) ($editListing->excerpt ?? '');
+                if ($excerptRaw !== '') {
+                    $decodedMeta = json_decode($excerptRaw, true);
+                    if (is_array($decodedMeta) && ($decodedMeta['_mc_restaurant_v1'] ?? false)) {
+                        $meta = $decodedMeta;
+                    }
+                }
                 $restaurantEditPayload = [
                     'id' => $editListing->id,
                     'title' => (string) $editListing->title,
                     'city' => (string) ($editListing->city?->name ?? ''),
                     'cuisine_type' => (string) ($editListing->category?->name ?? ''),
                     'price_range' => (string) $editListing->price,
+                    'address' => (string) ($meta['address'] ?? ''),
+                    'zip_code' => (string) ($meta['zip_code'] ?? ''),
+                    'country' => (string) ($meta['country'] ?? ''),
+                    'seating_capacity' => (string) ($meta['seating_capacity'] ?? ''),
+                    'services' => array_values((array) ($meta['services'] ?? [])),
+                    'opening_hours' => (array) ($meta['opening_hours'] ?? []),
+                    'contact_name' => (string) ($meta['contact_name'] ?? ''),
+                    'phone' => (string) ($meta['phone'] ?? ''),
+                    'email' => (string) ($meta['email'] ?? ''),
+                    'image' => (string) $editListing->image_url,
+                    'gallery_images' => $editListing->images
+                        ->sortBy('sort_order')
+                        ->values()
+                        ->map(fn ($img) => (string) $img->image_url)
+                        ->all(),
                 ];
             }
         }
@@ -1681,6 +1610,117 @@ HTML;
     saveDraftBtn.value = '1';
   }
 
+  form.querySelectorAll('input[name="services"]').forEach((el) => {
+    el.setAttribute('name', 'services[]');
+    if (!el.value || el.value === 'on') el.value = String(el.id || '').trim();
+  });
+
+  const openingHoursHidden = document.getElementById('openingHoursHidden');
+  const dayKeys = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  const syncOpeningHours = () => {
+    if (!openingHoursHidden) return;
+    const payload = {};
+    dayKeys.forEach((day) => {
+      const enabled = !!document.getElementById(day)?.checked;
+      const fromVal = String(document.getElementById(`${day}From`)?.value || '');
+      const toVal = String(document.getElementById(`${day}To`)?.value || '');
+      payload[day] = { enabled, from: fromVal, to: toVal };
+    });
+    openingHoursHidden.value = JSON.stringify(payload);
+  };
+  dayKeys.forEach((day) => {
+    document.getElementById(day)?.addEventListener('change', syncOpeningHours);
+    document.getElementById(`${day}From`)?.addEventListener('input', syncOpeningHours);
+    document.getElementById(`${day}To`)?.addEventListener('input', syncOpeningHours);
+  });
+
+  const galleryGrid = form.querySelector('[data-restaurant-upload-grid]');
+  let uploadTile = form.querySelector('[data-restaurant-upload-tile]')?.closest('.col');
+  const galleryInput = document.getElementById('galleryPhotos');
+  const coverInput = document.getElementById('coverPhoto');
+  const selectedGalleryFiles = [];
+  let nextGalleryFileId = 1;
+  const syncGalleryInputFiles = () => {
+    if (!galleryInput) return;
+    const dt = new DataTransfer();
+    selectedGalleryFiles.forEach((row) => {
+      if (row?.file) dt.items.add(row.file);
+    });
+    galleryInput.files = dt.files;
+  };
+  const createGalleryCard = (src, fileId = null) => {
+    const col = document.createElement('div');
+    col.className = 'col';
+    if (fileId !== null) col.dataset.fileId = String(fileId);
+    col.innerHTML = `
+      <div class="hover-effect-opacity position-relative overflow-hidden rounded">
+        <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
+          <img src="${src}" alt="Image">
+        </div>
+        <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
+          <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove"><i class="fi-trash fs-base"></i></button>
+          <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
+        </div>
+      </div>
+    `;
+    return col;
+  };
+
+  if (galleryGrid && uploadTile && galleryInput) {
+    // Hard reset tile node so old listeners cannot fire twice.
+    const freshTile = uploadTile.cloneNode(true);
+    uploadTile.parentNode?.replaceChild(freshTile, uploadTile);
+    uploadTile = freshTile;
+
+    Array.from(galleryGrid.children).forEach((col) => {
+      if (col !== uploadTile) col.remove();
+    });
+    uploadTile.style.cursor = 'pointer';
+    if (uploadTile.dataset.mcUploadBound !== '1') {
+      uploadTile.dataset.mcUploadBound = '1';
+      uploadTile.addEventListener('click', (event) => {
+        if (event.target && event.target.closest('button[aria-label="Remove"]')) return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        galleryInput.click();
+      }, true);
+    }
+
+    if (galleryInput.dataset.mcUploadInputBound !== '1') {
+      galleryInput.dataset.mcUploadInputBound = '1';
+      galleryInput.addEventListener('change', () => {
+        const files = Array.from(galleryInput.files || []);
+        files.forEach((file) => {
+          const fileId = nextGalleryFileId++;
+          selectedGalleryFiles.push({ id: fileId, file });
+          const card = createGalleryCard(URL.createObjectURL(file), fileId);
+          galleryGrid.insertBefore(card, uploadTile);
+        });
+        syncGalleryInputFiles();
+        if (files[0] && coverInput) {
+          const dt = new DataTransfer();
+          dt.items.add(files[0]);
+          coverInput.files = dt.files;
+        }
+      });
+    }
+
+    galleryGrid.addEventListener('click', (event) => {
+      const btn = event.target && event.target.closest('button[aria-label="Remove"]');
+      if (!btn) return;
+      const col = btn.closest('.col');
+      if (!col || col === uploadTile) return;
+      const id = Number(col.dataset.fileId || '0');
+      if (id > 0) {
+        const idx = selectedGalleryFiles.findIndex((row) => row.id === id);
+        if (idx >= 0) selectedGalleryFiles.splice(idx, 1);
+        syncGalleryInputFiles();
+      }
+      col.remove();
+    }, true);
+  }
+
   if (isEdit) {
     const byId = (id) => document.getElementById(id);
     if (byId('restaurantName')) byId('restaurantName').value = editData.title || '';
@@ -1700,6 +1740,46 @@ HTML;
       const range = String(editData.price_range).replace(/\s*avg$/i, '').trim();
       byId('priceRange').value = range;
     }
+    if (byId('addressLine')) byId('addressLine').value = editData.address || '';
+    if (byId('zipCode')) byId('zipCode').value = editData.zip_code || '';
+    if (byId('country')) byId('country').value = editData.country || '';
+    if (byId('seatingCapacity')) byId('seatingCapacity').value = editData.seating_capacity || '';
+    if (byId('contactName')) byId('contactName').value = editData.contact_name || '';
+    if (byId('phone')) byId('phone').value = editData.phone || '';
+    if (byId('email')) byId('email').value = editData.email || '';
+
+    const normalizeService = (value) => String(value || '').toLowerCase().replace(/[\s_-]+/g, '');
+    const services = Array.isArray(editData.services) ? editData.services.map((v) => normalizeService(v)) : [];
+    form.querySelectorAll('input[name="services[]"]').forEach((box) => {
+      const key = normalizeService(box.value || box.id || '');
+      box.checked = services.includes(key);
+    });
+
+    const hours = editData.opening_hours && typeof editData.opening_hours === 'object' ? editData.opening_hours : {};
+    dayKeys.forEach((day) => {
+      const row = hours[day] || {};
+      const enabled = !!row.enabled;
+      const fromVal = String(row.from || '');
+      const toVal = String(row.to || '');
+      const dayToggle = document.getElementById(day);
+      const dayFrom = document.getElementById(`${day}From`);
+      const dayTo = document.getElementById(`${day}To`);
+      if (dayToggle) dayToggle.checked = enabled;
+      if (dayFrom && fromVal) dayFrom.value = fromVal;
+      if (dayTo && toVal) dayTo.value = toVal;
+    });
+
+    if (galleryGrid && uploadTile) {
+      Array.from(galleryGrid.children).forEach((col) => {
+        if (col !== uploadTile) col.remove();
+      });
+      const gallery = Array.isArray(editData.gallery_images) ? editData.gallery_images : [];
+      if (gallery.length) {
+        gallery.forEach((src) => galleryGrid.insertBefore(createGalleryCard(src), uploadTile));
+      } else if (editData.image) {
+        galleryGrid.insertBefore(createGalleryCard(editData.image), uploadTile);
+      }
+    }
 
     const actions = form.querySelector('.col-12.d-flex.flex-wrap.gap-2.justify-content-end.pt-2');
     if (actions) {
@@ -1717,6 +1797,11 @@ HTML;
       actions.prepend(delForm);
     }
   }
+
+  form.addEventListener('submit', () => {
+    syncOpeningHours();
+  });
+  syncOpeningHours();
 })();
 </script>
 HTML;
@@ -1782,6 +1867,7 @@ HTML;
                     'price' => (string) ($editListing->price ?? ''),
                     'image' => (string) $editListing->image_url,
                     'features' => array_values($editListing->features ?? []),
+                    'wizard_data' => $editListing->carDetail?->wizard_data ?? [],
                 ];
             }
         }
@@ -1951,13 +2037,49 @@ HTML;
       option.textContent = String(value).trim();
       select.appendChild(option);
     }
-    select.value = option.value || String(value).trim();
-    select.dispatchEvent(new Event('change', { bubbles: true }));
-    const choicesRoot = select.nextElementSibling && select.nextElementSibling.classList.contains('choices')
-      ? select.nextElementSibling
-      : null;
-    const choicesItem = choicesRoot?.querySelector('.choices__inner .choices__item--selectable');
-    if (choicesItem) choicesItem.textContent = (option.textContent || '').trim();
+    const applyNative = () => {
+      Array.from(select.options).forEach((opt) => { opt.selected = false; });
+      option.selected = true;
+      select.value = option.value || String(value).trim();
+      select.dispatchEvent(new Event('input', { bubbles: true }));
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    const applyChoicesUi = () => {
+      try {
+        const roots = [];
+        if (select.nextElementSibling && select.nextElementSibling.classList.contains('choices')) {
+          roots.push(select.nextElementSibling);
+        }
+        if (select.parentElement) {
+          Array.from(select.parentElement.children).forEach((node) => {
+            if (node !== select && node.classList && node.classList.contains('choices') && !roots.includes(node)) {
+              roots.push(node);
+            }
+          });
+        }
+        document.querySelectorAll('.choices').forEach((root) => {
+          if (root.previousElementSibling === select && !roots.includes(root)) roots.push(root);
+        });
+        roots.forEach((root) => {
+          const selectedItem = root.querySelector('.choices__list--single .choices__item');
+          if (selectedItem) {
+            selectedItem.textContent = (option.textContent || '').trim();
+            selectedItem.setAttribute('data-value', String(option.value || '').trim());
+            selectedItem.classList.remove('choices__placeholder');
+          }
+        });
+      } catch (_) {
+        // Ignore UI sync failures; native select value is authoritative.
+      }
+    };
+
+    applyNative();
+    applyChoicesUi();
+    [80, 260, 700, 1400].forEach((ms) => setTimeout(() => {
+      applyNative();
+      applyChoicesUi();
+    }, ms));
   };
 
   const setRadioByLabel = (name, value) => {
@@ -2006,8 +2128,77 @@ HTML;
     });
   };
 
+  const showNativeSelect = (select) => {
+    if (!select) return;
+    try {
+      if (select.nextElementSibling && select.nextElementSibling.classList?.contains('choices')) {
+        select.nextElementSibling.remove();
+      }
+      select.removeAttribute('data-select');
+      select.removeAttribute('hidden');
+      select.removeAttribute('tabindex');
+      select.style.display = '';
+      select.style.opacity = '';
+      select.style.position = '';
+      select.style.pointerEvents = '';
+      select.classList.remove('choices__input', 'choices__input--cloned');
+      if (!select.classList.contains('form-select')) select.classList.add('form-select');
+      if (!select.classList.contains('form-select-lg')) select.classList.add('form-select-lg');
+    } catch (_) {
+      // Keep flow alive even if one select cannot be normalized.
+    }
+  };
+
+  const forceNativeForCarDropdowns = () => {
+    const selectors = [
+      ['select[aria-label="Car brand select"]', 'select[name="brand"]'],
+      ['select[aria-label="Car model select"]', 'select[name="model"]'],
+      ['select[aria-label="Manufacturing year select"]', 'select[name="year"]'],
+      ['select[aria-label="Location select"]', 'select[name="city"]'],
+      ['select[aria-label="Radius select"]', 'select[name="radius"]'],
+      ['select[aria-label="Drive type select"]', 'select[name="drive_type"]'],
+      ['select[aria-label="Engine select"]', 'select[name="engine"]'],
+      ['select[aria-label="Fuel select"]', 'select[name="fuel_type"]'],
+      ['select[aria-label="Transmission select"]', 'select[name="transmission"]'],
+    ];
+    selectors.forEach((group) => {
+      const sel = pickSelect(group);
+      if (sel) showNativeSelect(sel);
+    });
+  };
+
+  const enforceDropdownPrefill = (source) => {
+    const data = source || {};
+    const pairs = [
+      { selectors: ['select[aria-label="Car brand select"]', 'select[name="brand"]'], value: data.brand },
+      { selectors: ['select[aria-label="Car model select"]', 'select[name="model"]'], value: data.model },
+      { selectors: ['select[aria-label="Manufacturing year select"]', 'select[name="year"]'], value: data.year },
+      { selectors: ['select[aria-label="Location select"]', 'select[name="city"]'], value: data.city },
+      { selectors: ['select[aria-label="Radius select"]', 'select[name="radius"]'], value: data.radius },
+      { selectors: ['select[aria-label="Drive type select"]', 'select[name="drive_type"]'], value: data.drive_type },
+      { selectors: ['select[aria-label="Engine select"]', 'select[name="engine"]'], value: data.engine },
+      { selectors: ['select[aria-label="Fuel select"]', 'select[name="fuel_type"]'], value: data.fuel_type },
+      { selectors: ['select[aria-label="Transmission select"]', 'select[name="transmission"]'], value: data.transmission },
+    ];
+    pairs.forEach((row) => {
+      if (row.value === undefined || row.value === null || String(row.value).trim() === '') return;
+      setSelectByText(row.selectors, row.value);
+    });
+  };
+
   const applyEditData = () => {
     if (!editData || !editData.id) return;
+    try { forceNativeForCarDropdowns(); } catch (_) {}
+    const wizardData = (editData.wizard_data && typeof editData.wizard_data === 'object') ? editData.wizard_data : {};
+    const pref = (key, fallback = '') => {
+      const w = wizardData[key];
+      if (w !== undefined && w !== null && String(w).trim() !== '') return w;
+      return fallback;
+    };
+    const prefBool = (key, fallback = false) => {
+      if (wizardData[key] !== undefined) return !!wizardData[key];
+      return !!fallback;
+    };
 
     let hiddenId = form.querySelector('input[name="listing_id"]');
     if (!hiddenId) {
@@ -2046,35 +2237,37 @@ HTML;
     const lastNameInput = form.querySelector('#ln');
     const emailInput = form.querySelector('#email');
     const phoneInput = form.querySelector('#phone');
-    if (mileageInput) mileageInput.value = String(editData.mileage || '');
-    if (priceInput) priceInput.value = String(editData.price || '').replace(/[^\d]/g, '');
-    if (cityMpgInput) cityMpgInput.value = String(editData.city_mpg || '');
-    if (highwayMpgInput) highwayMpgInput.value = String(editData.highway_mpg || '');
-    if (exteriorColorInput) exteriorColorInput.value = String(editData.exterior_color || '');
-    if (interiorColorInput) interiorColorInput.value = String(editData.interior_color || '');
-    if (descriptionInput) descriptionInput.value = String(editData.description || '');
-    if (firstNameInput) firstNameInput.value = String(editData.contact_first_name || '');
-    if (lastNameInput) lastNameInput.value = String(editData.contact_last_name || '');
-    if (emailInput) emailInput.value = String(editData.contact_email || '');
-    if (phoneInput) phoneInput.value = String(editData.contact_phone || '');
+    if (mileageInput) mileageInput.value = String(pref('mileage', editData.mileage || ''));
+    if (priceInput) priceInput.value = String(pref('price', editData.price || '')).replace(/[^\d]/g, '');
+    if (cityMpgInput) cityMpgInput.value = String(pref('city_mpg', editData.city_mpg || ''));
+    if (highwayMpgInput) highwayMpgInput.value = String(pref('highway_mpg', editData.highway_mpg || ''));
+    if (exteriorColorInput) exteriorColorInput.value = String(pref('exterior_color', editData.exterior_color || ''));
+    if (interiorColorInput) interiorColorInput.value = String(pref('interior_color', editData.interior_color || ''));
+    if (descriptionInput) descriptionInput.value = String(pref('description', editData.description || ''));
+    if (firstNameInput) firstNameInput.value = String(pref('contact_first_name', editData.contact_first_name || ''));
+    if (lastNameInput) lastNameInput.value = String(pref('contact_last_name', editData.contact_last_name || ''));
+    if (emailInput) emailInput.value = String(pref('contact_email', editData.contact_email || ''));
+    if (phoneInput) phoneInput.value = String(pref('contact_phone', editData.contact_phone || ''));
 
-    setSelectByText(['select[aria-label="Car brand select"]', 'select[name="brand"]'], editData.brand);
-    setSelectByText(['select[aria-label="Car model select"]', 'select[name="model"]'], editData.model);
-    setSelectByText(['select[aria-label="Manufacturing year select"]', 'select[name="year"]'], editData.year);
-    setSelectByText(['select[aria-label="Location select"]', 'select[name="city"]'], editData.city);
-    setSelectByText(['select[aria-label="Radius select"]', 'select[name="radius"]'], editData.radius);
-    setSelectByText(['select[aria-label="Drive type select"]', 'select[name="drive_type"]'], editData.drive_type);
-    setSelectByText(['select[aria-label="Engine select"]', 'select[name="engine"]'], editData.engine);
-    setSelectByText(['select[aria-label="Fuel select"]', 'select[name="fuel_type"]'], editData.fuel_type);
-    setSelectByText(['select[aria-label="Transmission select"]', 'select[name="transmission"]'], editData.transmission);
-    setRadioByLabel('condition', editData.condition);
-    setRadioByLabel('body', editData.body_type);
-    setRadioById('seller', editData.seller_type || 'private');
-    setCheckboxById('negotiated', !!editData.negotiated);
-    setCheckboxById('installments', !!editData.installments);
-    setCheckboxById('exchange', !!editData.exchange);
-    setCheckboxById('uncleared', !!editData.uncleared);
-    setCheckboxById('dealer-ready', !!editData.dealer_ready);
+    enforceDropdownPrefill({
+      brand: pref('brand', editData.brand),
+      model: pref('model', editData.model),
+      year: pref('year', editData.year),
+      city: pref('city', editData.city),
+      radius: pref('radius', editData.radius),
+      drive_type: pref('drive_type', editData.drive_type),
+      engine: pref('engine', editData.engine),
+      fuel_type: pref('fuel_type', editData.fuel_type),
+      transmission: pref('transmission', editData.transmission),
+    });
+    setRadioByLabel('condition', pref('condition', editData.condition));
+    setRadioByLabel('body', pref('body_type', editData.body_type));
+    setRadioById('seller', pref('seller_type', editData.seller_type || 'private'));
+    setCheckboxById('negotiated', prefBool('negotiated', !!editData.negotiated));
+    setCheckboxById('installments', prefBool('installments', !!editData.installments));
+    setCheckboxById('exchange', prefBool('exchange', !!editData.exchange));
+    setCheckboxById('uncleared', prefBool('uncleared', !!editData.uncleared));
+    setCheckboxById('dealer-ready', prefBool('dealer_ready', !!editData.dealer_ready));
 
     if (editData.image && galleryGrid && uploadTile) {
       const alreadyInserted = Array.from(galleryGrid.querySelectorAll('img')).some((img) => (img.getAttribute('src') || '').includes(editData.image));
@@ -2093,13 +2286,34 @@ HTML;
     if (previewPrice && editData.price) {
       previewPrice.textContent = String(editData.price);
     }
-    setCheckedByIdList(editData.features || []);
+    const featureIds = (Array.isArray(editData.features) && editData.features.length)
+      ? editData.features
+      : (Array.isArray(wizardData.features) ? wizardData.features : []);
+    setCheckedByIdList(featureIds);
   };
 
   const forceApplyEditData = () => {
     if (!(editData && editData.id)) return;
     applyEditData();
     [120, 450, 900, 1500, 2200].forEach((ms) => setTimeout(applyEditData, ms));
+    // Hard-sync dropdowns for delayed plugin hydration.
+    let dropdownRetries = 0;
+    const dropdownSync = setInterval(() => {
+      const wizardData = (editData.wizard_data && typeof editData.wizard_data === 'object') ? editData.wizard_data : {};
+      enforceDropdownPrefill({
+        brand: wizardData.brand ?? editData.brand,
+        model: wizardData.model ?? editData.model,
+        year: wizardData.year ?? editData.year,
+        city: wizardData.city ?? editData.city,
+        radius: wizardData.radius ?? editData.radius,
+        drive_type: wizardData.drive_type ?? editData.drive_type,
+        engine: wizardData.engine ?? editData.engine,
+        fuel_type: wizardData.fuel_type ?? editData.fuel_type,
+        transmission: wizardData.transmission ?? editData.transmission,
+      });
+      dropdownRetries += 1;
+      if (dropdownRetries >= 20) clearInterval(dropdownSync);
+    }, 600);
     let retries = 0;
     const hardSync = setInterval(() => {
       applyEditData();
@@ -2584,7 +2798,88 @@ Route::middleware('auth')->group(function () use ($serve) {
                 'price' => (string) ($editListing->price ?? ''),
                 'image' => (string) $editListing->image_url,
                 'features' => array_values($editListing->features ?? []),
+                'wizard_data' => $editListing->carDetail?->wizard_data ?? [],
             ],
+        ]);
+    });
+    Route::get('/account/contractors/{listing}/edit-data', function (int $listing) {
+        $editListing = Listing::query()
+            ->with(['contractorDetail', 'city', 'images'])
+            ->where('id', $listing)
+            ->where('module', 'contractors')
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (! $editListing) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+
+        $serviceArea = (string) ($editListing->contractorDetail?->service_area ?? '');
+        $address = '';
+        $zip = '';
+        if ($serviceArea !== '') {
+            $parts = array_values(array_filter(array_map('trim', explode(',', $serviceArea))));
+            $zipCandidate = end($parts) ?: '';
+            if ($zipCandidate !== '' && preg_match('/\d/', $zipCandidate)) {
+                $zip = (string) $zipCandidate;
+                array_pop($parts);
+            }
+            if (count($parts) > 0) {
+                $address = (string) $parts[0];
+            }
+        }
+
+        $priceRaw = (string) ($editListing->price ?? '');
+        $priceValue = preg_replace('/[^\d]/', '', $priceRaw) ?: '';
+
+        return response()->json([
+            'data' => [
+                'id' => $editListing->id,
+                'title' => (string) $editListing->title,
+                'project_name' => (string) $editListing->title,
+                'project_description' => (string) ($editListing->excerpt ?? ''),
+                'price_value' => (string) $priceValue,
+                'city' => (string) ($editListing->city?->name ?? ''),
+                'service_area' => $serviceArea,
+                'address' => $address,
+                'zip' => $zip,
+                'image' => (string) $editListing->image_url,
+                'gallery_images' => $editListing->images
+                    ->sortBy('sort_order')
+                    ->values()
+                    ->map(fn ($img) => (string) $img->image_url)
+                    ->all(),
+            ],
+        ]);
+    });
+    Route::post('/account/contractors/{listing}/profile-photo', function (Request $request, int $listing) {
+        $record = Listing::query()
+            ->where('id', $listing)
+            ->where('module', 'contractors')
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (! $record) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+
+        $request->validate([
+            'profile_photo' => ['required', 'image', 'max:8192'],
+        ]);
+
+        $file = $request->file('profile_photo');
+        if (! ($file instanceof \Illuminate\Http\UploadedFile) || ! $file->isValid()) {
+            return response()->json(['message' => 'Invalid upload'], 422);
+        }
+
+        $path = $file->store('listings/contractors/profile', 'public');
+        $record->image = $path;
+        $record->save();
+
+        return response()->json([
+            'ok' => true,
+            'image' => $path,
+            'image_url' => $record->fresh()->image_url,
         ]);
     });
     Route::post('/account/listings/delete', function (Request $request) {

@@ -15,6 +15,13 @@
   const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
   if (!Object.prototype.hasOwnProperty.call(stepMap, currentPath)) return;
 
+  const selectedGalleryFiles = [];
+  let nextGalleryId = 1;
+  let selectedProfilePhotoFile = null;
+  let existingGalleryUrls = [];
+  let loadedEditData = null;
+  let submitInFlight = false;
+
   const readState = () => {
     try {
       return JSON.parse(sessionStorage.getItem(key) || '{}') || {};
@@ -26,6 +33,21 @@
   const writeState = (next) => {
     const merged = { ...readState(), ...next };
     sessionStorage.setItem(key, JSON.stringify(merged));
+  };
+
+  const readCookie = (name) => {
+    const token = `${name}=`;
+    const row = document.cookie.split('; ').find((part) => part.startsWith(token));
+    return row ? decodeURIComponent(row.slice(token.length)) : '';
+  };
+
+  const getCsrfToken = () => {
+    const fromWindow = String(window.__mcCsrf || '').trim();
+    if (fromWindow) return fromWindow;
+    const fromMeta = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    if (fromMeta) return fromMeta;
+    const fromCookie = readCookie('XSRF-TOKEN');
+    return fromCookie || '';
   };
 
   const saveControls = () => {
@@ -81,29 +103,31 @@
       saveAreas();
     };
 
-    wrap.addEventListener('click', (event) => {
-      const btn = event.target && event.target.closest('button.btn.btn-sm.btn-outline-secondary');
-      if (!btn) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      btn.remove();
-      saveAreas();
-    }, true);
-
-    const consume = () => {
-      const raw = input.value || '';
-      raw.split(',').map((v) => v.trim()).filter(Boolean).forEach(addArea);
-      input.value = '';
-    };
-    input.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ',') {
+    if (wrap.dataset.mcAreaBound !== '1') {
+      wrap.dataset.mcAreaBound = '1';
+      wrap.addEventListener('click', (event) => {
+        const btn = event.target && event.target.closest('button.btn.btn-sm.btn-outline-secondary');
+        if (!btn) return;
         event.preventDefault();
-        consume();
-      }
-    });
-    input.addEventListener('blur', consume);
+        event.stopImmediatePropagation();
+        btn.remove();
+        saveAreas();
+      }, true);
 
-    // Restore saved areas once.
+      const consume = () => {
+        const raw = input.value || '';
+        raw.split(',').map((v) => v.trim()).filter(Boolean).forEach(addArea);
+        input.value = '';
+      };
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ',') {
+          event.preventDefault();
+          consume();
+        }
+      });
+      input.addEventListener('blur', consume);
+    }
+
     const saved = readState().areas;
     if (Array.isArray(saved) && saved.length) {
       wrap.innerHTML = '';
@@ -111,59 +135,134 @@
     }
   };
 
+  const bindProfilePhoto = () => {
+    const btn = Array.from(document.querySelectorAll('button, a'))
+      .find((el) => (el.textContent || '').trim().toLowerCase() === 'update photo');
+    if (!btn) return;
+
+    const img = btn.closest('.d-flex')?.querySelector('img') || document.querySelector('img');
+    if (!img) return;
+
+    if (btn.dataset.mcProfileBound === '1') return;
+    btn.dataset.mcProfileBound = '1';
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.className = 'position-absolute top-0 start-0 w-100 h-100 opacity-0';
+    fileInput.style.cursor = 'pointer';
+    fileInput.style.zIndex = '2';
+    fileInput.dataset.mcAvatarInput = '1';
+
+    if (getComputedStyle(btn).position === 'static') btn.style.position = 'relative';
+    btn.appendChild(fileInput);
+
+    const uploadProfilePhoto = async (file) => {
+      if (!file || !editId) return null;
+      const csrf = getCsrfToken();
+      if (!csrf) return null;
+      const fd = new FormData();
+      fd.append('_token', csrf);
+      fd.append('profile_photo', file);
+      const res = await fetch(`/account/contractors/${encodeURIComponent(editId)}/profile-photo`, {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      const url = String(json?.image_url || '').trim();
+      return url || null;
+    };
+
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (!f) return;
+      selectedProfilePhotoFile = f;
+      const localPreview = URL.createObjectURL(f);
+      img.src = localPreview;
+      fileInput.value = '';
+      uploadProfilePhoto(f)
+        .then((remoteUrl) => {
+          if (!remoteUrl) return;
+          img.src = remoteUrl;
+          if (loadedEditData && typeof loadedEditData === 'object') {
+            loadedEditData.image = remoteUrl;
+          }
+        })
+        .catch(() => {
+          // Keep local preview when upload fails.
+        });
+    });
+  };
+
+  const createGalleryCard = ({ src, isVideo = false, fileId = null, existingUrl = '' }) => {
+    const col = document.createElement('div');
+    col.className = 'col';
+    if (fileId !== null) col.dataset.fileId = String(fileId);
+    if (existingUrl) col.dataset.existingUrl = existingUrl;
+    col.innerHTML = `
+      <div class="hover-effect-opacity position-relative overflow-hidden rounded">
+        <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
+          ${isVideo
+            ? `<video src="${src}" class="w-100 h-100 object-fit-cover" muted controls></video>`
+            : `<img src="${src}" alt="Uploaded image" class="w-100 h-100 object-fit-cover">`}
+        </div>
+        <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
+          <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove"><i class="fi-trash fs-base"></i></button>
+          <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
+        </div>
+      </div>
+    `;
+    return col;
+  };
+
   const bindProjectGallery = () => {
-    const grid = document.querySelector('.row.row-cols-2.row-cols-sm-3.g-2.g-md-3') ||
-      Array.from(document.querySelectorAll('.row')).find((row) =>
-        (row.textContent || '').toLowerCase().includes('upload photos / videos')
-      );
+    const grid = document.querySelector('.border.rounded.p-3 .row.row-cols-2.row-cols-sm-3.g-2') ||
+      document.querySelector('.row.row-cols-2.row-cols-sm-3.g-2.g-md-3');
     if (!grid) return;
 
-    const uploadCol = Array.from(grid.querySelectorAll('.col')).find((col) => {
+    const uploadCol = Array.from(grid.children).find((col) => {
       const t = (col.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
       return t.includes('upload photos / videos');
     });
     if (!uploadCol) return;
-    const uploadLabel = Array.from(uploadCol.querySelectorAll('*'))
-      .find((el) => (el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase() === 'upload photos / videos');
+
+    Array.from(grid.children).forEach((col) => {
+      if (col === uploadCol) return;
+      if (col.dataset.fileId || col.dataset.existingUrl) return;
+      col.remove();
+    });
+
+    Array.from(grid.querySelectorAll('.col[data-existing-url]')).forEach((col) => col.remove());
+    existingGalleryUrls.forEach((url) => {
+      grid.insertBefore(createGalleryCard({ src: url, existingUrl: url }), uploadCol);
+    });
+
+    if (uploadCol.dataset.mcUploadBound === '1') return;
+    uploadCol.dataset.mcUploadBound = '1';
 
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.multiple = true;
     fileInput.accept = 'image/*,video/*';
-    fileInput.className = 'd-none';
-    uploadCol.appendChild(fileInput);
-    uploadCol.style.cursor = 'pointer';
+    fileInput.className = 'position-absolute top-0 start-0 w-100 h-100 opacity-0';
+    fileInput.style.zIndex = '5';
+    fileInput.style.cursor = 'pointer';
+    fileInput.dataset.mcUploadInput = '1';
 
-    const openPicker = (event) => {
-      if (event.target && event.target.closest('button[aria-label="Remove"]')) return;
-      event.preventDefault();
-      fileInput.click();
-    };
-    uploadCol.addEventListener('click', openPicker);
-    if (uploadLabel) uploadLabel.addEventListener('click', openPicker);
-    const uploadCenter = uploadLabel ? uploadLabel.closest('.text-center') : null;
-    if (uploadCenter && uploadCenter !== uploadLabel) uploadCenter.addEventListener('click', openPicker);
+    const uploadTile = uploadCol.querySelector('.d-flex.align-items-center.justify-content-center.position-relative.h-100.cursor-pointer') || uploadCol;
+    if (!uploadTile.classList.contains('position-relative')) uploadTile.classList.add('position-relative');
+    uploadTile.appendChild(fileInput);
 
     fileInput.addEventListener('change', () => {
       const files = Array.from(fileInput.files || []);
       files.forEach((file) => {
+        const id = nextGalleryId++;
+        selectedGalleryFiles.push({ id, file });
         const src = URL.createObjectURL(file);
-        const col = document.createElement('div');
-        col.className = 'col';
-        col.innerHTML = `
-          <div class="hover-effect-opacity position-relative overflow-hidden rounded">
-            <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
-              ${file.type.startsWith('video/')
-                ? `<video src="${src}" class="w-100 h-100 object-fit-cover" muted controls></video>`
-                : `<img src="${src}" alt="Uploaded image" class="w-100 h-100 object-fit-cover">`}
-            </div>
-            <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
-              <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove"><i class="fi-trash fs-base"></i></button>
-              <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
-            </div>
-          </div>
-        `;
-        grid.insertBefore(col, uploadCol);
+        const card = createGalleryCard({ src, isVideo: file.type.startsWith('video/'), fileId: id });
+        grid.insertBefore(card, uploadCol);
       });
       fileInput.value = '';
     });
@@ -175,30 +274,20 @@
       if (!col || col === uploadCol) return;
       event.preventDefault();
       event.stopImmediatePropagation();
+
+      const fileId = Number(col.dataset.fileId || '0');
+      if (fileId > 0) {
+        const idx = selectedGalleryFiles.findIndex((row) => row.id === fileId);
+        if (idx >= 0) selectedGalleryFiles.splice(idx, 1);
+      }
+
+      const existingUrl = String(col.dataset.existingUrl || '').trim();
+      if (existingUrl) {
+        existingGalleryUrls = existingGalleryUrls.filter((u) => u !== existingUrl);
+      }
+
       col.remove();
     }, true);
-  };
-
-  const bindProfilePhoto = () => {
-    const btn = Array.from(document.querySelectorAll('button, a'))
-      .find((el) => (el.textContent || '').trim().toLowerCase() === 'update photo');
-    if (!btn) return;
-    const img = btn.closest('.d-flex')?.querySelector('img') || document.querySelector('img');
-    if (!img) return;
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.className = 'd-none';
-    document.body.appendChild(fileInput);
-    btn.addEventListener('click', (event) => {
-      event.preventDefault();
-      fileInput.click();
-    });
-    fileInput.addEventListener('change', () => {
-      const f = fileInput.files && fileInput.files[0];
-      if (!f) return;
-      img.src = URL.createObjectURL(f);
-    });
   };
 
   const bindTopStepper = () => {
@@ -223,6 +312,42 @@
     });
   };
 
+  const fixWorkingHoursLayout = () => {
+    if (currentPath !== '/add-contractor-price-hours') return;
+
+    if (!document.getElementById('mc-hours-layout-style')) {
+      const style = document.createElement('style');
+      style.id = 'mc-hours-layout-style';
+      style.textContent = `
+        .mc-hours-wrap { max-width: 50% !important; min-width: 320px; }
+        .mc-hours-grid { display: grid !important; grid-template-columns: 1fr auto 1fr; align-items: center; column-gap: .75rem; }
+        @media (max-width: 767.98px) {
+          .mc-hours-wrap { max-width: 100% !important; min-width: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    document.querySelectorAll('.vstack.gap-3 > .d-flex.align-items-center.gap-3.gap-sm-5').forEach((row) => {
+      const hoursWrap = row.querySelector('.position-relative.d-flex.align-items-center.w-100');
+      if (hoursWrap) {
+        hoursWrap.classList.add('mc-hours-wrap');
+      }
+
+      const hoursGrid = row.querySelector('.collapse > .d-flex');
+      if (hoursGrid) {
+        hoursGrid.classList.add('mc-hours-grid');
+        hoursGrid.querySelectorAll('input.form-control').forEach((input) => {
+          const raw = String(input.value || '').trim();
+          const normalized = raw.match(/^(\d{1,2}):(\d{2})$/) ? raw : '';
+          input.type = 'time';
+          if (normalized) input.value = normalized;
+          input.step = '300';
+        });
+      }
+    });
+  };
+
   const normalizeTemplateLinks = () => {
     document.querySelectorAll('a[href]').forEach((a) => {
       const href = (a.getAttribute('href') || '').trim();
@@ -232,45 +357,68 @@
     });
   };
 
-  const submitListing = (isDraft) => {
-      saveControls();
-      const state = readState();
-      const controls = state.controls || {};
-      const areas = Array.isArray(state.areas) ? state.areas : [];
+  const submitListing = async (isDraft) => {
+    if (submitInFlight) return;
+    submitInFlight = true;
+    saveControls();
+    const state = readState();
+    const controls = state.controls || {};
+    const areas = Array.isArray(state.areas) ? state.areas : [];
 
-      const selectedCity =
-        (document.querySelector('select[aria-label="City select"] option:checked')?.textContent || '').trim() ||
-        String(controls['select:city-select'] || '');
-      const address = String(controls.address || document.getElementById('address')?.value || '');
-      const zip = String(controls.zip || document.getElementById('zip')?.value || '');
-      const areaSearch = areas.length ? areas.join(', ') : String(controls['area-search'] || '');
+    const selectedCity =
+      (document.querySelector('select[aria-label="City select"] option:checked')?.textContent || '').trim() ||
+      String(controls['select:city-select'] || '');
 
-      const payload = {
-        'select:city-select': selectedCity,
-        'address': address,
-        'zip': zip,
-        'area-search': areaSearch,
-        'project-name': String(controls['project-name'] || ''),
-        'project-description': String(controls['project-description'] || ''),
-        'price': String(controls.price || '')
-      };
+    const payload = {
+      'select:city-select': selectedCity,
+      'address': String(controls.address || document.getElementById('address')?.value || ''),
+      'zip': String(controls.zip || document.getElementById('zip')?.value || ''),
+      'area-search': areas.length ? areas.join(', ') : String(controls['area-search'] || ''),
+      'project-name': String(controls['project-name'] || ''),
+      'project-description': String(controls['project-description'] || ''),
+      'price': String(controls.price || '')
+    };
 
-      const form = document.createElement('form');
-      form.method = 'get';
-      form.action = '/submit/contractor';
-      form.innerHTML = `
-        <input type="hidden" name="payload" value="${btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}">
-        ${isDraft ? '<input type="hidden" name="draft" value="1">' : ''}
-        ${editId ? `<input type="hidden" name="listing_id" value="${editId}">` : ''}
-      `;
-      document.body.appendChild(form);
-      form.submit();
+    const csrf = getCsrfToken();
+    const fd = new FormData();
+    if (csrf) fd.append('_token', csrf);
+    fd.append('payload', btoa(unescape(encodeURIComponent(JSON.stringify(payload)))));
+    if (isDraft) fd.append('draft', '1');
+    if (editId) fd.append('listing_id', editId);
+    if (selectedProfilePhotoFile) fd.append('profile_photo', selectedProfilePhotoFile);
+    selectedGalleryFiles.forEach((row) => {
+      if (row?.file) fd.append('photos[]', row.file);
+    });
+
+    try {
+      const res = await fetch('/submit/contractor', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+      });
+      if (res.redirected) {
+        window.location.href = res.url;
+        return;
+      }
+      const text = await res.text();
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      const nextUrl = doc.querySelector('meta[http-equiv="refresh"]')?.getAttribute('content')?.split('url=')[1];
+      if (nextUrl) {
+        window.location.href = nextUrl;
+        return;
+      }
+      window.location.reload();
+    } catch (_) {
+      submitInFlight = false;
+    }
   };
 
   const bindSaveDraft = () => {
     Array.from(document.querySelectorAll('button.btn.btn-lg.btn-outline-secondary'))
       .filter((btn) => (btn.textContent || '').trim().toLowerCase() === 'save draft')
       .forEach((btn) => {
+        if (btn.dataset.mcDraftBound === '1') return;
+        btn.dataset.mcDraftBound = '1';
         btn.addEventListener('click', (event) => {
           event.preventDefault();
           event.stopImmediatePropagation();
@@ -280,12 +428,14 @@
   };
 
   const bindPublish = () => {
-    Array.from(document.querySelectorAll('a.btn.btn-lg, button.btn.btn-lg'))
+    Array.from(document.querySelectorAll('a.btn.btn-lg, button.btn.btn-lg, a.nav-link'))
       .filter((btn) => {
         const t = (btn.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
         return t.includes('publish') || t.includes('save project and become a pro');
       })
       .forEach((btn) => {
+        if (btn.dataset.mcPublishBound === '1') return;
+        btn.dataset.mcPublishBound = '1';
         btn.addEventListener('click', (event) => {
           event.preventDefault();
           event.stopImmediatePropagation();
@@ -294,20 +444,69 @@
       });
   };
 
+  const loadEditData = async () => {
+    if (!editId) return;
+    if (currentPath !== '/add-contractor-project') return;
+    try {
+      const res = await fetch(`/account/contractors/${encodeURIComponent(editId)}/edit-data`, { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const json = await res.json();
+      const data = json?.data || null;
+      if (!data || !data.id) return;
+      loadedEditData = data;
+      existingGalleryUrls = Array.isArray(data.gallery_images) ? data.gallery_images.filter(Boolean) : [];
+
+      bindProfilePhoto();
+      bindProjectGallery();
+    } catch (_) {
+      // ignore
+    }
+  };
+
+  const loadProfileImage = async () => {
+    if (!editId) return;
+    if (currentPath !== '/add-contractor-profile') return;
+    try {
+      const res = await fetch(`/account/contractors/${encodeURIComponent(editId)}/edit-data`, { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const json = await res.json();
+      const data = json?.data || null;
+      if (!data || !data.id) return;
+      loadedEditData = data;
+      const btn = Array.from(document.querySelectorAll('button, a'))
+        .find((el) => (el.textContent || '').trim().toLowerCase() === 'update photo');
+      const img = btn?.closest('.d-flex')?.querySelector('img') || document.querySelector('img');
+      const savedUrl = String(data.image || '').trim();
+      if (img && savedUrl) img.src = savedUrl;
+    } catch (_) {
+      // ignore
+    }
+  };
+
   const init = () => {
     const safe = (fn) => { try { fn(); } catch (_) {} };
+
     safe(normalizeTemplateLinks);
     safe(bindTopStepper);
     safe(bindSaveDraft);
     safe(bindPublish);
-    safe(bindProfilePhoto);
-    safe(bindProjectGallery);
     safe(bindAreaServices);
     safe(restoreControls);
+    safe(bindProfilePhoto);
+    safe(bindProjectGallery);
+    safe(fixWorkingHoursLayout);
 
     document.querySelectorAll('input, select, textarea').forEach((el) => {
       el.addEventListener('input', saveControls);
       el.addEventListener('change', saveControls);
+    });
+
+    loadProfileImage().then(() => {
+      safe(bindProfilePhoto);
+    });
+
+    loadEditData().then(() => {
+      safe(bindProjectGallery);
     });
   };
 
