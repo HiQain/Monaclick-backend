@@ -742,6 +742,20 @@ HTML;
 (() => {
   const editData = __PROPERTY_EDIT_DATA__;
   const isEdit = !!(editData && editData.id);
+  let isSubmitting = false;
+  const wizardKey = 'propertyWizardSession';
+  const ensureWizardSession = () => {
+    try {
+      let value = localStorage.getItem(wizardKey);
+      if (!value) {
+        value = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        localStorage.setItem(wizardKey, value);
+      }
+      return value;
+    } catch (_) {
+      return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+  };
   const heading = document.querySelector('h1.h2');
   if (isEdit && heading) heading.textContent = 'Edit property';
 
@@ -757,11 +771,14 @@ HTML;
     el.checked = true;
     el.dispatchEvent(new Event('change', { bubbles: true }));
   };
-  const submitPayload = (isDraft) => {
+  const submitPayload = (isDraft, nextPath = '') => {
+    if (isSubmitting) return;
+    isSubmitting = true;
     const payload = {
       'radio:category': getCheckedLabel('category').toLowerCase().includes('rent') ? 'rent' : 'sell',
       'radio:type': getCheckedLabel('type') || 'House',
-      'radio:condition': getCheckedLabel('condition') || 'Secondary market'
+      'radio:condition': getCheckedLabel('condition') || 'Secondary market',
+      'wizard_session': ensureWizardSession()
     };
     const form = document.createElement('form');
     form.method = 'post';
@@ -771,11 +788,14 @@ HTML;
       <input type="hidden" name="payload" value="${btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}">
       ${isDraft ? '<input type="hidden" name="draft" value="1">' : ''}
       ${isEdit ? `<input type="hidden" name="listing_id" value="${String(editData.id)}">` : ''}
+      ${nextPath ? `<input type="hidden" name="next" value="${nextPath}">` : ''}
     `;
     document.body.appendChild(form);
     form.submit();
   };
 
+  const actionsBar = document.querySelector('.pt-5.d-flex.flex-wrap.gap-3.align-items-center');
+  if (actionsBar) actionsBar.classList.add('justify-content-start');
   const draftBtn = document.querySelector('.pt-5 .btn.btn-lg.btn-outline-secondary');
   const nextStepBtn = document.querySelector('.pt-5 .btn.btn-lg.btn-dark');
   if (draftBtn) {
@@ -783,8 +803,11 @@ HTML;
     draftBtn.addEventListener('click', () => submitPayload(true));
   }
   if (nextStepBtn) {
-    const qs = isEdit ? `?edit=${encodeURIComponent(String(editData.id))}` : '';
-    nextStepBtn.setAttribute('href', `/add-property-location${qs}`);
+    nextStepBtn.setAttribute('href', '#');
+    nextStepBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitPayload(true, '/add-property-location');
+    });
   }
   if (isEdit) {
     if ((editData.listing_type || '').toLowerCase() === 'rent') setCheckedByName('category', 'rent');
@@ -817,20 +840,62 @@ HTML;
     }
 
     if (str_starts_with($file, 'add-property-')) {
+        $propertyEditPayload = null;
+        $editId = (int) request()->query('edit', 0);
+        if ($editId > 0) {
+            $editQuery = Listing::query()
+                ->with(['propertyDetail', 'city', 'category', 'images'])
+                ->where('id', $editId)
+                ->where('module', 'real-estate');
+            if (Auth::check()) {
+                $editQuery->where('user_id', Auth::id());
+            }
+            $editListing = $editQuery->first();
+            if ($editListing) {
+                $propertyEditPayload = [
+                    'id' => $editListing->id,
+                    'title' => (string) $editListing->title,
+                    'listing_type' => (string) ($editListing->propertyDetail?->listing_type ?? 'sale'),
+                    'property_type' => (string) ($editListing->propertyDetail?->property_type ?? ''),
+                    'wizard_data' => $editListing->propertyDetail?->wizard_data ?? [],
+                    'images' => $editListing->images->map(fn ($img) => (string) $img->image_url)->values()->all(),
+                ];
+            }
+        }
+        $propertyEditJson = json_encode($propertyEditPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
         $propertyNavScript = <<<'HTML'
 <script>
 (() => {
+  const editData = __PROPERTY_EDIT_DATA__ || null;
+  const wizard = (editData && editData.wizard_data && typeof editData.wizard_data === 'object') ? editData.wizard_data : {};
+  let isSubmitting = false;
+  const wizardKey = 'propertyWizardSession';
+  const ensureWizardSession = () => {
+    try {
+      let value = localStorage.getItem(wizardKey);
+      if (!value) {
+        value = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        localStorage.setItem(wizardKey, value);
+      }
+      return value;
+    } catch (_) {
+      return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+  };
   const stepMap = [
     { key: 'property type', url: '/add-property' },
     { key: 'location', url: '/add-property-location' },
     { key: 'photos and videos', url: '/add-property-photos' },
     { key: 'property details', url: '/add-property-details' },
     { key: 'price', url: '/add-property-price' },
-    { key: 'contact info', url: '/add-property-contact-info' },
-    { key: 'ad promotion', url: '/add-property-promotion' }
+    { key: 'contact info', url: '/add-property-contact-info' }
   ];
   const search = new URLSearchParams(window.location.search);
-  const editId = (search.get('edit') || '').trim();
+  const editId = (search.get('edit') || (editData?.id ? String(editData.id) : '')).trim();
+  if (editId) {
+    try { localStorage.setItem(wizardKey, String(editId)); } catch (_) {}
+  }
+  window.__propertyEditData = editData;
   const withEdit = (url) => (editId ? `${url}?edit=${encodeURIComponent(editId)}` : url);
 
   // Sidebar steps: allow random step navigation on click.
@@ -852,20 +917,244 @@ HTML;
     btn.setAttribute('href', withEdit(`/add-property-${m[1].toLowerCase()}`));
   });
 
+  // New listing mode: clear template demo defaults so user starts with empty data.
+  if (!editId) {
+    document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea').forEach((el) => {
+      el.value = '';
+    });
+    document.querySelectorAll('select').forEach((select) => {
+      select.selectedIndex = 0;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach((el) => {
+      el.checked = false;
+    });
+  }
+
+  const setInput = (id, value) => {
+    const el = document.getElementById(id);
+    if (!el || typeof value === 'undefined' || value === null) return;
+    el.value = String(value);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+  const setSelectByValue = (ariaLabel, value) => {
+    if (!value) return;
+    const select = document.querySelector(`select[aria-label="${ariaLabel}"]`);
+    if (!select) return;
+    const wanted = String(value).trim().toLowerCase();
+    let option = Array.from(select.options).find((o) => (o.value || o.textContent || '').trim().toLowerCase() === wanted);
+    if (!option) {
+      option = document.createElement('option');
+      option.value = String(value);
+      option.textContent = String(value);
+      select.appendChild(option);
+    }
+    select.value = option.value;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+  const setChecked = (id, checked = true) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.checked = !!checked;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+  const selectedId = (name) => document.querySelector(`input[name="${name}"]:checked`)?.id || '';
+
+  if (editId) {
+    const path = window.location.pathname;
+    if (path === '/add-property-location') {
+      setSelectByValue('Country select', wizard.country);
+      setSelectByValue('City select', wizard.city);
+      setSelectByValue('District select', wizard.district);
+      setInput('zip', wizard.zip);
+      setInput('address', wizard.address);
+    }
+    if (path === '/add-property-details') {
+      if (wizard.ownership) setChecked(String(wizard.ownership));
+      setInput('floors-total', wizard.floors_total);
+      setInput('floor', wizard.floor);
+      setInput('total-area', wizard.total_area);
+      setInput('living-area', wizard.living_area);
+      setInput('kitchen-area', wizard.kitchen_area);
+      if (wizard.bedrooms) setChecked(`bedrooms-${wizard.bedrooms}`);
+      if (wizard.bathrooms) setChecked(`bathrooms-${wizard.bathrooms}`);
+      if (wizard.parking) setChecked(`parking-${wizard.parking}`);
+    }
+    if (path === '/add-property-price') {
+      setInput('price', wizard.price);
+      setChecked('negotiated', !!wizard.negotiated);
+      setChecked('private', (wizard.offer_type || 'private') === 'private');
+      setChecked('agent', (wizard.offer_type || '') === 'agent');
+      setChecked('no-credit', !!wizard.no_credit);
+      setChecked('ready-agents', !!wizard.ready_agents);
+      setChecked('exchange', !!wizard.exchange);
+    }
+    if (path === '/add-property-contact-info') {
+      setInput('fn', wizard.fn);
+      setInput('ln', wizard.ln);
+      setInput('email', wizard.email);
+      setInput('phone', wizard.phone);
+      setChecked('tour', !!wizard.tour);
+    }
+  }
+
+  const buildPayloadForStep = () => {
+    const path = window.location.pathname;
+    if (path === '/add-property-location') {
+      return {
+        wizard_session: ensureWizardSession(),
+        country: document.querySelector('select[aria-label="Country select"]')?.value || '',
+        city: document.querySelector('select[aria-label="City select"]')?.value || '',
+        district: document.querySelector('select[aria-label="District select"]')?.value || '',
+        zip: document.getElementById('zip')?.value || '',
+        address: document.getElementById('address')?.value || '',
+        'select:city-select': document.querySelector('select[aria-label="City select"]')?.value || '',
+      };
+    }
+    if (path === '/add-property-details') {
+      return {
+        wizard_session: ensureWizardSession(),
+        ownership: selectedId('ownership'),
+        floors_total: document.getElementById('floors-total')?.value || '',
+        floor: document.getElementById('floor')?.value || '',
+        total_area: document.getElementById('total-area')?.value || '',
+        living_area: document.getElementById('living-area')?.value || '',
+        kitchen_area: document.getElementById('kitchen-area')?.value || '',
+        'total-area': document.getElementById('total-area')?.value || '',
+        'radio:bedrooms': selectedId('bedrooms').replace('bedrooms-', ''),
+        'radio:bathrooms': selectedId('bathrooms').replace('bathrooms-', ''),
+        parking: selectedId('parking').replace('parking-', ''),
+      };
+    }
+    if (path === '/add-property-price') {
+      return {
+        wizard_session: ensureWizardSession(),
+        price: document.getElementById('price')?.value || '',
+        negotiated: !!document.getElementById('negotiated')?.checked,
+        offer_type: document.getElementById('agent')?.checked ? 'agent' : 'private',
+        no_credit: !!document.getElementById('no-credit')?.checked,
+        ready_agents: !!document.getElementById('ready-agents')?.checked,
+        exchange: !!document.getElementById('exchange')?.checked,
+      };
+    }
+    if (path === '/add-property-contact-info') {
+      return {
+        wizard_session: ensureWizardSession(),
+        fn: document.getElementById('fn')?.value || '',
+        ln: document.getElementById('ln')?.value || '',
+        email: document.getElementById('email')?.value || '',
+        phone: document.getElementById('phone')?.value || '',
+        tour: !!document.getElementById('tour')?.checked,
+      };
+    }
+    if (path === '/add-property-photos') {
+      return {
+        wizard_session: ensureWizardSession(),
+        video_link: document.getElementById('link')?.value || '',
+      };
+    }
+    return {};
+  };
+
+  const setActionsSubmitting = () => {
+    document.querySelectorAll('.pt-5.d-flex.flex-wrap.gap-3.align-items-center .btn').forEach((btn) => {
+      btn.classList.add('disabled');
+      btn.setAttribute('aria-disabled', 'true');
+      if (btn.tagName === 'BUTTON') btn.disabled = true;
+    });
+  };
+
+  const submitStep = (nextPath = '', publishNow = false) => {
+    if (isSubmitting) return;
+    isSubmitting = true;
+    setActionsSubmitting();
+    const payload = buildPayloadForStep();
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = '/submit/property';
+    form.enctype = 'multipart/form-data';
+    form.innerHTML = `
+      <input type="hidden" name="_token" value="__SCRIPT_CSRF__">
+      ${publishNow ? '' : '<input type="hidden" name="draft" value="1">'}
+      <input type="hidden" name="payload" value="${btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}">
+      ${editId ? `<input type="hidden" name="listing_id" value="${editId}">` : ''}
+      ${nextPath ? `<input type="hidden" name="next" value="${nextPath}">` : ''}
+    `;
+    const photoInput = window.__propertyPhotoInput;
+    if (photoInput && photoInput.files && photoInput.files.length) {
+      photoInput.name = 'photos[]';
+      photoInput.multiple = true;
+      form.appendChild(photoInput);
+    }
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  // Contact info should only move to ad promotion step.
   if (window.location.pathname === '/add-property-contact-info') {
     const actions = document.querySelector('.pt-5.d-flex.flex-wrap.gap-3.align-items-center');
-    const promotionBtn = actions?.querySelector('a.btn.btn-lg.btn-dark');
-    if (actions && promotionBtn && !actions.querySelector('.js-save-publish-free')) {
-      const publishBtn = document.createElement('a');
-      publishBtn.className = 'btn btn-lg btn-primary js-save-publish-free';
-      publishBtn.href = withEdit('/add-property-promotion');
-      publishBtn.textContent = 'Save & publish';
-      actions.insertBefore(publishBtn, promotionBtn.nextSibling);
+    if (actions) actions.classList.add('justify-content-start');
+    const nextBtn = actions?.querySelector('a.btn.btn-lg.btn-dark');
+    if (actions && !actions.querySelector('button[data-property-publish]')) {
+      const publishBtn = document.createElement('button');
+      publishBtn.type = 'button';
+      publishBtn.className = 'btn btn-lg btn-primary';
+      publishBtn.textContent = 'Publish listing';
+      publishBtn.setAttribute('data-property-publish', '1');
+      publishBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        submitStep('', true);
+      });
+      actions.appendChild(publishBtn);
+    }
+    if (nextBtn) {
+      nextBtn.textContent = 'Go to ad promotion';
+      nextBtn.setAttribute('href', '#');
+      nextBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        submitStep('/add-property-promotion');
+      });
+    }
+  }
+
+  const nextMap = {
+    '/add-property-location': '/add-property-photos',
+    '/add-property-photos': '/add-property-details',
+    '/add-property-details': '/add-property-price',
+    '/add-property-price': '/add-property-contact-info',
+  };
+  const path = window.location.pathname;
+  if (nextMap[path]) {
+    const actions = document.querySelector('.pt-5.d-flex.flex-wrap.gap-3.align-items-center');
+    if (actions) actions.classList.add('justify-content-start');
+    const draftBtn = actions?.querySelector('button.btn.btn-lg.btn-outline-secondary');
+    const nextBtn = actions?.querySelector('a.btn.btn-lg.btn-dark');
+    if (draftBtn) {
+      if (!draftBtn.dataset.propertyBound) {
+        draftBtn.dataset.propertyBound = '1';
+        draftBtn.addEventListener('click', (event) => {
+          event.preventDefault();
+          submitStep('');
+        });
+      }
+    }
+    if (nextBtn) {
+      nextBtn.setAttribute('href', '#');
+      if (!nextBtn.dataset.propertyBound) {
+        nextBtn.dataset.propertyBound = '1';
+        nextBtn.addEventListener('click', (event) => {
+          event.preventDefault();
+          submitStep(nextMap[path]);
+        });
+      }
     }
   }
 })();
 </script>
 HTML;
+        $propertyNavScript = str_replace('__PROPERTY_EDIT_DATA__', $propertyEditJson ?: 'null', $propertyNavScript);
+        $propertyNavScript = str_replace('__SCRIPT_CSRF__', csrf_token(), $propertyNavScript);
         $html = str_replace('</body>', $propertyNavScript . '</body>', $html);
     }
 
@@ -1010,13 +1299,30 @@ HTML;
         $propertyPhotosScript = <<<'HTML'
 <script>
 (() => {
-  const grid = document.querySelector('.row.row-cols-2.row-cols-sm-3.g-2.g-md-3');
+  const grid = document.querySelector('.row.row-cols-2.row-cols-sm-3');
   if (!grid) return;
+  const editData = window.__propertyEditData || null;
+  const existingImages = Array.isArray(editData?.images) ? editData.images : [];
+  let nextFileId = 1;
+  const selectedFiles = [];
+  const syncInputFiles = () => {
+    const dt = new DataTransfer();
+    selectedFiles.forEach((row) => {
+      if (row?.file) dt.items.add(row.file);
+    });
+    input.files = dt.files;
+  };
 
-  const uploadCol = Array.from(grid.children).find((col) =>
+  let uploadCol = Array.from(grid.children).find((col) =>
     (col.textContent || '').toLowerCase().includes('upload photos / videos')
   );
   if (!uploadCol) return;
+
+  // Hard reset upload tile to remove any previously bound listeners from static assets.
+  const freshUploadCol = uploadCol.cloneNode(true);
+  uploadCol.parentNode?.replaceChild(freshUploadCol, uploadCol);
+  uploadCol = freshUploadCol;
+  uploadCol.querySelectorAll('input[type="file"]').forEach((el) => el.remove());
 
   // Remove template default photos; keep only upload tile.
   Array.from(grid.children).forEach((col) => {
@@ -1027,16 +1333,23 @@ HTML;
   input.type = 'file';
   input.accept = 'image/*,video/*';
   input.multiple = true;
-  input.className = 'd-none';
-  uploadCol.appendChild(input);
+  input.className = 'position-absolute top-0 start-0 w-100 h-100 opacity-0';
+  input.style.zIndex = '5';
+  input.style.cursor = 'pointer';
+  input.name = 'photos[]';
+  const uploadTile = uploadCol.querySelector('.d-flex.align-items-center.justify-content-center.position-relative.h-100.cursor-pointer') || uploadCol;
+  uploadTile.appendChild(input);
+  window.__propertyPhotoInput = input;
 
-  const uploadTrigger = uploadCol.querySelector('.stretched-link') || uploadCol;
-  uploadTrigger.addEventListener('click', (e) => {
-    e.preventDefault();
-    input.click();
+  const linkInput = document.getElementById('link');
+  const linkWrap = linkInput ? (linkInput.closest('.pt-3.mt-3') || linkInput.closest('div')) : null;
+  if (linkWrap) linkWrap.remove();
+
+  input.addEventListener('click', () => {
+    input.value = '';
   });
 
-  const makeCard = (src, isVideo) => {
+  const makeCard = (src, isVideo, fileId = null) => {
     const col = document.createElement('div');
     col.className = 'col';
     col.innerHTML = `
@@ -1055,7 +1368,14 @@ HTML;
       </div>
     `;
     const removeBtn = col.querySelector('button[aria-label="Remove"]');
-    removeBtn?.addEventListener('click', () => col.remove());
+    removeBtn?.addEventListener('click', () => {
+      if (fileId !== null) {
+        const idx = selectedFiles.findIndex((row) => row.id === fileId);
+        if (idx >= 0) selectedFiles.splice(idx, 1);
+        syncInputFiles();
+      }
+      col.remove();
+    });
     return col;
   };
 
@@ -1070,12 +1390,28 @@ HTML;
   input.addEventListener('change', () => {
     const files = Array.from(input.files || []);
     files.forEach((file) => {
+      const id = nextFileId++;
+      selectedFiles.push({ id, file });
       const src = URL.createObjectURL(file);
       const isVideo = file.type.startsWith('video/');
-      const card = makeCard(src, isVideo);
+      const card = makeCard(src, isVideo, id);
       grid.insertBefore(card, uploadCol);
     });
-    input.value = '';
+    syncInputFiles();
+  });
+
+  // Editing: show existing saved images first.
+  existingImages.forEach((src, idx) => {
+    const isVideo = /\.(mp4|mov|webm)$/i.test(String(src || ''));
+    const card = makeCard(String(src || ''), isVideo);
+    const badge = card.querySelector('.badge');
+    if (idx === 0 && !badge) {
+      const span = document.createElement('span');
+      span.className = 'badge text-bg-light position-absolute top-0 start-0 z-3 mt-2 ms-2';
+      span.textContent = 'Cover';
+      card.querySelector('.hover-effect-opacity')?.prepend(span);
+    }
+    grid.insertBefore(card, uploadCol);
   });
 })();
 </script>

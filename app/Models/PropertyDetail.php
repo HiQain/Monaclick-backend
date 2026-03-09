@@ -17,12 +17,14 @@ class PropertyDetail extends Model
         'bathrooms',
         'area_sqft',
         'listing_type',
+        'wizard_data',
     ];
 
     protected $casts = [
         'bedrooms' => 'integer',
         'bathrooms' => 'integer',
         'area_sqft' => 'integer',
+        'wizard_data' => 'array',
     ];
 
     public function listing(): BelongsTo

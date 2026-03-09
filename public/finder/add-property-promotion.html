@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-bs-theme="light" data-pwa="true">
   <head>
     <meta charset="utf-8">
@@ -35,7 +35,15 @@
 
     <!-- Customizer -->
     <script src="/finder/assets/js/customizer.min.js"></script>
-  </head>
+  <script>
+(() => {
+  const p = window.location.pathname;
+  if (!p.startsWith('/finder/add-property-')) return;
+  const target = p.replace('/finder/', '/');
+  window.location.replace(target + window.location.search + window.location.hash);
+})();
+</script>
+</head>
 
 
   <!-- Body -->
@@ -610,6 +618,7 @@
     <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>
+
 
 
 

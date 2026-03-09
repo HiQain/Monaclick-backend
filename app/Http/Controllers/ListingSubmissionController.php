@@ -6,11 +6,13 @@ use App\Models\Category;
 use App\Models\City;
 use App\Models\ContractorDetail;
 use App\Models\Listing;
+use App\Models\ListingImage;
 use App\Models\PropertyDetail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class ListingSubmissionController extends Controller
 {
@@ -19,39 +21,108 @@ class ListingSubmissionController extends Controller
         $payload = $this->decodePayload($request);
         $status = $this->resolveStatus($request);
         $editListing = $this->resolveEditableListing($request, 'real-estate');
+        $existingWizardData = is_array($editListing?->propertyDetail?->wizard_data)
+            ? $editListing->propertyDetail->wizard_data
+            : [];
+        $wizardData = array_merge($existingWizardData, $payload);
+        $wizardSession = trim((string) ($wizardData['wizard_session'] ?? ''));
+        $wizardSessionMapKey = null;
+        if (auth()->check() && $wizardSession !== '') {
+            $wizardSessionMapKey = 'property-wizard-map:' . auth()->id() . ':' . md5($wizardSession);
+            if (! $editListing) {
+                $mappedListingId = (int) Cache::get($wizardSessionMapKey, 0);
+                if ($mappedListingId > 0) {
+                    $mappedListing = Listing::query()
+                        ->where('id', $mappedListingId)
+                        ->where('user_id', auth()->id())
+                        ->where('module', 'real-estate')
+                        ->first();
+                    if ($mappedListing) {
+                        $editListing = $mappedListing;
+                    }
+                }
+            }
+        }
+        $inFlightDraftLockKey = null;
+        if ($status === 'draft' && ! $editListing && auth()->check() && $wizardSession !== '') {
+            $inFlightDraftLockKey = 'property-draft-inflight:' . auth()->id() . ':' . md5($wizardSession);
+            if (! Cache::add($inFlightDraftLockKey, 1, now()->addSeconds(20))) {
+                return redirect('/account/listings?saved=draft');
+            }
+        }
+        if (! $editListing && $status === 'draft' && $wizardSession !== '' && auth()->check()) {
+            $sessionDraft = Listing::query()
+                ->where('user_id', auth()->id())
+                ->where('module', 'real-estate')
+                ->where('status', 'draft')
+                ->whereHas('propertyDetail', function ($query) use ($wizardSession) {
+                    $query->where('wizard_data->wizard_session', $wizardSession);
+                })
+                ->latest('id')
+                ->first();
+            if ($sessionDraft) {
+                $editListing = $sessionDraft;
+            }
+        }
 
-        $categorySlug = $this->mapPropertyCategorySlug((string) ($payload['radio:type'] ?? ''));
+        $categorySlug = $this->mapPropertyCategorySlug((string) ($wizardData['radio:type'] ?? ''));
         $category = $this->resolveCategory('real-estate', $categorySlug);
-        $city = $this->resolveCity($this->firstNonEmpty($payload, [
+        $city = $this->resolveCity($this->firstNonEmpty($wizardData, [
             'select:city-select',
             'select:location-select',
             'select:city',
             'city-select',
             'city',
         ]));
+        if (! $city && $editListing?->city) {
+            $city = $editListing->city;
+        }
 
         if (! $category || ! $city) {
             return redirect('/add-property?error=missing-taxonomy');
         }
 
         $title = trim(implode(' ', array_filter([
-            (string) ($payload['radio:type'] ?? ''),
-            (string) ($payload['address'] ?? ''),
-            (string) ($payload['zip'] ?? ''),
+            (string) ($wizardData['radio:type'] ?? ''),
+            (string) ($wizardData['address'] ?? ''),
+            (string) ($wizardData['zip'] ?? ''),
         ])));
 
+        if ($title === '' && $editListing) {
+            $title = (string) $editListing->title;
+        }
         if ($title === '') {
             $title = 'Property Listing';
         }
 
-        $listingType = ((string) ($payload['radio:category'] ?? 'sell')) === 'rent' ? 'rent' : 'sale';
-        $priceRaw = (string) ($payload['price'] ?? '');
+        $draftLockKey = null;
+        if ($status === 'draft' && ! $editListing && auth()->check()) {
+            $payloadHash = md5(json_encode($wizardData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '');
+            $draftLockKey = 'property-draft-lock:' . auth()->id() . ':' . $payloadHash;
+            $lockedId = (int) Cache::get($draftLockKey, 0);
+            if ($lockedId > 0) {
+                $lockedListing = Listing::query()
+                    ->where('id', $lockedId)
+                    ->where('user_id', auth()->id())
+                    ->where('module', 'real-estate')
+                    ->first();
+                if ($lockedListing) {
+                    $editListing = $lockedListing;
+                }
+            }
+        }
+
+        $listingType = ((string) ($wizardData['radio:category'] ?? ($existingWizardData['radio:category'] ?? 'sell'))) === 'rent' ? 'rent' : 'sale';
+        $priceRaw = (string) ($wizardData['price'] ?? ($existingWizardData['price'] ?? ''));
         $price = Listing::normalizePrice($priceRaw !== '' ? $priceRaw : null, $listingType === 'rent');
-        $excerpt = $this->firstNonEmpty($payload, [
+        $excerpt = $this->firstNonEmpty($wizardData, [
             'user-info',
             'description',
             'details',
         ]);
+        if ($excerpt === '' && $editListing) {
+            $excerpt = (string) ($editListing->excerpt ?? '');
+        }
         $listingData = [
             'category_id' => $category->id,
             'city_id' => $city->id,
@@ -60,12 +131,14 @@ class ListingSubmissionController extends Controller
             'excerpt' => $excerpt,
             'price' => $price,
             'budget_tier' => $this->resolveBudgetTier($priceRaw),
-            'availability_now' => (bool) ($payload['tour'] ?? false),
-            'features' => [],
+            'availability_now' => (bool) ($wizardData['tour'] ?? ($editListing?->availability_now ?? false)),
+            'features' => $editListing?->features ?? [],
             'rating' => 0,
             'reviews_count' => 0,
             'status' => $status,
-            'published_at' => $status === 'published' ? Carbon::now() : null,
+            'published_at' => $status === 'published'
+                ? ($editListing?->published_at ?: Carbon::now())
+                : null,
         ];
 
         if ($editListing) {
@@ -74,22 +147,83 @@ class ListingSubmissionController extends Controller
             $editListing->update($listingData);
             $listing = $editListing->fresh(['city']);
         } else {
-            $listingData['slug'] = $this->makeUniqueSlug($title, 'property-listing');
-            $listingData['user_id'] = auth()->id();
-            $listingData['image'] = '/finder/assets/img/listings/real-estate/03.jpg';
-            $listing = Listing::query()->create($listingData);
+            $recentDraft = null;
+            if ($status === 'draft' && auth()->check()) {
+                $recentDraft = Listing::query()
+                    ->where('user_id', auth()->id())
+                    ->where('module', 'real-estate')
+                    ->where('status', 'draft')
+                    ->where('title', $title)
+                    ->where('created_at', '>=', Carbon::now()->subMinutes(5))
+                    ->latest('id')
+                    ->first();
+            }
+
+            if ($recentDraft) {
+                $listingData['slug'] = $recentDraft->slug ?: $this->makeUniqueSlug($title, 'property-listing', $recentDraft->id);
+                $listingData['user_id'] = auth()->id();
+                $listingData['image'] = $recentDraft->image ?: '/finder/assets/img/listings/real-estate/03.jpg';
+                $recentDraft->update($listingData);
+                $listing = $recentDraft->fresh(['city']);
+            } else {
+                $listingData['slug'] = $this->makeUniqueSlug($title, 'property-listing');
+                $listingData['user_id'] = auth()->id();
+                $listingData['image'] = '/finder/assets/img/listings/real-estate/03.jpg';
+                $listing = Listing::query()->create($listingData);
+            }
         }
 
         PropertyDetail::query()->updateOrCreate(
             ['listing_id' => $listing->id],
             [
-                'property_type' => $this->mapPropertyType((string) ($payload['radio:type'] ?? '')),
-                'bedrooms' => $this->extractCount((string) ($payload['radio:bedrooms'] ?? '')),
-                'bathrooms' => $this->extractCount((string) ($payload['radio:bathrooms'] ?? '')),
-                'area_sqft' => $this->normalizeInteger((string) ($payload['total-area'] ?? '')),
+                'property_type' => $this->mapPropertyType((string) ($wizardData['radio:type'] ?? '')),
+                'bedrooms' => $this->extractCount((string) ($wizardData['radio:bedrooms'] ?? '')),
+                'bathrooms' => $this->extractCount((string) ($wizardData['radio:bathrooms'] ?? '')),
+                'area_sqft' => $this->normalizeInteger((string) ($wizardData['total-area'] ?? '')),
                 'listing_type' => $listingType,
+                'wizard_data' => $wizardData,
             ]
         );
+
+        if ($request->hasFile('photos')) {
+            $files = $request->file('photos');
+            if (! is_array($files)) {
+                $files = [$files];
+            }
+            $stored = [];
+            foreach ($files as $idx => $file) {
+                if (! $file) {
+                    continue;
+                }
+                $path = $file->store('listings/properties', 'public');
+                $stored[] = $path;
+                ListingImage::query()->create([
+                    'listing_id' => $listing->id,
+                    'image_path' => $path,
+                    'sort_order' => (int) $idx,
+                    'is_cover' => $idx === 0,
+                ]);
+            }
+            if (count($stored) > 0) {
+                $listing->image = $stored[0];
+                $listing->save();
+            }
+        }
+
+        if ($draftLockKey && $status === 'draft') {
+            Cache::put($draftLockKey, $listing->id, now()->addMinutes(2));
+        }
+        if ($wizardSessionMapKey) {
+            Cache::put($wizardSessionMapKey, $listing->id, now()->addHours(12));
+        }
+        if ($inFlightDraftLockKey) {
+            Cache::forget($inFlightDraftLockKey);
+        }
+
+        $nextPath = trim((string) $request->input('next', ''));
+        if ($status === 'draft' && $nextPath !== '' && str_starts_with($nextPath, '/add-property')) {
+            return redirect($nextPath . '?edit=' . $listing->id);
+        }
 
         return $this->redirectAfterSubmission(
             $status,

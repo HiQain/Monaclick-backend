@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-bs-theme="light" data-pwa="true">
   <head>
     <meta charset="utf-8">
@@ -39,7 +39,15 @@
 
     <!-- Customizer -->
     <script src="/finder/assets/js/customizer.min.js"></script>
-  </head>
+  <script>
+(() => {
+  const p = window.location.pathname;
+  if (!p.startsWith('/finder/add-property-')) return;
+  const target = p.replace('/finder/', '/');
+  window.location.replace(target + window.location.search + window.location.hash);
+})();
+</script>
+</head>
 
 
   <!-- Body -->
@@ -386,7 +394,7 @@
                     <option value="Spain">Spain</option>
                   </optgroup>
                   <optgroup label="North America">
-                    <option value="United States" selected>United States</option>
+                    <option value="United States">United States</option>
                     <option value="Canada">Canada</option>
                     <option value="Mexico">Mexico</option>
                     <option value="Jamaica">Jamaica</option>
@@ -417,7 +425,7 @@
                   "searchEnabled": true
                 }' aria-label="City select" required>
                   <option value="">Select city</option>
-                  <option value="New York" selected>New York</option>
+                  <option value="New York">New York</option>
                   <option value="Los Angeles">Los Angeles</option>
                   <option value="Chicago">Chicago</option>
                   <option value="Houston">Houston</option>
@@ -442,14 +450,14 @@
                 }' aria-label="District select" required>
                   <option value="">Select district</option>
                   <option value="Manhattan">Manhattan</option>
-                  <option value="Brooklyn" selected>Brooklyn</option>
+                  <option value="Brooklyn">Brooklyn</option>
                   <option value="The Bronx">The Bronx</option>
                   <option value="Staten Island">Staten Island</option>
                 </select>
               </div>
               <div class="col">
                 <label for="zip" class="form-label">Zip code *</label>
-                <input type="text" class="form-control form-control-lg" id="zip" value="11237" placeholder="Enter zip code" required>
+                <input type="text" class="form-control form-control-lg" id="zip" placeholder="Enter zip code" required>
               </div>
             </div>
             <div class="pb-4 mb-2">
@@ -462,7 +470,7 @@
             <p class="fs-sm">You can change the position of the mark on the map.</p>
             <div class="ratio ratio-21x9 bg-body-tertiary border rounded overflow-hidden" data-map='{
                 "tileLayer": "https://api.maptiler.com/maps/pastel/{z}/{x}/{y}.png?key=rqrCHwDtUZCUA2fCt3vV",
-                "attribution": "© Maptiler © OpenStreetMap contributors",
+                "attribution": "Â© Maptiler Â© OpenStreetMap contributors",
                 "zoom": 14,
                 "tileSize": 512,
                 "zoomOffset": -1,
@@ -630,6 +638,7 @@
     <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>
+
 
 
 
