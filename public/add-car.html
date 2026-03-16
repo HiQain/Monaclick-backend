@@ -303,6 +303,7 @@
             <h1 class="h2">Sell car</h1>
             <form id="addCarForm" action="/submit/car" method="post" enctype="multipart/form-data">
             <input type="hidden" name="_token" value="__CSRF_TOKEN__">
+            <input type="hidden" name="features_json" id="features-json" value="[]">
 
             <!-- Photos / videos -->
             <section class="position-relative bg-body rounded p-4 mt-4">
@@ -422,16 +423,6 @@
                       "searchEnabled": true
                     }' aria-label="Car brand select" name="brand" required>
                       <option value="">Select brand</option>
-                      <option value="Toyota">Toyota</option>
-                      <option value="Mercedes-Benz">Mercedes-Benz</option>
-                      <option value="BMW">BMW</option>
-                      <option value="Honda">Honda</option>
-                      <option value="Ford">Ford</option>
-                      <option value="Chevrolet">Chevrolet</option>
-                      <option value="Audi">Audi</option>
-                      <option value="Tesla">Tesla</option>
-                      <option value="Nissan">Nissan</option>
-                      <option value="Volkswagen">Volkswagen</option>
                     </select>
                   </div>
                   <div class="col">
@@ -443,16 +434,6 @@
                       "searchEnabled": true
                     }' aria-label="Car model select" name="model" required>
                       <option value="">Select model</option>
-                      <option value="A-Class">A-Class</option>
-                      <option value="C-Class">C-Class</option>
-                      <option value="E-Class">E-Class</option>
-                      <option value="S-Class">S-Class</option>
-                      <option value="A205">A205</option>
-                      <option value="GLA">GLA</option>
-                      <option value="GLC">GLC</option>
-                      <option value="GLE">GLE</option>
-                      <option value="GLS">GLS</option>
-                      <option value="AMG GT">AMG GT</option>
                     </select>
                   </div>
                 </div>
@@ -526,24 +507,14 @@
                 </div>
                 <div class="row row-cols-1 row-cols-sm-2 g-3 g-md-4 mb-3 mb-md-4">
                   <div class="col">
-                    <label class="form-label">Location *</label>
-                    <select class="form-select form-select-lg" data-select='{
-                      "classNames": {
-                        "containerInner": ["form-select", "form-select-lg"]
-                      },
-                      "searchEnabled": true
-                    }' aria-label="Location select" name="city" required>
-                      <option value="">Select location</option>
-                      <option value="New York">New York</option>
-                      <option value="Los Angeles">Los Angeles</option>
-                      <option value="Chicago">Chicago</option>
-                      <option value="Houston">Houston</option>
-                      <option value="Phoenix">Phoenix</option>
-                      <option value="Philadelphia">Philadelphia</option>
-                      <option value="San Antonio">San Antonio</option>
-                      <option value="San Diego">San Diego</option>
-                      <option value="Dallas">Dallas</option>
-                      <option value="San Jose">San Jose</option>
+                    <label class="form-label">State *</label>
+                    <select class="form-select form-select-lg" id="state" aria-label="State select" name="state" required>
+                      <option value="">Select state</option>
+                    </select>
+
+                    <label class="form-label mt-3">City *</label>
+                    <select class="form-select form-select-lg" id="city" name="city" aria-label="City select" required>
+                      <option value="">Select city</option>
                     </select>
                   </div>
                   <div class="col">
@@ -580,10 +551,6 @@
                       }
                     }' aria-label="Drive type select" name="drive_type" required>
                       <option value="">Select drive type</option>
-                      <option value="Front-Wheel Drive">Front-Wheel Drive</option>
-                      <option value="Rear-Wheel Drive">Rear-Wheel Drive</option>
-                      <option value="All-Wheel Drive">All-Wheel Drive</option>
-                      <option value="Four-Wheel Drive">Four-Wheel Drive</option>
                     </select>
                   </div>
                   <div class="col">
@@ -594,15 +561,6 @@
                       }
                     }' aria-label="Engine select" name="engine" required>
                       <option value="">Select engine</option>
-                      <option value="Inline-4">Inline-4</option>
-                      <option value="Inline-6">Inline-6</option>
-                      <option value="6-Cylinder Turbo">6-Cylinder Turbo</option>
-                      <option value="V6">V6</option>
-                      <option value="V8">V8</option>
-                      <option value="V10">V10</option>
-                      <option value="V12">V12</option>
-                      <option value="Electric">Electric</option>
-                      <option value="Hybrid">Hybrid</option>
                     </select>
                   </div>
                   <div class="col">
@@ -1076,7 +1034,7 @@
 
             <!-- Action buttons -->
             <section class="d-flex flex-column flex-sm-row justify-content-between gap-3 mt-4">
-              <button type="submit" class="btn btn-lg btn-outline-secondary bg-body" formaction="/entry/cars" formmethod="get" formtarget="_blank" formnovalidate>
+              <button type="submit" class="btn btn-lg btn-outline-secondary bg-body" formaction="/entry/cars" formmethod="get" formtarget="_blank" formnovalidate name="preview" value="1">
                 <i class="fi-eye fs-lg ms-n1 me-2"></i>
                 Detailed preview
               </button>
@@ -1089,6 +1047,38 @@
                 Save and publish
               </button>
             </section>
+            <script>
+              (() => {
+                const form = document.getElementById('addCarForm');
+                const featuresInput = document.getElementById('features-json');
+                const featuresWrap = document.getElementById('features');
+                if (!form || !featuresInput || !featuresWrap) return;
+
+                // Ensure checkboxes submit something even if JS serialization fails.
+                // We set name/value from the visible label, then server can read `car_features[]` too.
+                featuresWrap.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+                  if (cb.getAttribute('name')) return;
+                  const label = featuresWrap.querySelector(`label[for="${cb.id}"]`);
+                  const text = (label && label.textContent ? String(label.textContent) : '').trim();
+                  if (!text) return;
+                  cb.setAttribute('name', 'car_features[]');
+                  cb.setAttribute('value', text);
+                });
+
+                const collectSelected = () => {
+                  const selected = [];
+                  featuresWrap.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+                    if (!cb.checked) return;
+                    const label = featuresWrap.querySelector(`label[for="${cb.id}"]`);
+                    const text = (label && label.textContent ? String(label.textContent) : '').trim();
+                    if (text) selected.push(text);
+                  });
+                  featuresInput.value = JSON.stringify(selected);
+                };
+
+                form.addEventListener('submit', collectSelected);
+              })();
+            </script>
             </form>
           </div>
 

@@ -8,16 +8,40 @@ use App\Models\ContractorDetail;
 use App\Models\Listing;
 use App\Models\ListingImage;
 use App\Models\PropertyDetail;
+use App\Models\State;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class ListingSubmissionController extends Controller
 {
+    private function storePublicUpload(\Illuminate\Http\UploadedFile $file, string $dir): ?string
+    {
+        if (! $file->isValid()) {
+            return null;
+        }
+
+        try {
+            return $file->store($dir, 'public');
+        } catch (\Throwable $e) {
+            // Some environments miss `fileinfo`, causing MIME guessing / extension detection to fail.
+            // Fall back to the client-provided extension (or none) so uploads still work.
+            $ext = preg_replace('/[^a-z0-9]+/i', '', (string) $file->getClientOriginalExtension());
+            $filename = Str::random(40) . ($ext !== '' ? ('.' . strtolower($ext)) : '');
+
+            return $file->storeAs($dir, $filename, 'public');
+        }
+    }
+
     public function property(Request $request): RedirectResponse
     {
+        if (! auth()->check()) {
+            return redirect('/signin');
+        }
+
         $payload = $this->decodePayload($request);
         $status = $this->resolveStatus($request);
         $editListing = $this->resolveEditableListing($request, 'real-estate');
@@ -47,6 +71,24 @@ class ListingSubmissionController extends Controller
         if ($status === 'draft' && ! $editListing && auth()->check() && $wizardSession !== '') {
             $inFlightDraftLockKey = 'property-draft-inflight:' . auth()->id() . ':' . md5($wizardSession);
             if (! Cache::add($inFlightDraftLockKey, 1, now()->addSeconds(20))) {
+                // A near-simultaneous click can hit here before the first request finishes.
+                // Prefer routing the user to the next wizard step if we already have a listing mapped.
+                $nextPath = trim((string) $request->input('next', ''));
+                $mappedListingId = $wizardSessionMapKey ? (int) Cache::get($wizardSessionMapKey, 0) : 0;
+                if ($mappedListingId > 0 && $nextPath !== '' && str_starts_with($nextPath, '/add-property')) {
+                    return redirect($nextPath . '?edit=' . $mappedListingId);
+                }
+                if ($mappedListingId > 0) {
+                    return redirect('/add-property?edit=' . $mappedListingId);
+                }
+
+                // If we don't have a mapped listing yet, keep the user in the wizard instead of dumping them
+                // to account listings. This is usually caused by duplicate event handlers / double submits.
+                $referer = (string) ($request->headers->get('referer') ?? '');
+                if ($referer !== '' && str_contains($referer, '/add-property')) {
+                    return redirect()->back();
+                }
+
                 return redirect('/account/listings?saved=draft');
             }
         }
@@ -67,13 +109,17 @@ class ListingSubmissionController extends Controller
 
         $categorySlug = $this->mapPropertyCategorySlug((string) ($wizardData['radio:type'] ?? ''));
         $category = $this->resolveCategory('real-estate', $categorySlug);
+        $stateCode = strtoupper(trim((string) ($wizardData['state'] ?? '')));
+        if ($stateCode === '' || ! $this->resolveUsState($stateCode)) {
+            return redirect('/add-property-location?error=missing-state');
+        }
         $city = $this->resolveCity($this->firstNonEmpty($wizardData, [
             'select:city-select',
             'select:location-select',
             'select:city',
             'city-select',
             'city',
-        ]));
+        ]), $stateCode);
         if (! $city && $editListing?->city) {
             $city = $editListing->city;
         }
@@ -114,6 +160,7 @@ class ListingSubmissionController extends Controller
 
         $listingType = ((string) ($wizardData['radio:category'] ?? ($existingWizardData['radio:category'] ?? 'sell'))) === 'rent' ? 'rent' : 'sale';
         $priceRaw = (string) ($wizardData['price'] ?? ($existingWizardData['price'] ?? ''));
+        $priceAmount = $this->normalizeInteger($priceRaw);
         $price = Listing::normalizePrice($priceRaw !== '' ? $priceRaw : null, $listingType === 'rent');
         $excerpt = $this->firstNonEmpty($wizardData, [
             'user-info',
@@ -123,6 +170,8 @@ class ListingSubmissionController extends Controller
         if ($excerpt === '' && $editListing) {
             $excerpt = (string) ($editListing->excerpt ?? '');
         }
+
+        $features = $this->resolvePropertyFeatures($wizardData, $editListing?->features ?? []);
         $listingData = [
             'category_id' => $category->id,
             'city_id' => $city->id,
@@ -132,7 +181,7 @@ class ListingSubmissionController extends Controller
             'price' => $price,
             'budget_tier' => $this->resolveBudgetTier($priceRaw),
             'availability_now' => (bool) ($wizardData['tour'] ?? ($editListing?->availability_now ?? false)),
-            'features' => $editListing?->features ?? [],
+            'features' => $features,
             'rating' => 0,
             'reviews_count' => 0,
             'status' => $status,
@@ -140,6 +189,10 @@ class ListingSubmissionController extends Controller
                 ? ($editListing?->published_at ?: Carbon::now())
                 : null,
         ];
+
+        if (Schema::hasColumn('listings', 'price_amount')) {
+            $listingData['price_amount'] = $priceAmount > 0 ? $priceAmount : null;
+        }
 
         if ($editListing) {
             $listingData['slug'] = $this->makeUniqueSlug($title, 'property-listing', $editListing->id);
@@ -173,16 +226,20 @@ class ListingSubmissionController extends Controller
             }
         }
 
+        $propertyDetailPayload = [
+            'property_type' => $this->mapPropertyType((string) ($wizardData['radio:type'] ?? '')),
+            'bedrooms' => $this->extractCount((string) ($wizardData['radio:bedrooms'] ?? '')),
+            'bathrooms' => $this->extractCount((string) ($wizardData['radio:bathrooms'] ?? '')),
+            'area_sqft' => $this->normalizeInteger((string) ($wizardData['total-area'] ?? '')),
+            'listing_type' => $listingType,
+        ];
+        if (Schema::hasColumn('property_details', 'wizard_data')) {
+            $propertyDetailPayload['wizard_data'] = $wizardData;
+        }
+
         PropertyDetail::query()->updateOrCreate(
             ['listing_id' => $listing->id],
-            [
-                'property_type' => $this->mapPropertyType((string) ($wizardData['radio:type'] ?? '')),
-                'bedrooms' => $this->extractCount((string) ($wizardData['radio:bedrooms'] ?? '')),
-                'bathrooms' => $this->extractCount((string) ($wizardData['radio:bathrooms'] ?? '')),
-                'area_sqft' => $this->normalizeInteger((string) ($wizardData['total-area'] ?? '')),
-                'listing_type' => $listingType,
-                'wizard_data' => $wizardData,
-            ]
+            $propertyDetailPayload
         );
 
         if ($request->hasFile('photos')) {
@@ -190,16 +247,22 @@ class ListingSubmissionController extends Controller
             if (! is_array($files)) {
                 $files = [$files];
             }
-            $stored = [];
-            foreach ($files as $idx => $file) {
-                if (! $file) {
-                    continue;
-                }
-                $path = $file->store('listings/properties', 'public');
-                $stored[] = $path;
-                ListingImage::query()->create([
-                    'listing_id' => $listing->id,
-                    'image_path' => $path,
+              $stored = [];
+              foreach ($files as $idx => $file) {
+                  if (! $file) {
+                      continue;
+                  }
+                  if (! ($file instanceof \Illuminate\Http\UploadedFile)) {
+                      continue;
+                  }
+                  $path = $this->storePublicUpload($file, 'listings/properties');
+                  if (! $path) {
+                      continue;
+                  }
+                  $stored[] = $path;
+                  ListingImage::query()->create([
+                      'listing_id' => $listing->id,
+                      'image_path' => $path,
                     'sort_order' => (int) $idx,
                     'is_cover' => $idx === 0,
                 ]);
@@ -236,6 +299,10 @@ class ListingSubmissionController extends Controller
 
     public function contractor(Request $request): RedirectResponse
     {
+        if (! auth()->check()) {
+            return redirect('/signin');
+        }
+
         $payload = $this->decodePayload($request);
         $status = $this->resolveStatus($request);
         $editListing = $this->resolveEditableListing($request, 'contractors');
@@ -248,13 +315,28 @@ class ListingSubmissionController extends Controller
             'category',
         ]);
         $category = $this->resolveCategory('contractors', $selectedCategory !== '' ? $selectedCategory : 'Remodeling');
-        $city = $this->resolveCity($this->firstNonEmpty($payload, [
-            'select:city-select',
-            'select:location-select',
-            'select:city',
-            'city-select',
-            'city',
-        ]));
+        $stateCode = strtoupper(trim((string) ($payload['state'] ?? '')));
+        $hasValidState = $stateCode !== '' && $this->resolveUsState($stateCode);
+        $city = null;
+
+        if ($hasValidState) {
+            $city = $this->resolveCity($this->firstNonEmpty($payload, [
+                'select:city-select',
+                'select:location-select',
+                'select:city',
+                'city-select',
+                'city',
+            ]), $stateCode);
+        }
+
+        // Edit-mode tolerance: if location fields are missing on the final step, keep the existing city.
+        if (! $city && $editListing?->city) {
+            $city = $editListing->city;
+        }
+
+        if (! $hasValidState && ! $city) {
+            return redirect('/add-contractor-location?error=missing-state');
+        }
 
         if (! $category || ! $city) {
             return redirect('/add-contractor?error=missing-taxonomy');
@@ -263,6 +345,7 @@ class ListingSubmissionController extends Controller
         $projectName = trim((string) ($payload['project-name'] ?? ''));
         $title = $projectName !== '' ? $projectName : ucfirst(str_replace('-', ' ', $category->slug)) . ' Service';
         $priceRaw = (string) ($payload['price'] ?? '');
+        $priceAmount = $this->normalizeInteger($priceRaw);
         $features = ['verified-hires'];
         if (($payload['home-renovations'] ?? false) || ($payload['custom-home-building'] ?? false)) {
             $features[] = 'free-estimate';
@@ -273,6 +356,20 @@ class ListingSubmissionController extends Controller
         if (($payload['monday'] ?? false) && ($payload['saturday'] ?? false || $payload['sunday'] ?? false)) {
             $features[] = 'weekend-consultations';
         }
+
+        $servicesRaw = $payload['services'] ?? [];
+        if (is_string($servicesRaw)) {
+            $servicesRaw = [$servicesRaw];
+        }
+        $serviceTokens = is_array($servicesRaw)
+            ? collect($servicesRaw)
+                ->map(fn ($v) => trim((string) $v))
+                ->filter()
+                ->map(fn ($v) => 'service:' . $v)
+                ->values()
+                ->all()
+            : [];
+        $features = array_values(array_unique(array_merge($features, $serviceTokens)));
 
         $listingData = [
             'category_id' => $category->id,
@@ -294,15 +391,17 @@ class ListingSubmissionController extends Controller
             'published_at' => $status === 'published' ? Carbon::now() : null,
         ];
 
+        if (Schema::hasColumn('listings', 'price_amount')) {
+            $listingData['price_amount'] = $priceAmount > 0 ? $priceAmount : null;
+        }
+
         if ($editListing) {
             $listingData['slug'] = $this->makeUniqueSlug($title, 'contractor-service', $editListing->id);
-            $listingData['image'] = $editListing->image ?: '/finder/assets/img/listings/contractors/03.jpg';
             $editListing->update($listingData);
             $listing = $editListing->fresh(['city', 'images']);
         } else {
             $listingData['slug'] = $this->makeUniqueSlug($title, 'contractor-service');
             $listingData['user_id'] = auth()->id();
-            $listingData['image'] = '/finder/assets/img/listings/contractors/03.jpg';
             $listing = Listing::query()->create($listingData)->fresh(['city', 'images']);
         }
 
@@ -332,11 +431,11 @@ class ListingSubmissionController extends Controller
             ]
         );
 
-        $coverPath = null;
-        $profilePhoto = $request->file('profile_photo');
-        if ($profilePhoto instanceof \Illuminate\Http\UploadedFile && $profilePhoto->isValid()) {
-            $coverPath = $profilePhoto->store('listings/contractors/profile', 'public');
-        }
+          $coverPath = null;
+          $profilePhoto = $request->file('profile_photo');
+          if ($profilePhoto instanceof \Illuminate\Http\UploadedFile && $profilePhoto->isValid()) {
+              $coverPath = $this->storePublicUpload($profilePhoto, 'listings/contractors/profile');
+          }
 
         if ($request->hasFile('photos')) {
             $files = $request->file('photos');
@@ -347,15 +446,18 @@ class ListingSubmissionController extends Controller
             $listing->images()->delete();
             $stored = [];
             $sort = 0;
-            foreach ($files as $file) {
-                if (! ($file instanceof \Illuminate\Http\UploadedFile) || ! $file->isValid()) {
-                    continue;
-                }
-                $path = $file->store('listings/contractors/gallery', 'public');
-                $stored[] = $path;
-                ListingImage::query()->create([
-                    'listing_id' => $listing->id,
-                    'image_path' => $path,
+              foreach ($files as $file) {
+                  if (! ($file instanceof \Illuminate\Http\UploadedFile) || ! $file->isValid()) {
+                      continue;
+                  }
+                  $path = $this->storePublicUpload($file, 'listings/contractors/gallery');
+                  if (! $path) {
+                      continue;
+                  }
+                  $stored[] = $path;
+                  ListingImage::query()->create([
+                      'listing_id' => $listing->id,
+                      'image_path' => $path,
                     'sort_order' => $sort,
                     'is_cover' => $sort === 0,
                 ]);
@@ -371,17 +473,19 @@ class ListingSubmissionController extends Controller
                 $coverPath = $listing->image;
             } else {
                 $firstExisting = $listing->images()->orderBy('sort_order')->first();
-                $coverPath = $firstExisting?->image_path ?: '/finder/assets/img/listings/contractors/03.jpg';
+                $coverPath = $firstExisting?->image_path;
             }
         }
 
-        $listing->image = $coverPath;
-        $listing->save();
+        if ($coverPath !== null && $coverPath !== '') {
+            $listing->image = $coverPath;
+            $listing->save();
+        }
 
         return $this->redirectAfterSubmission(
             $status,
             '/account/listings',
-            '/account/listings',
+            '/listings/contractors',
             $title,
             $listing->id
         );
@@ -398,14 +502,20 @@ class ListingSubmissionController extends Controller
         }
 
         $category = $this->resolveCategory('restaurants', (string) $request->input('cuisine_type', ''));
-        $city = $this->resolveCity((string) $request->input('city', ''));
+        $stateCode = strtoupper(trim((string) $request->input('state', '')));
+        if ($stateCode === '' || ! $this->resolveUsState($stateCode)) {
+            return redirect('/add-restaurant?error=missing-state');
+        }
+        $city = $this->resolveCity((string) $request->input('city', ''), $stateCode);
 
         if (! $category || ! $city) {
             return redirect('/add-restaurant?error=missing-taxonomy');
         }
 
         $priceRange = trim((string) $request->input('price_range', ''));
-        $price = $priceRange !== '' ? "{$priceRange} avg" : null;
+        $rangeAmount = $priceRange !== '' ? $this->normalizeInteger($priceRange) : 0;
+        $price = $rangeAmount > 0 ? ('$' . number_format($rangeAmount)) : null;
+        $priceAmount = $rangeAmount > 0 ? $rangeAmount : null;
         $services = $request->input('services', []);
 
         if (is_string($services)) {
@@ -429,16 +539,7 @@ class ListingSubmissionController extends Controller
             ->values()
             ->all();
 
-        $features = ['eco-friendly'];
-        if (in_array('reservations', $serviceValues, true)) {
-            $features[] = 'free-consultation';
-        }
-        if (in_array('delivery', $serviceValues, true)) {
-            $features[] = 'online-consultation';
-        }
-        if (in_array('family friendly', $serviceValues, true) || in_array('family-friendly', $serviceValues, true)) {
-            $features[] = 'weekend-consultations';
-        }
+        $features = [];
 
         $serviceValues = array_values(array_unique($serviceValues));
         $openingHoursRaw = (string) $request->input('opening_hours', '');
@@ -454,7 +555,8 @@ class ListingSubmissionController extends Controller
             '_mc_restaurant_v1' => true,
             'address' => trim((string) $request->input('address', '')),
             'zip_code' => trim((string) $request->input('zip_code', '')),
-            'country' => trim((string) $request->input('country', '')),
+            'country' => 'United States',
+            'state' => $stateCode,
             'seating_capacity' => trim((string) $request->input('seating_capacity', '')),
             'services' => $serviceValues,
             'opening_hours' => $openingHours,
@@ -480,10 +582,17 @@ class ListingSubmissionController extends Controller
             'published_at' => $status === 'published' ? Carbon::now() : null,
         ];
 
-        $uploadedImagePath = null;
-        if ($request->hasFile('cover_photo')) {
-            $uploadedImagePath = $request->file('cover_photo')?->store('listings/restaurants', 'public');
+        if (Schema::hasColumn('listings', 'price_amount')) {
+            $listingData['price_amount'] = $priceAmount && $priceAmount > 0 ? $priceAmount : null;
         }
+
+          $uploadedImagePath = null;
+          if ($request->hasFile('cover_photo')) {
+              $cover = $request->file('cover_photo');
+              if ($cover instanceof \Illuminate\Http\UploadedFile && $cover->isValid()) {
+                  $uploadedImagePath = $this->storePublicUpload($cover, 'listings/restaurants');
+              }
+          }
 
         if ($editListing) {
             $listingData['slug'] = $this->makeUniqueSlug($title, 'restaurant-listing', $editListing->id);
@@ -507,15 +616,18 @@ class ListingSubmissionController extends Controller
             $hasExistingImages = $listing->images()->exists();
             $sort = (int) $listing->images()->max('sort_order');
             $sort = $sort > 0 ? $sort + 1 : 0;
-            foreach ($files as $file) {
-                if (! ($file instanceof \Illuminate\Http\UploadedFile) || ! $file->isValid()) {
-                    continue;
-                }
-                $path = $file->store('listings/restaurants/gallery', 'public');
-                ListingImage::query()->create([
-                    'listing_id' => $listing->id,
-                    'image_path' => $path,
-                    'sort_order' => $sort,
+              foreach ($files as $file) {
+                  if (! ($file instanceof \Illuminate\Http\UploadedFile) || ! $file->isValid()) {
+                      continue;
+                  }
+                  $path = $this->storePublicUpload($file, 'listings/restaurants/gallery');
+                  if (! $path) {
+                      continue;
+                  }
+                  ListingImage::query()->create([
+                      'listing_id' => $listing->id,
+                      'image_path' => $path,
+                      'sort_order' => $sort,
                     'is_cover' => $sort === 0 && ! $hasExistingImages,
                 ]);
                 if ($sort === 0) {
@@ -557,6 +669,91 @@ class ListingSubmissionController extends Controller
         $payload = json_decode($decoded, true);
 
         return is_array($payload) ? $payload : [];
+    }
+
+    /**
+     * @param array<string, mixed> $wizardData
+     * @param array<int, mixed> $existingFeatures
+     * @return array<int, string>
+     */
+    private function resolvePropertyFeatures(array $wizardData, array $existingFeatures = []): array
+    {
+        $derived = [];
+
+        if ($this->wizardTruthy($wizardData, ['negotiated', 'negotiable'])) {
+            $derived[] = 'negotiable';
+        }
+
+        if ($this->wizardTruthy($wizardData, ['no-credit', 'no_credit', 'noCredit', 'no_credit_sale'])) {
+            $derived[] = 'no-credit';
+        }
+
+        if ($this->wizardTruthy($wizardData, ['ready-agents', 'ready_agents', 'readyAgents', 'agent'])) {
+            $derived[] = 'agent-friendly';
+        }
+
+        if ($this->wizardTruthy($wizardData, ['exchange', 'exchange_possible'])) {
+            $derived[] = 'exchange';
+        }
+
+        $amenities = [
+            'tv' => 'tv-set',
+            'washing' => 'washing-machine',
+            'kitchen' => 'kitchen',
+            'ac' => 'air-conditioning',
+            'workspace' => 'separate-workplace',
+            'fridge' => 'refrigerator',
+            'drying' => 'drying-machine',
+            'closet' => 'closet',
+            'patio' => 'patio',
+            'fireplace' => 'fireplace',
+            'shower' => 'shower-cabin',
+            'whirlpool' => 'whirlpool',
+            'cctv' => 'security-cameras',
+            'balcony' => 'balcony',
+            'bar' => 'bar',
+        ];
+        foreach ($amenities as $key => $token) {
+            if ($this->wizardTruthy($wizardData, [$key])) {
+                $derived[] = $token;
+            }
+        }
+
+        return array_values(array_unique(array_filter(array_map(fn ($v) => trim((string) $v), $derived))));
+    }
+
+    /**
+     * @param array<string, mixed> $wizardData
+     * @param array<int, string> $keys
+     */
+    private function wizardTruthy(array $wizardData, array $keys): bool
+    {
+        foreach ($keys as $key) {
+            if (! array_key_exists($key, $wizardData)) {
+                continue;
+            }
+            $value = $wizardData[$key];
+            if (is_bool($value)) {
+                return $value;
+            }
+            if (is_int($value) || is_float($value)) {
+                return ((float) $value) !== 0.0;
+            }
+            $str = strtolower(trim((string) $value));
+            if ($str === '') {
+                return false;
+            }
+            if (in_array($str, ['1', 'true', 'yes', 'on'], true)) {
+                return true;
+            }
+            if (in_array($str, ['0', 'false', 'no', 'off'], true)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private function resolveStatus(Request $request): string
@@ -619,23 +816,63 @@ class ListingSubmissionController extends Controller
         ]);
     }
 
-    private function resolveCity(string $rawValue): ?City
+    private function resolveUsState(string $stateCode): ?State
+    {
+        $stateCode = strtoupper(trim($stateCode));
+        if (preg_match('/^[A-Z]{2}$/', $stateCode) !== 1) {
+            return null;
+        }
+
+        if (!Schema::hasTable('states')) {
+            return new State([
+                'country_code' => 'US',
+                'code' => $stateCode,
+                'name' => $stateCode,
+                'is_active' => true,
+                'sort_order' => 0,
+            ]);
+        }
+
+        return State::query()
+            ->where('country_code', 'US')
+            ->where('code', $stateCode)
+            ->where('is_active', true)
+            ->first();
+    }
+
+    private function resolveCity(string $rawValue, string $stateCode = ''): ?City
     {
         $rawValue = trim($rawValue);
         $slug = Str::slug($rawValue);
+        $stateCode = strtoupper(trim($stateCode));
+        if ($stateCode !== '' && ! $this->resolveUsState($stateCode)) {
+            return null;
+        }
 
         if ($slug !== '') {
-            $city = City::query()->where('slug', $slug)->first();
+            $city = City::query()
+                ->where('slug', $slug)
+                ->when($stateCode !== '' && Schema::hasColumn('cities', 'state_code'), fn ($q) => $q->where('state_code', $stateCode))
+                ->first();
             if ($city) {
                 return $city;
             }
 
-            return City::query()->create([
+            $payload = [
                 'name' => ucwords(str_replace('-', ' ', $slug)),
                 'slug' => $slug,
-                'is_active' => true,
-                'sort_order' => (int) City::query()->max('sort_order') + 1,
-            ]);
+            ];
+            if (Schema::hasColumn('cities', 'state_code') && $stateCode !== '') {
+                $payload['state_code'] = $stateCode;
+            }
+            if (Schema::hasColumn('cities', 'is_active')) {
+                $payload['is_active'] = true;
+            }
+            if (Schema::hasColumn('cities', 'sort_order')) {
+                $payload['sort_order'] = (int) City::query()->max('sort_order') + 1;
+            }
+
+            return City::query()->create($payload);
         }
 
         return City::query()->orderBy('sort_order')->first();
@@ -706,12 +943,12 @@ class ListingSubmissionController extends Controller
 
     private function resolveRestaurantBudgetTier(string $priceRange): int
     {
-        $len = strlen(trim($priceRange));
+        $amount = $this->normalizeInteger($priceRange);
 
         return match (true) {
-            $len <= 1 => 1,
-            $len === 2 => 2,
-            $len === 3 => 3,
+            $amount <= 500 => 1,
+            $amount <= 1000 => 2,
+            $amount <= 1500 => 3,
             default => 4,
         };
     }

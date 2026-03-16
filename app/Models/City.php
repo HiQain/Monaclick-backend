@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 class City extends Model
 {
@@ -14,6 +16,7 @@ class City extends Model
     protected $fillable = [
         'name',
         'slug',
+        'state_code',
         'is_active',
         'sort_order',
     ];
@@ -22,6 +25,11 @@ class City extends Model
         'is_active' => 'boolean',
         'sort_order' => 'integer',
     ];
+
+    public function state(): BelongsTo
+    {
+        return $this->belongsTo(State::class, 'state_code', 'code');
+    }
 
     public function listings(): HasMany
     {
@@ -48,18 +56,29 @@ class City extends Model
                 $baseSlug = 'city';
             }
 
-            $city->slug = static::makeUniqueSlug($baseSlug, $city->id);
+            $stateCode = strtoupper(trim((string) ($city->state_code ?? '')));
+            $city->slug = static::makeUniqueSlug($baseSlug, $city->id, $stateCode);
         });
     }
 
-    protected static function makeUniqueSlug(string $baseSlug, ?int $ignoreId = null): string
+    protected static function makeUniqueSlug(string $baseSlug, ?int $ignoreId = null, string $stateCode = ''): string
     {
+        static $hasStateCode = null;
+        if ($hasStateCode === null) {
+            try {
+                $hasStateCode = Schema::hasColumn('cities', 'state_code');
+            } catch (\Throwable $e) {
+                $hasStateCode = false;
+            }
+        }
+
         $slug = $baseSlug;
         $counter = 2;
 
         while (
             static::query()
                 ->where('slug', $slug)
+                ->when($hasStateCode && $stateCode !== '', fn ($q) => $q->where('state_code', $stateCode))
                 ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
                 ->exists()
         ) {

@@ -8,6 +8,7 @@ use App\Models\Listing;
 use App\Models\ListingImage;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ListingSeeder extends Seeder
@@ -51,23 +52,39 @@ class ListingSeeder extends Seeder
             $item
         ));
 
-        $cities = collect([
-            'Austin',
-            'Dallas',
-            'Houston',
-            'Chicago',
-            'Los Angeles',
-            'San Diego',
-            'Phoenix',
-            'Seattle',
-        ])->values()->map(fn (string $name, int $index) => City::updateOrCreate(
-            ['slug' => Str::slug($name)],
-            [
+        $hasStateCode = Schema::hasColumn('cities', 'state_code');
+        $seedCities = collect([
+            ['name' => 'Austin', 'state_code' => 'TX'],
+            ['name' => 'Dallas', 'state_code' => 'TX'],
+            ['name' => 'Houston', 'state_code' => 'TX'],
+            ['name' => 'Chicago', 'state_code' => 'IL'],
+            ['name' => 'Los Angeles', 'state_code' => 'CA'],
+            ['name' => 'San Diego', 'state_code' => 'CA'],
+            ['name' => 'Phoenix', 'state_code' => 'AZ'],
+            ['name' => 'Seattle', 'state_code' => 'WA'],
+        ])->values();
+
+        $cities = $seedCities->map(function (array $city, int $index) use ($hasStateCode) {
+            $name = (string) $city['name'];
+            $stateCode = strtoupper(trim((string) ($city['state_code'] ?? '')));
+            $slug = Str::slug($name);
+
+            $identity = ['slug' => $slug];
+            if ($hasStateCode && $stateCode !== '') {
+                $identity['state_code'] = $stateCode;
+            }
+
+            $payload = [
                 'name' => $name,
                 'is_active' => true,
                 'sort_order' => $index + 1,
-            ]
-        ));
+            ];
+            if ($hasStateCode) {
+                $payload['state_code'] = $stateCode !== '' ? $stateCode : null;
+            }
+
+            return City::updateOrCreate($identity, $payload);
+        });
 
         $images = [
             'contractors' => [

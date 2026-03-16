@@ -409,6 +409,29 @@
                   </div>
                 </div>
 
+                <!-- Price -->
+                <div class="pb-4 mb-2 mb-xl-3" data-price-wrap>
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h4 class="h6 mb-0">Price</h4>
+                    <span class="badge text-bg-secondary" data-price-label>Any</span>
+                  </div>
+                  <div class="position-relative mb-3" style="height: 1.5rem">
+                    <input type="range" class="form-range position-absolute top-0 start-0 w-100" min="0" max="200000" step="500" value="0" data-price-min-slider aria-label="Min price">
+                    <input type="range" class="form-range position-absolute top-0 start-0 w-100" min="0" max="200000" step="500" value="200000" data-price-max-slider aria-label="Max price">
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text">$</span>
+                      <input type="number" class="form-control" min="0" step="500" value="0" data-price-min-input aria-label="Min price">
+                    </div>
+                    <span class="text-body-secondary">–</span>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text">$</span>
+                      <input type="number" class="form-control" min="0" step="500" value="200000" data-price-max-input aria-label="Max price">
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Body type -->
                 <div class="pb-4 mb-2 mb-xl-3">
                   <h4 class="h6">Body type</h4>

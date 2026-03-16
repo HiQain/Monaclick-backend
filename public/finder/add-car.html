@@ -525,24 +525,14 @@
                 </div>
                 <div class="row row-cols-1 row-cols-sm-2 g-3 g-md-4 mb-3 mb-md-4">
                   <div class="col">
-                    <label class="form-label">Location *</label>
-                    <select class="form-select form-select-lg" data-select='{
-                      "classNames": {
-                        "containerInner": ["form-select", "form-select-lg"]
-                      },
-                      "searchEnabled": true
-                    }' aria-label="Location select" required>
-                      <option value="">Select location</option>
-                      <option value="New York">New York</option>
-                      <option value="Los Angeles">Los Angeles</option>
-                      <option value="Chicago" selected>Chicago</option>
-                      <option value="Houston">Houston</option>
-                      <option value="Phoenix">Phoenix</option>
-                      <option value="Philadelphia">Philadelphia</option>
-                      <option value="San Antonio">San Antonio</option>
-                      <option value="San Diego">San Diego</option>
-                      <option value="Dallas">Dallas</option>
-                      <option value="San Jose">San Jose</option>
+                    <label class="form-label">State *</label>
+                    <select class="form-select form-select-lg" id="state" name="state" aria-label="State select" required>
+                      <option value="">Select state</option>
+                    </select>
+
+                    <label class="form-label mt-3">City *</label>
+                    <select class="form-select form-select-lg" id="city" name="city" aria-label="City select" required>
+                      <option value="">Select city</option>
                     </select>
                   </div>
                   <div class="col">

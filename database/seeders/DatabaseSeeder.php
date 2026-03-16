@@ -30,6 +30,8 @@ class DatabaseSeeder extends Seeder
 
         $admin->assignRole('admin');
 
+        $this->call(StatesSeeder::class);
+        $this->call(CarCatalogSeeder::class);
         $this->call(ListingSeeder::class);
     }
 }

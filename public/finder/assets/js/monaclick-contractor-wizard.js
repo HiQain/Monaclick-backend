@@ -51,13 +51,27 @@
   };
 
   const saveControls = () => {
-    const controls = {};
+    const prev = readState();
+    const controls = { ...(prev.controls || {}) };
     document.querySelectorAll('input, select, textarea').forEach((el) => {
       const k = el.id || el.name;
       if (!k) return;
       if (el.type === 'checkbox' || el.type === 'radio') controls[k] = !!el.checked;
       else controls[k] = el.value;
     });
+
+    // Some Finder templates don't provide id/name attributes for these selects; persist them explicitly.
+    const stateSelect = document.querySelector('select[aria-label="State select"]');
+    if (stateSelect) {
+      controls.state = String(stateSelect.value || '').trim();
+    }
+
+    const citySelect = document.querySelector('select[aria-label="City select"]');
+    if (citySelect) {
+      const label = (citySelect.querySelector('option:checked')?.textContent || '').trim();
+      const value = String(citySelect.value || '').trim();
+      controls['select:city-select'] = label || value || String(controls['select:city-select'] || '');
+    }
     writeState({ controls });
   };
 
@@ -72,6 +86,21 @@
       el.dispatchEvent(new Event('change', { bubbles: true }));
       el.dispatchEvent(new Event('input', { bubbles: true }));
     });
+
+    const stateSelect = document.querySelector('select[aria-label="State select"]');
+    const savedState = String(controls.state || '').trim();
+    if (stateSelect && savedState) {
+      stateSelect.value = savedState;
+      stateSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    const citySelect = document.querySelector('select[aria-label="City select"]');
+    const savedCity = String(controls['select:city-select'] || '').trim();
+    if (citySelect && savedCity) {
+      const match = Array.from(citySelect.options).find((opt) => (opt.textContent || '').trim() === savedCity);
+      if (match) citySelect.value = match.value;
+      citySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
   };
 
   const makeChip = (label) => {
@@ -84,7 +113,7 @@
 
   const bindAreaServices = () => {
     const input = document.getElementById('area-search');
-    const wrap = Array.from(document.querySelectorAll('div.d-flex.flex-wrap.gap-2'))
+    const wrap = document.getElementById('selected-service-areas') || Array.from(document.querySelectorAll('div.d-flex.flex-wrap.gap-2'))
       .find((el) => el.querySelector('button.btn.btn-sm.btn-outline-secondary'));
     if (!input || !wrap) return;
     input.type = 'text';
@@ -132,6 +161,52 @@
     if (Array.isArray(saved) && saved.length) {
       wrap.innerHTML = '';
       saved.forEach((a) => wrap.appendChild(makeChip(a)));
+    }
+  };
+
+  const bindProvidedServices = () => {
+    if (currentPath !== '/add-contractor-services') return;
+
+    const heading = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+      .find((h) => (h.textContent || '').trim().toLowerCase() === 'i provide these services:');
+    const container = heading ? heading.nextElementSibling : null;
+    if (!container) return;
+
+    const rows = Array.from(container.querySelectorAll('input[type="checkbox"]'))
+      .map((cb) => {
+        const id = cb.id;
+        const label = id ? container.querySelector(`label[for="${CSS.escape(id)}"]`) : null;
+        const text = (label?.textContent || '').replace(/\s+/g, ' ').trim();
+        return { cb, text };
+      })
+      .filter((row) => row.cb && row.text);
+
+    if (!rows.length) return;
+
+    const save = () => {
+      const services = rows
+        .filter((row) => row.cb.checked)
+        .map((row) => row.text);
+      writeState({ services });
+    };
+
+    if (container.dataset.mcServicesBound !== '1') {
+      container.dataset.mcServicesBound = '1';
+      container.addEventListener('change', (event) => {
+        const target = event.target;
+        if (!target || target.tagName !== 'INPUT') return;
+        if (target.type !== 'checkbox') return;
+        save();
+      }, true);
+      save();
+    }
+
+    const saved = readState().services;
+    if (Array.isArray(saved) && saved.length) {
+      const set = new Set(saved.map((s) => String(s).toLowerCase()));
+      rows.forEach((row) => {
+        row.cb.checked = set.has(row.text.toLowerCase());
+      });
     }
   };
 
@@ -364,25 +439,32 @@
     const state = readState();
     const controls = state.controls || {};
     const areas = Array.isArray(state.areas) ? state.areas : [];
+    const services = Array.isArray(state.services) ? state.services : [];
 
     const selectedCity =
       (document.querySelector('select[aria-label="City select"] option:checked')?.textContent || '').trim() ||
       String(controls['select:city-select'] || '');
 
+    const selectedState =
+      (document.querySelector('select[aria-label="State select"] option:checked')?.value || '').trim() ||
+      String(controls.state || '').trim();
+
     const payload = {
+      ...controls,
+      state: selectedState,
       'select:city-select': selectedCity,
-      'address': String(controls.address || document.getElementById('address')?.value || ''),
-      'zip': String(controls.zip || document.getElementById('zip')?.value || ''),
+      address: String(controls.address || document.getElementById('address')?.value || ''),
+      zip: String(controls.zip || document.getElementById('zip')?.value || ''),
       'area-search': areas.length ? areas.join(', ') : String(controls['area-search'] || ''),
-      'project-name': String(controls['project-name'] || ''),
-      'project-description': String(controls['project-description'] || ''),
-      'price': String(controls.price || '')
+      description: String(controls.about || controls.description || ''),
+      services,
     };
 
     const csrf = getCsrfToken();
+    const encodedPayload = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
     const fd = new FormData();
     if (csrf) fd.append('_token', csrf);
-    fd.append('payload', btoa(unescape(encodeURIComponent(JSON.stringify(payload)))));
+    fd.append('payload', encodedPayload);
     if (isDraft) fd.append('draft', '1');
     if (editId) fd.append('listing_id', editId);
     if (selectedProfilePhotoFile) fd.append('profile_photo', selectedProfilePhotoFile);
@@ -400,6 +482,24 @@
         window.location.href = res.url;
         return;
       }
+
+      // If the session/CSRF token is invalid, Laravel returns 419 HTML. On the final step we can safely
+      // fall back to GET submission (no file uploads) to avoid getting stuck on the same page.
+      if (res.status === 419 || res.status === 403) {
+        const hasFiles = !!selectedProfilePhotoFile || selectedGalleryFiles.some((row) => !!row?.file);
+        if (hasFiles) {
+          alert('Session expired. Please refresh the page and try again.');
+          submitInFlight = false;
+          return;
+        }
+        const qs = new URLSearchParams();
+        qs.set('payload', encodedPayload);
+        if (isDraft) qs.set('draft', '1');
+        if (editId) qs.set('listing_id', editId);
+        window.location.href = `/submit/contractor?${qs.toString()}`;
+        return;
+      }
+
       const text = await res.text();
       const doc = new DOMParser().parseFromString(text, 'text/html');
       const nextUrl = doc.querySelector('meta[http-equiv="refresh"]')?.getAttribute('content')?.split('url=')[1];
@@ -407,8 +507,30 @@
         window.location.href = nextUrl;
         return;
       }
+
+      // If the server responded with a non-redirect HTML (validation/CSRF page/etc),
+      // prefer a GET redirect fallback when possible so the user isn't stuck reloading.
+      const hasFiles = !!selectedProfilePhotoFile || selectedGalleryFiles.some((row) => !!row?.file);
+      if (!hasFiles) {
+        const qs = new URLSearchParams();
+        qs.set('payload', encodedPayload);
+        if (isDraft) qs.set('draft', '1');
+        if (editId) qs.set('listing_id', editId);
+        window.location.href = `/submit/contractor?${qs.toString()}`;
+        return;
+      }
+
       window.location.reload();
     } catch (_) {
+      const hasFiles = !!selectedProfilePhotoFile || selectedGalleryFiles.some((row) => !!row?.file);
+      if (!hasFiles) {
+        const qs = new URLSearchParams();
+        qs.set('payload', encodedPayload);
+        if (isDraft) qs.set('draft', '1');
+        if (editId) qs.set('listing_id', editId);
+        window.location.href = `/submit/contractor?${qs.toString()}`;
+        return;
+      }
       submitInFlight = false;
     }
   };
@@ -431,7 +553,7 @@
     Array.from(document.querySelectorAll('a.btn.btn-lg, button.btn.btn-lg, a.nav-link'))
       .filter((btn) => {
         const t = (btn.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-        return t.includes('publish') || t.includes('save project and become a pro');
+        return t.includes('publish listing') || t.includes('save project and become a pro') || t === 'publish';
       })
       .forEach((btn) => {
         if (btn.dataset.mcPublishBound === '1') return;
@@ -439,7 +561,9 @@
         btn.addEventListener('click', (event) => {
           event.preventDefault();
           event.stopImmediatePropagation();
-          submitListing(false);
+          const t = (btn.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+          const shouldDraft = t.includes('save project and become a pro');
+          submitListing(shouldDraft);
         }, true);
       });
   };
@@ -455,6 +579,13 @@
       if (!data || !data.id) return;
       loadedEditData = data;
       existingGalleryUrls = Array.isArray(data.gallery_images) ? data.gallery_images.filter(Boolean) : [];
+
+      // Ensure required location fields persist for final submission (state is required by backend).
+      const state = readState();
+      const controls = { ...(state.controls || {}) };
+      if (data.state && !controls.state) controls.state = String(data.state).trim();
+      if (data.city && !controls['select:city-select']) controls['select:city-select'] = String(data.city).trim();
+      if (Object.keys(controls).length) writeState({ controls });
 
       bindProfilePhoto();
       bindProjectGallery();
@@ -491,6 +622,7 @@
     safe(bindSaveDraft);
     safe(bindPublish);
     safe(bindAreaServices);
+    safe(bindProvidedServices);
     safe(restoreControls);
     safe(bindProfilePhoto);
     safe(bindProjectGallery);

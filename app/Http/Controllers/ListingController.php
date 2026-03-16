@@ -21,8 +21,8 @@ class ListingController extends Controller
                 'carDetail',
                 'eventDetail',
             ])
-            ->where('status', 'published')
-            ->where('module', $module);
+            ->whereRaw('LOWER(TRIM(status)) = ?', ['published'])
+            ->whereRaw('LOWER(TRIM(module)) = ?', [strtolower(trim($module))]);
 
         if ($request->filled('slug')) {
             $query->where('slug', (string) $request->string('slug'));
@@ -32,8 +32,8 @@ class ListingController extends Controller
 
         $related = Listing::query()
             ->with(['category', 'city'])
-            ->where('status', 'published')
-            ->where('module', $module)
+            ->whereRaw('LOWER(TRIM(status)) = ?', ['published'])
+            ->whereRaw('LOWER(TRIM(module)) = ?', [strtolower(trim($module))])
             ->whereKeyNot($listing->id)
             ->latest('published_at')
             ->take(4)
@@ -46,10 +46,10 @@ class ListingController extends Controller
     {
         $selectedModule = $module ?: ($request->filled('module') ? (string) $request->string('module') : null);
 
-        $query = Listing::with(['category', 'city'])->where('status', 'published');
+        $query = Listing::with(['category', 'city'])->whereRaw('LOWER(TRIM(status)) = ?', ['published']);
 
         if ($selectedModule) {
-            $query->where('module', $selectedModule);
+            $query->whereRaw('LOWER(TRIM(module)) = ?', [strtolower(trim($selectedModule))]);
         }
 
         if ($request->filled('category')) {
@@ -93,10 +93,10 @@ class ListingController extends Controller
         $selectedModule = $module ?: ($request->filled('module') ? (string) $request->string('module') : null);
 
         $query = Listing::with(['category', 'city'])
-            ->where('status', 'published');
+            ->whereRaw('LOWER(TRIM(status)) = ?', ['published']);
 
         if ($selectedModule) {
-            $query->where('module', $selectedModule);
+            $query->whereRaw('LOWER(TRIM(module)) = ?', [strtolower(trim($selectedModule))]);
         }
 
         if ($request->filled('category')) {
@@ -138,7 +138,7 @@ class ListingController extends Controller
 
     public function show(Listing $listing)
     {
-        abort_if($listing->status !== 'published', 404);
+        abort_if(strtolower(trim((string) $listing->status)) !== 'published', 404);
 
         $listing->loadMissing([
             'category',

@@ -109,27 +109,7 @@ trait HandlesListingDetails
             }
         }
 
-        if ($module === 'events') {
-            if (blank($data['event_starts_at'] ?? null)) {
-                $errors['event_starts_at'][] = 'Start date/time is required for event listings.';
-            }
-            if (blank($data['event_ends_at'] ?? null)) {
-                $errors['event_ends_at'][] = 'End date/time is required for event listings.';
-            }
-            if (blank($data['event_venue'] ?? null)) {
-                $errors['event_venue'][] = 'Venue is required for event listings.';
-            }
-
-            if (!blank($data['event_starts_at'] ?? null) && !blank($data['event_ends_at'] ?? null)) {
-                $startsAt = strtotime((string) $data['event_starts_at']);
-                $endsAt = strtotime((string) $data['event_ends_at']);
-                if ($startsAt !== false && $endsAt !== false && $endsAt < $startsAt) {
-                    $errors['event_ends_at'][] = 'End date/time must be after the start date/time.';
-                }
-            }
-        }
-
-        if (in_array($module, ['real-estate', 'cars', 'events'], true)) {
+        if (in_array($module, ['real-estate', 'cars'], true)) {
             $galleryCount = count($galleryImages);
             if ($galleryCount < 1) {
                 $errors['gallery_images'][] = 'Add at least one gallery image for published listings.';
@@ -255,19 +235,7 @@ trait HandlesListingDetails
             $listing->carDetail()->delete();
         }
 
-        if ($module === 'events') {
-            $listing->eventDetail()->updateOrCreate(
-                ['listing_id' => $listing->id],
-                [
-                    'starts_at' => $data['event_starts_at'] ?? null,
-                    'ends_at' => $data['event_ends_at'] ?? null,
-                    'venue' => $data['event_venue'] ?? null,
-                    'capacity' => $data['event_capacity'] ?? null,
-                ]
-            );
-        } else {
-            $listing->eventDetail()->delete();
-        }
+        $listing->eventDetail()->delete();
 
         $galleryImages = array_values(array_filter((array) ($data['gallery_images'] ?? [])));
 

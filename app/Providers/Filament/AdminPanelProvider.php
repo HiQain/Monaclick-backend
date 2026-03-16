@@ -5,6 +5,10 @@ namespace App\Providers\Filament;
 use App\Filament\Resources\Categories\CategoryResource;
 use App\Filament\Resources\Cities\CityResource;
 use App\Filament\Resources\Listings\ListingResource;
+use App\Filament\Resources\Permissions\PermissionResource;
+use App\Filament\Resources\Roles\RoleResource;
+use App\Filament\Resources\States\StateResource;
+use App\Filament\Resources\Users\UserResource;
 use App\Filament\Widgets\ListingsOverviewWidget;
 use App\Filament\Widgets\ModuleCountsWidget;
 use Filament\Http\Middleware\Authenticate;
@@ -37,8 +41,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->resources([
                 CategoryResource::class,
+                StateResource::class,
                 CityResource::class,
                 ListingResource::class,
+                RoleResource::class,
+                PermissionResource::class,
+                UserResource::class,
             ])
             ->pages([
                 Dashboard::class,

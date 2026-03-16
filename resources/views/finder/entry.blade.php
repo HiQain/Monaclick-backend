@@ -47,10 +47,23 @@
               <span>{{ number_format($listing->rating, 1) }}</span>
               <span class="text-body-secondary">({{ $listing->reviews_count }})</span>
             </div>
-            <div class="fw-semibold fs-4">{{ \$listing->display_price }}</div>
+            <div class="fw-semibold fs-4">{{ $listing->display_price }}</div>
           </div>
 
           <p class="mb-4">{{ $listing->excerpt }}</p>
+
+          @if (!empty($listing->features) && count($listing->features) > 0)
+            <div class="card border-0 bg-body-tertiary mb-3">
+              <div class="card-body">
+                <h2 class="h6 mb-2">Features</h2>
+                <div class="d-flex flex-wrap gap-2">
+                  @foreach ($listing->features as $feature)
+                    <span class="badge bg-body-secondary text-body">{{ ucwords(str_replace(['-', '_'], ' ', (string) $feature)) }}</span>
+                  @endforeach
+                </div>
+              </div>
+            </div>
+          @endif
 
           @if ($listing->module === 'contractors' && $listing->contractorDetail)
             <div class="card border-0 bg-body-tertiary mb-3">

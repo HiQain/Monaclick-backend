@@ -1,6 +1,34 @@
 (() => {
+  // Ensure add/account pages don't stay hidden by the no-flash CSS injected server-side.
+  const markDomReady = () => {
+    try {
+      document.body?.classList.add('account-dom-ready');
+    } catch {
+      // no-op
+    }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', markDomReady, { once: true });
+  }
+  markDomReady();
+
+  // Some pages can load without the Choices.js vendor script (or it can fail to load).
+  // The theme bundle expects `window.Choices` to exist; provide a no-op shim to prevent runtime crashes
+  // that would otherwise stop subsequent page scripts (wizard bindings, redirects, etc.).
+  if (typeof window.Choices !== 'function') {
+    class NoopChoices {
+      constructor() {}
+      destroy() {}
+      setChoiceByValue() {}
+      clearChoices() {}
+      clearStore() {}
+      removeActiveItems() {}
+      removeActiveItemsByValue() {}
+    }
+    window.Choices = NoopChoices;
+  }
+
   const footer = document.querySelector('footer.footer');
-  if (!footer) return;
 
   const currentPath = window.location.pathname.toLowerCase();
   const isAuthSplitPage = currentPath === '/signin' || currentPath === '/signup' || currentPath === '/password-recovery';
@@ -23,15 +51,15 @@
       header.classList.add('mb-2');
     }
 
-    if (main) {
+    if (main && footer) {
       main.insertAdjacentElement('afterend', footer);
     }
   }
-const moduleLinks = [
+  if (footer) {
+  const moduleLinks = [
     { href: '/listings/contractors', label: 'Contractors' },
     { href: '/listings/real-estate', label: 'Real Estate' },
     { href: '/listings/cars', label: 'Cars' },
-    { href: '/listings/events', label: 'Events' },
     { href: '/listings/restaurants', label: 'Restaurants' },
   ];
 
@@ -83,7 +111,7 @@ const moduleLinks = [
               </span>
               <span class="fs-4 fw-semibold">Monaclick</span>
             </a>
-            <p class="fs-sm text-body-secondary pt-md-1" style="max-width: 290px">One platform for contractors, real estate, cars, events, and restaurants across major cities.</p>
+            <p class="fs-sm text-body-secondary pt-md-1" style="max-width: 290px">One platform for contractors, real estate, cars, and restaurants across major cities.</p>
             <div class="d-flex gap-3 pt-2 pt-md-3">
               <a class="btn btn-icon btn-sm btn-secondary rounded-circle" href="/about" aria-label="Follow us on Instagram"><i class="fi-instagram fs-sm"></i></a>
               <a class="btn btn-icon btn-sm btn-secondary rounded-circle" href="/about" aria-label="Follow us on Facebook"><i class="fi-facebook fs-sm"></i></a>
@@ -154,6 +182,7 @@ const moduleLinks = [
       </div>
     </footer>
   `;
+  }
 })();
 
 (() => {
@@ -191,6 +220,336 @@ const moduleLinks = [
     }
   };
 
+  const setupUsLocationFields = () => {
+    const stateSelect = document.getElementById('state');
+    if (!(stateSelect instanceof HTMLSelectElement)) return;
+
+    const citySelect = document.getElementById('city');
+    if (!(citySelect instanceof HTMLSelectElement)) return;
+
+    const citiesCache = new Map(); // stateCode -> [names]
+    let citiesRequestId = 0;
+
+    const ensurePlaceholder = () => {
+      // Keep placeholder consistent even if the template had "Select location".
+      const first = stateSelect.querySelector('option[value=\"\"]');
+      if (first) {
+        first.textContent = 'Select state';
+        return;
+      }
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'Select state';
+      opt.selected = true;
+      stateSelect.insertBefore(opt, stateSelect.firstChild);
+    };
+
+    const fillStates = (states) => {
+      if (stateSelect.dataset.monaclickStatesBound === '1') return;
+      stateSelect.dataset.monaclickStatesBound = '1';
+
+      const current = (stateSelect.value || '').trim().toUpperCase();
+      // Reset existing options (some templates ship with a "locations" city list here).
+      stateSelect.innerHTML = '';
+      ensurePlaceholder();
+      const existing = new Set(Array.from(stateSelect.options).map((o) => String(o.value || '').toUpperCase()));
+      states.forEach((s) => {
+        const code = String(s?.code || '').trim().toUpperCase();
+        const name = String(s?.name || '').trim();
+        if (!code || !name || existing.has(code)) return;
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = `${name} (${code})`;
+        stateSelect.appendChild(opt);
+      });
+
+      if (current && Array.from(stateSelect.options).some((o) => String(o.value || '').toUpperCase() === current)) {
+        stateSelect.value = current;
+      }
+    };
+
+    fetch('/api/monaclick/locations/states')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload) => {
+        const states = Array.isArray(payload?.data) ? payload.data : [];
+        if (states.length) fillStates(states);
+      })
+      .catch(() => {
+        // no-op
+      });
+
+    const fetchCities = (stateCode) => {
+      const code = String(stateCode || '').trim().toUpperCase();
+      if (!code) return Promise.resolve([]);
+      if (citiesCache.has(code)) return Promise.resolve(citiesCache.get(code) || []);
+
+      const requestId = ++citiesRequestId;
+      return fetch(`/api/monaclick/locations/cities?state=${encodeURIComponent(code)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((payload) => {
+          if (requestId !== citiesRequestId) return [];
+          const cities = Array.isArray(payload?.data) ? payload.data : [];
+          const names = cities
+            .map((c) => String(c?.name || '').trim())
+            .filter((n) => n !== '');
+          citiesCache.set(code, names);
+          return names;
+        })
+        .catch(() => []);
+    };
+
+    const fillCities = (names) => {
+      const current = (citySelect.value || '').trim();
+      citySelect.innerHTML = '';
+      const p = document.createElement('option');
+      p.value = '';
+      p.textContent = 'Select city';
+      citySelect.appendChild(p);
+      (Array.isArray(names) ? names : []).forEach((name) => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        citySelect.appendChild(opt);
+      });
+      if (current && Array.from(citySelect.options).some((o) => o.value === current)) {
+        citySelect.value = current;
+      }
+    };
+
+    const refreshCities = () => {
+      const code = (stateSelect.value || '').trim().toUpperCase();
+      fetchCities(code).then((names) => {
+        fillCities(names);
+      });
+    };
+
+    stateSelect.addEventListener('change', () => {
+      citySelect.value = '';
+      refreshCities();
+    });
+
+    refreshCities();
+  };
+
+  const setupCarMakeModelSync = () => {
+    const brandSelect = document.querySelector('select[aria-label="Car brand select"]');
+    const modelSelect = document.querySelector('select[aria-label="Car model select"]');
+    if (!(brandSelect instanceof HTMLSelectElement) || !(modelSelect instanceof HTMLSelectElement)) return;
+
+    let makesRequest = 0;
+    let modelsRequest = 0;
+
+    const setOptions = (select, items, placeholder) => {
+      const current = select.value;
+      select.innerHTML = '';
+      const p = document.createElement('option');
+      p.value = '';
+      p.textContent = placeholder;
+      select.appendChild(p);
+      items.forEach((it) => {
+        const v = String(it?.value || '').trim();
+        const t = String(it?.label || '').trim();
+        if (!v || !t) return;
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = t;
+        select.appendChild(opt);
+      });
+      if (current && Array.from(select.options).some((o) => o.value === current)) {
+        select.value = current;
+      }
+    };
+
+    const loadMakes = () => {
+      const req = ++makesRequest;
+      return fetch('/api/monaclick/cars/makes')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((payload) => {
+          if (req !== makesRequest) return;
+          const makes = Array.isArray(payload?.data) ? payload.data : [];
+          setOptions(
+            brandSelect,
+            makes.map((m) => ({ value: m.name || m.slug, label: m.name || m.slug })),
+            'Select brand'
+          );
+        });
+    };
+
+    const loadModels = (makeName) => {
+      const req = ++modelsRequest;
+      const makeSlug = toSlug(makeName);
+      return fetch(`/api/monaclick/cars/models?make=${encodeURIComponent(makeSlug)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((payload) => {
+          if (req !== modelsRequest) return;
+          const currentMake = toSlug((brandSelect.value || '').trim());
+          if (!currentMake || currentMake !== makeSlug) return;
+          const models = Array.isArray(payload?.data) ? payload.data : [];
+          setOptions(
+            modelSelect,
+            models.map((m) => ({ value: m.name || m.slug, label: m.name || m.slug })),
+            'Select model'
+          );
+        })
+        .catch(() => {
+          // keep existing options if API fails
+        });
+    };
+
+    if (brandSelect.dataset.monaclickMakeModelBound === '1') return;
+    brandSelect.dataset.monaclickMakeModelBound = '1';
+
+    loadMakes()
+      .then(() => {
+        const selected = (brandSelect.value || '').trim();
+        if (selected) loadModels(selected);
+      })
+      .catch(() => {
+        // no-op
+      });
+
+    brandSelect.addEventListener('change', () => {
+      modelSelect.value = '';
+      const makeName = (brandSelect.value || '').trim();
+      if (!makeName) return;
+      loadModels(makeName);
+    });
+  };
+
+  const setupJoinProNetworkGate = () => {
+    const triggers = Array.from(document.querySelectorAll('a, button'))
+      .filter((el) => (el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase() === 'join pro network');
+    if (!triggers.length) return;
+
+    const isAuthed = !!window.__MC_AUTH__;
+    if (isAuthed) return;
+
+    const ensureModal = () => {
+      if (document.getElementById('mcAuthGateModal')) return;
+      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+      document.body.insertAdjacentHTML('beforeend', `
+        <div class="modal fade" id="mcAuthGateModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Sign in required</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p class="mb-0">Please sign in or create an account to join the Pro Network and publish listings.</p>
+              </div>
+              <div class="modal-footer">
+                <a class="btn btn-outline-secondary" href="/signup?redirect=${redirect}">Sign up</a>
+                <a class="btn btn-primary" href="/signin?redirect=${redirect}">Sign in</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+    };
+
+    const showModal = () => {
+      ensureModal();
+      const el = document.getElementById('mcAuthGateModal');
+      if (!el) return;
+      if (window.bootstrap && window.bootstrap.Modal) {
+        window.bootstrap.Modal.getOrCreateInstance(el).show();
+      } else {
+        el.classList.add('show');
+        el.style.display = 'block';
+      }
+    };
+
+    triggers.forEach((trigger) => {
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        showModal();
+      });
+    });
+  };
+
+  const setupDriveEngineSync = () => {
+    const driveSelect = document.querySelector('select[aria-label="Drive type select"]');
+    const engineSelect = document.querySelector('select[aria-label="Engine select"]');
+    if (!(driveSelect instanceof HTMLSelectElement) || !(engineSelect instanceof HTMLSelectElement)) return;
+
+    if (driveSelect.dataset.monaclickDriveEngineBound === '1') return;
+    driveSelect.dataset.monaclickDriveEngineBound = '1';
+
+    let driveRequest = 0;
+    let engineRequest = 0;
+
+    const setOptions = (select, items, placeholder) => {
+      const current = select.value;
+      select.innerHTML = '';
+      const p = document.createElement('option');
+      p.value = '';
+      p.textContent = placeholder;
+      select.appendChild(p);
+      items.forEach((it) => {
+        const v = String(it?.value || '').trim();
+        const t = String(it?.label || '').trim();
+        if (!v || !t) return;
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = t;
+        select.appendChild(opt);
+      });
+      if (current && Array.from(select.options).some((o) => o.value === current)) {
+        select.value = current;
+      }
+    };
+
+    const loadDriveTypes = () => {
+      const req = ++driveRequest;
+      return fetch('/api/monaclick/cars/drive-types')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((payload) => {
+          if (req !== driveRequest) return;
+          const drives = Array.isArray(payload?.data) ? payload.data : [];
+          if (!drives.length) return;
+          setOptions(
+            driveSelect,
+            drives.map((d) => ({ value: d.name || d.slug, label: d.name || d.slug })),
+            'Select drive type'
+          );
+        })
+        .catch(() => {});
+    };
+
+    const loadEngines = (driveValue) => {
+      const req = ++engineRequest;
+      const driveSlug = toSlug(driveValue);
+      return fetch(`/api/monaclick/cars/engines?drive=${encodeURIComponent(driveSlug)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((payload) => {
+          if (req !== engineRequest) return;
+          const currentDrive = toSlug((driveSelect.value || '').trim());
+          if (!currentDrive || currentDrive !== driveSlug) return;
+          const engines = Array.isArray(payload?.data) ? payload.data : [];
+          if (!engines.length) return;
+          setOptions(
+            engineSelect,
+            engines.map((e) => ({ value: e.name || e.slug, label: e.name || e.slug })),
+            'Select engine'
+          );
+        })
+        .catch(() => {});
+    };
+
+    loadDriveTypes().then(() => {
+      const drive = (driveSelect.value || '').trim();
+      if (drive) loadEngines(drive);
+    });
+
+    driveSelect.addEventListener('change', () => {
+      engineSelect.value = '';
+      const drive = (driveSelect.value || '').trim();
+      if (!drive) return;
+      loadEngines(drive);
+    });
+  };
+
   const setupRestaurantForm = () => {
     if (path !== '/add-restaurant' && path !== '/add-restaurant.html') return;
 
@@ -200,6 +559,15 @@ const moduleLinks = [
     form.setAttribute('action', '/submit/restaurant');
     form.setAttribute('method', 'post');
     form.setAttribute('enctype', 'multipart/form-data');
+
+    // Ensure CSRF token exists when served through Laravel ($serve replaces __CSRF_TOKEN__).
+    if (!form.querySelector('input[type="hidden"][name="_token"]')) {
+      const token = document.createElement('input');
+      token.type = 'hidden';
+      token.name = '_token';
+      token.value = (typeof window.__MC_CSRF__ === 'string' && window.__MC_CSRF__) ? window.__MC_CSRF__ : '__CSRF_TOKEN__';
+      form.appendChild(token);
+    }
 
     const saveDraftBtn = Array.from(form.querySelectorAll('button'))
       .find((button) => (button.textContent || '').trim().toLowerCase() === 'save draft');
@@ -536,6 +904,10 @@ const moduleLinks = [
     });
   };
 
+  setupUsLocationFields();
+  setupCarMakeModelSync();
+  setupDriveEngineSync();
+  setupJoinProNetworkGate();
   setupRestaurantForm();
   setupWizardSubmission();
   setupProfilePhotoButton();

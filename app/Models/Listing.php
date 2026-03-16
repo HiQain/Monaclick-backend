@@ -17,7 +17,6 @@ class Listing extends Model
         'contractors' => 'Contractors',
         'real-estate' => 'Real Estate',
         'cars' => 'Cars',
-        'events' => 'Events',
         'restaurants' => 'Restaurants',
     ];
 
@@ -30,6 +29,7 @@ class Listing extends Model
         'slug',
         'excerpt',
         'price',
+        'price_amount',
         'budget_tier',
         'availability_now',
         'features',
@@ -44,6 +44,7 @@ class Listing extends Model
         'published_at' => 'datetime',
         'availability_now' => 'boolean',
         'features' => 'array',
+        'price_amount' => 'integer',
     ];
 
     public function getRouteKeyName(): string

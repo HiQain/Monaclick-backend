@@ -20,12 +20,23 @@
       <p class="mb-3">{{ $listing->excerpt }}</p>
       <div class="d-flex justify-content-between py-2 border-top border-bottom mb-3">
         <span class="fw-semibold">Price</span>
-        <span>{{ \$listing->display_price }}</span>
+        <span>{{ $listing->display_price }}</span>
       </div>
       <div class="d-flex justify-content-between mb-4">
         <span class="fw-semibold">Rating</span>
         <span class="text-warning">{{ number_format($listing->rating, 1) }} ({{ $listing->reviews_count }} reviews)</span>
       </div>
+
+      @if (!empty($listing->features) && count($listing->features) > 0)
+        <div class="border rounded-3 p-3 mb-3">
+          <h2 class="h6">Features</h2>
+          <div class="d-flex flex-wrap gap-2">
+            @foreach ($listing->features as $feature)
+              <span class="badge text-bg-light">{{ ucwords(str_replace(['-', '_'], ' ', (string) $feature)) }}</span>
+            @endforeach
+          </div>
+        </div>
+      @endif
 
       @if ($listing->module === 'contractors' && $listing->contractorDetail)
         <div class="border rounded-3 p-3 mb-3">

@@ -145,8 +145,19 @@
     if (!wrap) return;
     wrap.innerHTML = items.slice(0, 6).map((item, index) => `
       <div class="swiper-slide h-auto">
-        <article class="card h-100">
+        <article class="card h-100 position-relative">
           <img class="card-img-top module-card-img" src="${escapeHtml(item.image_url || '/finder/assets/img/placeholders/preview-square.svg')}" alt="${escapeHtml(item.title)}" loading="${index === 0 ? 'eager' : 'lazy'}" fetchpriority="${index === 0 ? 'high' : 'auto'}" decoding="async" onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';">
+          ${(() => {
+            const badges = [];
+            const conditionRaw = String(item?.details?.car?.condition || '').toLowerCase();
+            const stock = conditionRaw.includes('used') ? 'Used' : (conditionRaw.includes('new') ? 'New' : '');
+            const features = Array.isArray(item?.features) ? item.features : [];
+            const isVerified = features.some((f) => String(f || '').toLowerCase().includes('verified'));
+            if (isVerified) badges.push('<span class="badge text-bg-success">Verified</span>');
+            if (stock) badges.push(`<span class="badge text-bg-warning text-dark">${escapeHtml(stock)}</span>`);
+            if (!badges.length) return '';
+            return `<div class="card-img-overlay d-flex flex-column align-items-start gap-2 p-3" style="pointer-events:none">${badges.join('')}</div>`;
+          })()}
           <div class="card-body">
             <div class="fs-sm text-body-secondary mb-2">${escapeHtml(item.city?.name || 'City')}</div>
             <a class="stretched-link text-decoration-none" href="${entryUrl(item)}"><h3 class="h5 mb-1">${escapeHtml(item.title)}</h3></a>
@@ -221,7 +232,6 @@
       ...(groups.contractors || []),
       ...(groups.realEstate || []),
       ...(groups.cars || []),
-      ...(groups.events || []),
     ];
 
     const unique = [];
@@ -319,7 +329,6 @@
         contractors: datasets.contractorsPopular || [],
         realEstate: datasets.realEstate || [],
         cars: datasets.cars || [],
-        events: datasets.events || [],
       })
     );
     initAllSwipers();
@@ -335,11 +344,10 @@
     }
 
     try {
-      const [realEstate, contractors, cars, events] = await Promise.all([
+      const [realEstate, contractors, cars] = await Promise.all([
         fetchListings('real-estate', { per_page: '6' }),
         fetchListings('contractors', { per_page: '8' }),
         fetchListings('cars', { per_page: '6' }),
-        fetchListings('events', { per_page: '4' }),
       ]);
 
       const byRatingDesc = (a, b) => Number(b?.rating || 0) - Number(a?.rating || 0);
@@ -349,7 +357,6 @@
         contractorsPopular: [...contractors].sort(byRatingDesc),
         contractorsLatest: contractors,
         cars,
-        events,
       };
       renderAll(datasets);
       writeCache(datasets);
@@ -371,7 +378,7 @@
         return;
       }
 
-      const modules = ['contractors', 'real-estate', 'cars', 'events', 'restaurants'];
+      const modules = ['contractors', 'real-estate', 'cars', 'restaurants'];
       const results = await Promise.allSettled(modules.map((module) => fetchListings(module, { q, per_page: '3' })));
 
       const merged = results

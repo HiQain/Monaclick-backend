@@ -10,6 +10,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class CarListingSubmissionController extends Controller
 {
@@ -43,6 +45,22 @@ class CarListingSubmissionController extends Controller
             $title = 'Car Listing';
         }
 
+        // If car catalog tables exist, try to keep model consistent with the selected make slug.
+        if ($brand && Schema::hasTable('car_makes') && Schema::hasTable('car_models')) {
+            $make = DB::table('car_makes')->where('slug', Str::slug($brand))->orWhere('name', $brand)->first();
+            if ($make && $model) {
+                $valid = DB::table('car_models')
+                    ->where('make_id', $make->id)
+                    ->where(function ($q) use ($model) {
+                        $q->where('name', $model)->orWhere('slug', Str::slug($model));
+                    })
+                    ->exists();
+                if (!$valid) {
+                    $model = null;
+                }
+            }
+        }
+
         $bodyType = $this->stringInputOrExisting($request, 'body_type', $existingDetail?->body_type, ['body']);
         $categorySlug = Str::slug($bodyType);
         $category = Category::query()
@@ -60,17 +78,40 @@ class CarListingSubmissionController extends Controller
             $category = Category::query()->where('module', 'cars')->orderBy('sort_order')->first();
         }
 
+        $stateCode = strtoupper(trim((string) $request->input('state', '')));
+        if ($stateCode !== '' && preg_match('/^[A-Z]{2}$/', $stateCode) !== 1) {
+            $stateCode = '';
+        }
+
         $cityRaw = $this->stringInputOrExisting($request, 'city', $existingListing?->city?->name);
         $citySlug = Str::slug($cityRaw);
         $city = City::query()
             ->when($citySlug !== '', fn ($query) => $query->where('slug', $citySlug))
+            ->when($stateCode !== '' && Schema::hasColumn('cities', 'state_code'), fn ($query) => $query->where('state_code', $stateCode))
             ->first();
 
         if (! $city && $existingListing) {
             $city = City::query()->where('id', $existingListing->city_id)->first();
         }
         if (! $city) {
-            $city = City::query()->orderBy('sort_order')->first();
+            if ($citySlug !== '') {
+                $payload = [
+                    'name' => ucwords(str_replace('-', ' ', $citySlug)),
+                    'slug' => $citySlug,
+                ];
+                if ($stateCode !== '' && Schema::hasColumn('cities', 'state_code')) {
+                    $payload['state_code'] = $stateCode;
+                }
+                if (Schema::hasColumn('cities', 'is_active')) {
+                    $payload['is_active'] = true;
+                }
+                if (Schema::hasColumn('cities', 'sort_order')) {
+                    $payload['sort_order'] = (int) City::query()->max('sort_order') + 1;
+                }
+                $city = City::query()->create($payload);
+            } else {
+                $city = City::query()->orderBy('sort_order')->first();
+            }
         }
 
         if (! $category || ! $city) {
@@ -83,6 +124,7 @@ class CarListingSubmissionController extends Controller
         $price = $priceRaw !== ''
             ? Listing::normalizePrice($priceRaw)
             : ($existingListing?->price ?: null);
+        $priceAmount = $priceRaw !== '' ? (int) preg_replace('/[^\d]/', '', $priceRaw) : null;
         $features = $this->normalizeFeatures($request, $existingListing?->features ?? []);
 
         $amount = (int) preg_replace('/[^\d]/', '', (string) $priceRaw);
@@ -107,12 +149,18 @@ class CarListingSubmissionController extends Controller
             $uploadedImage = $uploadedImage[0] ?? null;
         }
 
-        if ($uploadedImage instanceof \Illuminate\Http\UploadedFile && $uploadedImage->isValid()) {
-            $coverImage = $uploadedImage->store('listings/cars', 'public');
-        } elseif (! $existingListing) {
-            $fallbackImages = [
-                '/finder/assets/img/listings/cars/grid/01.jpg',
-                '/finder/assets/img/listings/cars/grid/02.jpg',
+          if ($uploadedImage instanceof \Illuminate\Http\UploadedFile && $uploadedImage->isValid()) {
+             try {
+                 $coverImage = $uploadedImage->store('listings/cars', 'public');
+             } catch (\Throwable $e) {
+                 $ext = preg_replace('/[^a-z0-9]+/i', '', (string) $uploadedImage->getClientOriginalExtension());
+                 $filename = Str::random(40) . ($ext !== '' ? ('.' . strtolower($ext)) : '');
+                 $coverImage = $uploadedImage->storeAs('listings/cars', $filename, 'public');
+             }
+          } elseif (! $existingListing) {
+              $fallbackImages = [
+                 '/finder/assets/img/listings/cars/grid/01.jpg',
+                 '/finder/assets/img/listings/cars/grid/02.jpg',
                 '/finder/assets/img/listings/cars/grid/03.jpg',
             ];
             $fallbackIndex = (int) (Listing::query()->where('module', 'cars')->count() % count($fallbackImages));
@@ -139,6 +187,10 @@ class CarListingSubmissionController extends Controller
                 ? ($existingListing?->published_at ?: Carbon::now())
                 : null,
         ];
+
+        if (Schema::hasColumn('listings', 'price_amount')) {
+            $payload['price_amount'] = $priceAmount && $priceAmount > 0 ? $priceAmount : null;
+        }
 
         if ($existingListing) {
             $existingListing->fill($payload)->save();
@@ -294,23 +346,36 @@ class CarListingSubmissionController extends Controller
      */
     private function normalizeFeatures(Request $request, array $existingFeatures = []): array
     {
-        if (! $request->exists('features_json')) {
-            return array_values(array_filter(array_map(
-                fn ($feature) => trim((string) $feature),
-                $existingFeatures
-            )));
+        $legacy = $request->input('car_features', []);
+        if (is_string($legacy)) {
+            $legacy = [$legacy];
+        }
+        $legacyFeatures = is_array($legacy)
+            ? collect($legacy)->map(fn ($v) => trim((string) $v))->filter()->values()->all()
+            : [];
+
+        if ($request->exists('features_json')) {
+            $featuresRaw = (string) $request->input('features_json', '[]');
+            $decoded = json_decode($featuresRaw, true);
+            $features = is_array($decoded)
+                ? collect($decoded)->map(fn ($v) => trim((string) $v))->filter()->values()->all()
+                : [];
+
+            // If client-side JSON stayed empty, fall back to checkbox-submitted values.
+            if (!count($features) && count($legacyFeatures)) {
+                return $legacyFeatures;
+            }
+
+            return $features;
         }
 
-        $featuresRaw = (string) $request->input('features_json', '[]');
-        $features = json_decode($featuresRaw, true);
-        if (! is_array($features)) {
-            return [];
+        if (count($legacyFeatures)) {
+            return $legacyFeatures;
         }
 
-        return collect($features)
-            ->map(fn ($feature) => trim((string) $feature))
-            ->filter()
-            ->values()
-            ->all();
+        return array_values(array_filter(array_map(
+            fn ($feature) => trim((string) $feature),
+            $existingFeatures
+        )));
     }
 }

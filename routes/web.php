@@ -6,6 +6,8 @@ use App\Http\Controllers\ListingSubmissionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CarListingSubmissionController;
 use App\Http\Controllers\Api\PublicListingController;
+use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\CarCatalogController;
 use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 $serve = static function (string $file) {
     $path = public_path($file);
@@ -21,17 +24,104 @@ $serve = static function (string $file) {
     $html = file_get_contents($path);
     $html = str_replace('data-pwa="true"', 'data-pwa="false"', $html);
     $html = str_replace('__CSRF_TOKEN__', csrf_token(), $html);
+
+    // Cache-bust frequently updated dynamic scripts without touching every template file.
+    $scriptVersions = [
+        '/finder/assets/js/monaclick-global-footer.js' => [
+            public_path('finder/assets/js/monaclick-global-footer.js'),
+            base_path('../finder/assets/js/monaclick-global-footer.js'),
+        ],
+        '/finder/assets/js/monaclick-listings-dynamic.js' => [
+            public_path('finder/assets/js/monaclick-listings-dynamic.js'),
+            base_path('../finder/assets/js/monaclick-listings-dynamic.js'),
+        ],
+        '/finder/assets/js/monaclick-entry-dynamic.js' => [
+            public_path('finder/assets/js/monaclick-entry-dynamic.js'),
+            base_path('../finder/assets/js/monaclick-entry-dynamic.js'),
+        ],
+        '/finder/assets/js/monaclick-entry-features-patch.js' => [
+            public_path('finder/assets/js/monaclick-entry-features-patch.js'),
+            base_path('../finder/assets/js/monaclick-entry-features-patch.js'),
+        ],
+        '/finder/assets/js/monaclick-home-dynamic.js' => [
+            public_path('finder/assets/js/monaclick-home-dynamic.js'),
+            base_path('../finder/assets/js/monaclick-home-dynamic.js'),
+        ],
+    ];
+    foreach ($scriptVersions as $webPath => $diskPath) {
+        $candidates = is_array($diskPath) ? $diskPath : [$diskPath];
+        $resolved = null;
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && file_exists($candidate)) {
+                $resolved = $candidate;
+                break;
+            }
+        }
+        if ($resolved === null) {
+            continue;
+        }
+        $ver = (string) (filemtime($resolved) ?: time());
+        $replacement = $webPath . '?v=' . $ver;
+
+        // Replace existing versioned URLs first.
+        $patternExisting = '~' . preg_quote($webPath, '~') . '\\?v=[^"\\\']+~';
+        $html = preg_replace($patternExisting, $replacement, $html) ?? $html;
+
+        // If the template didn't include ?v=..., append it to avoid stale browser caching.
+        $patternMissing = '~' . preg_quote($webPath, '~') . '(?!\\?v=)~';
+        $html = preg_replace($patternMissing, $replacement, $html) ?? $html;
+    }
+    if (!str_contains($html, 'window.__MC_AUTH__')) {
+        $authFlag = Auth::check() ? 'true' : 'false';
+        $csrf = csrf_token();
+        $html = str_replace('</head>', "<script>window.__MC_AUTH__={$authFlag};window.__MC_CSRF__=" . json_encode($csrf) . ";</script></head>", $html);
+    }
     $accountAuthPage = str_starts_with($file, 'account-') && Auth::check();
     $noFlashPage = $accountAuthPage || str_starts_with($file, 'add-');
     if ($noFlashPage) {
         $noFlashStyles = <<<'HTML'
 <style id="account-noflash-style">
-.content-wrapper{opacity:0;transition:opacity .12s ease}
-body.account-dom-ready .content-wrapper{opacity:1}
+.content-wrapper{opacity:0;transition:opacity .12s ease;animation:mc-unhide 0s linear .25s forwards}
+@keyframes mc-unhide{to{opacity:1}}
+body.account-dom-ready .content-wrapper{opacity:1;animation:none}
 </style>
 HTML;
         $html = str_replace('</head>', $noFlashStyles . '</head>', $html);
     }
+
+    if (str_starts_with($file, 'single-entry-')) {
+        $entryNoFlash = <<<'HTML'
+<style id="entry-noflash-style">
+body.monaclick-entry-shell[data-entry-ready="0"] .content-wrapper{opacity:0;transition:opacity .12s ease;animation:mc-entry-unhide 0s linear .35s forwards}
+@keyframes mc-entry-unhide{to{opacity:1}}
+body.monaclick-entry-shell[data-entry-ready="1"] .content-wrapper{opacity:1;animation:none}
+</style>
+HTML;
+        $html = str_replace('</head>', $entryNoFlash . '</head>', $html);
+    }
+
+    // Events module removed: strip any leftover nav links in templates.
+    $removeEventsScript = <<<'HTML'
+<script id="mc-remove-events">
+(() => {
+  const selectors = [
+    'a[href="/events"]',
+    'a[href="/listings/events"]',
+    'a[href^="/entry/events"]',
+    'a[href*="listings-events.html"]',
+    'a[href*="home-events.html"]',
+    'a[href*="single-entry-events.html"]',
+  ];
+  selectors.forEach((sel) => {
+    document.querySelectorAll(sel).forEach((a) => {
+      const li = a.closest('li');
+      (li || a).remove();
+    });
+  });
+})();
+</script>
+HTML;
+    $html = str_replace('</body>', $removeEventsScript . '</body>', $html);
     if (str_starts_with($file, 'add-')) {
         // Keep add flows on native selects to avoid double-rendered dropdown UI.
         $html = preg_replace(
@@ -187,9 +277,13 @@ HTML;
                 $profileName = (string) ($user?->name ?? 'User');
             }
             $profilePayload = [
+                'first_name' => (string) ($user?->first_name ?? ''),
+                'last_name' => (string) ($user?->last_name ?? ''),
                 'name' => $profileName,
                 'email' => (string) ($user?->email ?? ''),
                 'phone' => (string) ($user?->phone ?? ''),
+                'birth_date' => (string) ($user?->birth_date ?? ''),
+                'language' => (string) ($user?->language ?? ''),
                 'address' => (string) ($user?->address ?? ''),
                 'bio' => (string) ($user?->bio ?? ''),
                 'avatar' => (string) ($user?->avatar_url ?? ''),
@@ -198,6 +292,7 @@ HTML;
                 return [
                     'id' => $listing->id,
                     'title' => (string) $listing->title,
+                    'slug' => (string) $listing->slug,
                     'module' => (string) $listing->module,
                     'module_label' => Listing::MODULE_OPTIONS[$listing->module] ?? ucfirst((string) $listing->module),
                     'price' => (string) ($listing->display_price ?: ($listing->price ?? '')),
@@ -229,6 +324,11 @@ HTML;
     if (item.module === 'restaurants') return `/add-restaurant?edit=${encodeURIComponent(item.id)}`;
     return '';
   };
+  const viewHref = (item) => (
+    item.slug
+      ? `/entry/${encodeURIComponent(item.module)}?slug=${encodeURIComponent(item.slug)}`
+      : `/listings/${encodeURIComponent(item.module)}?q=${encodeURIComponent(item.title)}`
+  );
   const deleteForm = (item) => `
     <form method="post" action="/account/listings/delete" class="d-inline">
       <input type="hidden" name="_token" value="${esc(csrfToken)}">
@@ -253,7 +353,7 @@ HTML;
             <div class="text-body-secondary small mb-2">${esc(item.module_label)}${item.city ? ' • ' + esc(item.city) : ''}</div>
             <div class="fw-semibold mb-3">${esc(item.price || 'Price on request')}</div>
             <div class="mt-auto d-flex gap-2 flex-wrap">
-              <a class="btn btn-sm btn-outline-secondary" href="/listings/${encodeURIComponent(item.module)}?q=${encodeURIComponent(item.title)}">View</a>
+              <a class="btn btn-sm btn-outline-secondary" href="${viewHref(item)}">View</a>
               ${editHref(item) ? `<a class="btn btn-sm btn-primary" href="${editHref(item)}">Edit</a>` : ''}
               ${deleteForm(item)}
             </div>
@@ -266,11 +366,15 @@ HTML;
   if (location.pathname === '/account/profile') {
     const root = document.querySelector('.col-lg-9');
     if (!root) return;
+    const avatarSrc = profile.avatar ? profile.avatar : avatar;
     root.innerHTML = `
-      <h1 class="h2 pb-2 pb-lg-3">My profile</h1>
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-2 pb-lg-3">
+        <h1 class="h2 mb-0">My profile</h1>
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#mcEditProfileModal">Edit profile</button>
+      </div>
       <section class="pb-5 mb-md-3">
         <div class="d-flex align-items-start gap-3 mb-4">
-          <img src="${avatar}" alt="Avatar" width="96" height="96" class="rounded-circle border">
+          <img src="${esc(avatarSrc)}" alt="Avatar" width="96" height="96" class="rounded-circle border" data-mc-avatar>
           <div>
             <h2 class="h4 mb-2">${esc(profile.name)}</h2>
             <div class="text-body-secondary">${esc(profile.email)}</div>
@@ -278,11 +382,128 @@ HTML;
         </div>
         <div class="vstack gap-2 fs-5">
           ${profile.phone ? `<div><strong>Phone:</strong> ${esc(profile.phone)}</div>` : ''}
+          ${profile.birth_date ? `<div><strong>Date of birth:</strong> ${esc(profile.birth_date)}</div>` : ''}
+          ${profile.language ? `<div><strong>Language:</strong> ${esc(profile.language)}</div>` : ''}
           ${profile.address ? `<div><strong>Address:</strong> ${esc(profile.address)}</div>` : ''}
           ${profile.bio ? `<div><strong>About:</strong> ${esc(profile.bio)}</div>` : ''}
         </div>
       </section>
+
+      <div class="modal fade" id="mcEditProfileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit profile</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="/account/settings" enctype="multipart/form-data">
+              <div class="modal-body">
+                <input type="hidden" name="_token" value="${esc(csrfToken)}">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="mcFirstName">First name</label>
+                    <input class="form-control" id="mcFirstName" name="first_name" value="${esc(profile.first_name || '')}">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="mcLastName">Last name</label>
+                    <input class="form-control" id="mcLastName" name="last_name" value="${esc(profile.last_name || '')}">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="mcEmail">Email</label>
+                    <input class="form-control" type="email" id="mcEmail" name="email" value="${esc(profile.email || '')}" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="mcPhone">Phone</label>
+                    <input class="form-control" id="mcPhone" name="phone" value="${esc(profile.phone || '')}">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="mcBirthDate">Date of birth</label>
+                    <div class="position-relative">
+                      <input type="text" class="form-control form-icon-end" id="mcBirthDate" name="birth_date" value="${esc(profile.birth_date || '')}" data-datepicker='{"dateFormat":"Y-m-d"}' placeholder="YYYY-MM-DD">
+                      <i class="fi-calendar fs-lg position-absolute top-50 end-0 translate-middle-y me-3"></i>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="mcLanguage">Language</label>
+                    <select class="form-select" id="mcLanguage" name="language" data-select='{"removeItemButton": false}' aria-label="Language select">
+                      <option value="">Select language</option>
+                      <option value="English">English</option>
+                      <option value="Spanish">Spanish</option>
+                      <option value="French">French</option>
+                      <option value="German">German</option>
+                      <option value="Italian">Italian</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="mcAddress">Address</label>
+                    <input class="form-control" id="mcAddress" name="address" value="${esc(profile.address || '')}">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="mcBio">About</label>
+                    <textarea class="form-control" id="mcBio" name="bio" rows="3">${esc(profile.bio || '')}</textarea>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="mcProfileAvatar">Profile photo</label>
+                    <input class="form-control" type="file" id="mcProfileAvatar" name="avatar" accept="image/*">
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     `;
+
+    const avatarInput = root.querySelector('#mcProfileAvatar');
+    const avatarImg = root.querySelector('img[data-mc-avatar]');
+    const langSelect = root.querySelector('#mcLanguage');
+    if (langSelect) langSelect.value = profile.language || '';
+
+    root.querySelectorAll('[data-datepicker]').forEach((input) => {
+      if (input && input._flatpickr) return;
+      if (typeof window.flatpickr !== 'function') return;
+      let config = {};
+      try {
+        const raw = input.getAttribute('data-datepicker');
+        config = raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        config = {};
+      }
+      try {
+        window.flatpickr(input, config);
+      } catch (e) {
+        // ignore
+      }
+    });
+
+    root.querySelectorAll('select[data-select]').forEach((select) => {
+      if (!select || select.__mcChoices) return;
+      if (typeof window.Choices !== 'function') return;
+      let config = {};
+      try {
+        const raw = select.getAttribute('data-select');
+        config = raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        config = {};
+      }
+      try {
+        select.__mcChoices = new window.Choices(select, config);
+      } catch (e) {
+        // ignore
+      }
+    });
+
+    if (avatarInput && avatarImg) {
+      avatarInput.addEventListener('change', () => {
+        const file = avatarInput.files && avatarInput.files[0];
+        if (!file) return;
+        avatarImg.src = URL.createObjectURL(file);
+      });
+    }
   }
 
   if (location.pathname === '/account/listings') {
@@ -507,6 +728,7 @@ HTML;
             'email' => (string) (Auth::user()?->email ?? ''),
             'phone' => (string) (Auth::user()?->phone ?? ''),
             'birth_date' => (string) (Auth::user()?->birth_date ?? ''),
+            'language' => (string) (Auth::user()?->language ?? ''),
             'address' => (string) (Auth::user()?->address ?? ''),
             'bio' => (string) (Auth::user()?->bio ?? ''),
             'avatar' => (string) (Auth::user()?->avatar_url ?? ''),
@@ -544,6 +766,7 @@ HTML;
   setVal('#email', profile.email || '');
   setVal('#phone', profile.phone || '');
   setVal('#birth-date', profile.birth_date || '');
+  setVal('#language', profile.language || '');
   setVal('#address', profile.address || '');
   setVal('#user-info', profile.bio || '');
 
@@ -557,6 +780,7 @@ HTML;
       document.querySelector('#email'),
       document.querySelector('#phone'),
       document.querySelector('#birth-date'),
+      document.querySelector('#language'),
       document.querySelector('#address'),
       document.querySelector('#user-info'),
     ].filter(Boolean);
@@ -569,7 +793,7 @@ HTML;
     }
     if (progressLabel) progressLabel.textContent = `${percent}%`;
   };
-  ['#fn', '#ln', '#email', '#phone', '#birth-date', '#address', '#user-info'].forEach((selector) => {
+  ['#fn', '#ln', '#email', '#phone', '#birth-date', '#language', '#address', '#user-info'].forEach((selector) => {
     const el = document.querySelector(selector);
     if (!el) return;
     el.addEventListener('input', computeProgress);
@@ -630,6 +854,7 @@ HTML;
     mapName('#email', 'email');
     mapName('#phone', 'phone');
     mapName('#birth-date', 'birth_date');
+    mapName('#language', 'language');
     mapName('#address', 'address');
     mapName('#user-info', 'bio');
 
@@ -777,18 +1002,27 @@ HTML;
   const isEdit = !!(editData && editData.id);
   let isSubmitting = false;
   const wizardKey = 'propertyWizardSession';
+  const randomWizardSession = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   const ensureWizardSession = () => {
     try {
       let value = localStorage.getItem(wizardKey);
-      if (!value) {
-        value = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      // Never reuse an old numeric session (often from editId) when starting a new listing.
+      if (!value || /^\d+$/.test(String(value).trim())) {
+        value = randomWizardSession();
         localStorage.setItem(wizardKey, value);
       }
       return value;
     } catch (_) {
-      return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      return randomWizardSession();
     }
   };
+
+  // New listing: always start with a fresh wizard session so we don't overwrite an existing property listing.
+  if (!isEdit) {
+    try {
+      localStorage.setItem(wizardKey, randomWizardSession());
+    } catch (_) {}
+  }
   const heading = document.querySelector('h1.h2');
   if (isEdit && heading) heading.textContent = 'Edit property';
 
@@ -885,12 +1119,28 @@ HTML;
             }
             $editListing = $editQuery->first();
             if ($editListing) {
+                $wizardData = $editListing->propertyDetail?->wizard_data;
+                $wizardData = is_array($wizardData) ? $wizardData : [];
+
+                $cityName = (string) ($editListing->city?->name ?? '');
+                if ($cityName !== '') {
+                    $wizardData['select:city-select'] = $wizardData['select:city-select'] ?? $cityName;
+                    $wizardData['city'] = $wizardData['city'] ?? $cityName;
+                }
+
+                if (Schema::hasColumn('cities', 'state_code')) {
+                    $stateCode = (string) ($editListing->city?->state_code ?? '');
+                    if ($stateCode !== '') {
+                        $wizardData['state'] = $wizardData['state'] ?? $stateCode;
+                    }
+                }
+
                 $propertyEditPayload = [
                     'id' => $editListing->id,
                     'title' => (string) $editListing->title,
                     'listing_type' => (string) ($editListing->propertyDetail?->listing_type ?? 'sale'),
                     'property_type' => (string) ($editListing->propertyDetail?->property_type ?? ''),
-                    'wizard_data' => $editListing->propertyDetail?->wizard_data ?? [],
+                    'wizard_data' => $wizardData,
                     'images' => $editListing->images->map(fn ($img) => (string) $img->image_url)->values()->all(),
                 ];
             }
@@ -903,16 +1153,19 @@ HTML;
   const wizard = (editData && editData.wizard_data && typeof editData.wizard_data === 'object') ? editData.wizard_data : {};
   let isSubmitting = false;
   const wizardKey = 'propertyWizardSession';
+  const randomWizardSession = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   const ensureWizardSession = () => {
     try {
       let value = localStorage.getItem(wizardKey);
-      if (!value) {
-        value = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      // If we don't have an active editId and the saved value looks like a numeric listing id,
+      // treat it as stale and start a new wizard session (otherwise new listing overwrites old one).
+      if (!value || (!editId && /^\d+$/.test(String(value).trim()))) {
+        value = randomWizardSession();
         localStorage.setItem(wizardKey, value);
       }
       return value;
     } catch (_) {
-      return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      return randomWizardSession();
     }
   };
   const stepMap = [
@@ -925,8 +1178,9 @@ HTML;
   ];
   const search = new URLSearchParams(window.location.search);
   const editId = (search.get('edit') || (editData?.id ? String(editData.id) : '')).trim();
-  if (editId) {
-    try { localStorage.setItem(wizardKey, String(editId)); } catch (_) {}
+  // Starting a new listing (no editId): always rotate wizard session when landing on the first step.
+  if (!editId && window.location.pathname === '/add-property') {
+    try { localStorage.setItem(wizardKey, randomWizardSession()); } catch (_) {}
   }
   window.__propertyEditData = editData;
   const withEdit = (url) => (editId ? `${url}?edit=${encodeURIComponent(editId)}` : url);
@@ -937,6 +1191,15 @@ HTML;
     const text = (link.textContent || '').trim().toLowerCase();
     const step = stepMap.find((s) => text.includes(s.key));
     if (!step) return;
+    // For brand new listings, prevent jumping ahead before the first draft is created
+    // (otherwise required taxonomy/location fields may not exist yet and the server redirects back).
+    const allowWithoutEdit = step.url === '/add-property' || step.url === '/add-property-location';
+    if (!editId && !allowWithoutEdit) {
+      link.classList.add('disabled', 'pe-none');
+      link.setAttribute('aria-disabled', 'true');
+      link.setAttribute('href', withEdit('/add-property-location'));
+      return;
+    }
     link.classList.remove('disabled', 'pe-none');
     link.removeAttribute('aria-disabled');
     link.setAttribute('href', withEdit(step.url));
@@ -952,16 +1215,53 @@ HTML;
 
   // New listing mode: clear template demo defaults so user starts with empty data.
   if (!editId) {
-    document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea').forEach((el) => {
-      el.value = '';
-    });
-    document.querySelectorAll('select').forEach((select) => {
-      select.selectedIndex = 0;
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach((el) => {
-      el.checked = false;
-    });
+    const clear = () => {
+      const root = document.querySelector('main') || document;
+      root.querySelectorAll('form').forEach((form) => {
+        form.setAttribute('autocomplete', 'off');
+      });
+
+      root.querySelectorAll('input, textarea, select').forEach((el) => {
+        if (el.tagName === 'INPUT') {
+          const type = (el.getAttribute('type') || 'text').toLowerCase();
+          if (type === 'hidden' || type === 'submit' || type === 'button' || type === 'file') return;
+
+          // Reduce browser autofill; keep it consistent across fields.
+          el.setAttribute('autocomplete', 'off');
+          if (type === 'email') el.setAttribute('autocomplete', 'new-password');
+          if (type === 'tel') el.setAttribute('autocomplete', 'new-password');
+
+          if (type === 'checkbox' || type === 'radio') {
+            el.checked = false;
+            el.defaultChecked = false;
+            el.removeAttribute('checked');
+            return;
+          }
+
+          el.value = '';
+          el.defaultValue = '';
+          el.removeAttribute('value');
+          return;
+        }
+
+        if (el.tagName === 'TEXTAREA') {
+          el.value = '';
+          el.defaultValue = '';
+          el.textContent = '';
+          return;
+        }
+
+        if (el.tagName === 'SELECT') {
+          el.selectedIndex = 0;
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    };
+
+    // Run twice to override late autofill and template defaults.
+    clear();
+    setTimeout(clear, 50);
+    setTimeout(clear, 250);
   }
 
   const setInput = (id, value) => {
@@ -975,16 +1275,25 @@ HTML;
     if (!value) return;
     const select = document.querySelector(`select[aria-label="${ariaLabel}"]`);
     if (!select) return;
+
     const wanted = String(value).trim().toLowerCase();
-    let option = Array.from(select.options).find((o) => (o.value || o.textContent || '').trim().toLowerCase() === wanted);
-    if (!option) {
-      option = document.createElement('option');
-      option.value = String(value);
-      option.textContent = String(value);
-      select.appendChild(option);
-    }
-    select.value = option.value;
-    select.dispatchEvent(new Event('change', { bubbles: true }));
+    const trySet = (attemptsLeft) => {
+      // Wait for async option population (theme script) when possible.
+      if (select.options.length <= 1 && attemptsLeft > 0) {
+        setTimeout(() => trySet(attemptsLeft - 1), 75);
+        return;
+      }
+      let option = Array.from(select.options).find((o) => (o.value || o.textContent || '').trim().toLowerCase() === wanted);
+      if (!option) {
+        option = document.createElement('option');
+        option.value = String(value);
+        option.textContent = String(value);
+        select.appendChild(option);
+      }
+      select.value = option.value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    trySet(20);
   };
   const setChecked = (id, checked = true) => {
     const el = document.getElementById(id);
@@ -997,9 +1306,9 @@ HTML;
   if (editId) {
     const path = window.location.pathname;
     if (path === '/add-property-location') {
-      setSelectByValue('Country select', wizard.country);
-      setSelectByValue('City select', wizard.city);
-      setSelectByValue('District select', wizard.district);
+      setSelectByValue('State select', wizard.state);
+      setSelectByValue('City select', wizard['select:city-select'] || wizard.city);
+      setInput('district', wizard.district);
       setInput('zip', wizard.zip);
       setInput('address', wizard.address);
     }
@@ -1035,17 +1344,104 @@ HTML;
   const buildPayloadForStep = () => {
     const path = window.location.pathname;
     if (path === '/add-property-location') {
+      const normalizeStateCode = (rawValue, rawLabel) => {
+        const value = String(rawValue || '').trim();
+        const label = String(rawLabel || '').trim();
+        const nameToCode = (raw) => {
+          const key = String(raw || '')
+            .replace(/\([A-Za-z]{2}\)\s*$/, '')
+            .trim()
+            .toLowerCase();
+          if (!key) return '';
+          const map = {
+            'alabama': 'AL',
+            'alaska': 'AK',
+            'arizona': 'AZ',
+            'arkansas': 'AR',
+            'california': 'CA',
+            'colorado': 'CO',
+            'connecticut': 'CT',
+            'delaware': 'DE',
+            'district of columbia': 'DC',
+            'florida': 'FL',
+            'georgia': 'GA',
+            'hawaii': 'HI',
+            'idaho': 'ID',
+            'illinois': 'IL',
+            'indiana': 'IN',
+            'iowa': 'IA',
+            'kansas': 'KS',
+            'kentucky': 'KY',
+            'louisiana': 'LA',
+            'maine': 'ME',
+            'maryland': 'MD',
+            'massachusetts': 'MA',
+            'michigan': 'MI',
+            'minnesota': 'MN',
+            'mississippi': 'MS',
+            'missouri': 'MO',
+            'montana': 'MT',
+            'nebraska': 'NE',
+            'nevada': 'NV',
+            'new hampshire': 'NH',
+            'new jersey': 'NJ',
+            'new mexico': 'NM',
+            'new york': 'NY',
+            'north carolina': 'NC',
+            'north dakota': 'ND',
+            'ohio': 'OH',
+            'oklahoma': 'OK',
+            'oregon': 'OR',
+            'pennsylvania': 'PA',
+            'rhode island': 'RI',
+            'south carolina': 'SC',
+            'south dakota': 'SD',
+            'tennessee': 'TN',
+            'texas': 'TX',
+            'utah': 'UT',
+            'vermont': 'VT',
+            'virginia': 'VA',
+            'washington': 'WA',
+            'west virginia': 'WV',
+            'wisconsin': 'WI',
+            'wyoming': 'WY',
+          };
+          return map[key] || '';
+        };
+        const pick = (s) => {
+          const v = String(s || '').trim();
+          if (!v) return '';
+          const m = v.match(/\(([A-Za-z]{2})\)\s*$/);
+          if (m) return m[1].toUpperCase();
+          if (/^[A-Za-z]{2}$/.test(v)) return v.toUpperCase();
+          return '';
+        };
+        return pick(value) || pick(label) || nameToCode(value) || nameToCode(label) || '';
+      };
+
+      const stateSelect = document.getElementById('state') || document.querySelector('select[aria-label="State select"]');
+      const selectedStateLabel = (stateSelect?.querySelector('option:checked')?.textContent || '').trim();
+      const citySelect = document.getElementById('city') || document.querySelector('select[aria-label="City select"]');
+      const selectedCityLabel = (citySelect?.querySelector('option:checked')?.textContent || '').trim();
+      const city = (citySelect?.value || '').trim() || selectedCityLabel;
       return {
         wizard_session: ensureWizardSession(),
-        country: document.querySelector('select[aria-label="Country select"]')?.value || '',
-        city: document.querySelector('select[aria-label="City select"]')?.value || '',
-        district: document.querySelector('select[aria-label="District select"]')?.value || '',
+        state: normalizeStateCode(stateSelect?.value || '', selectedStateLabel),
+        city,
+        district: document.getElementById('district')?.value || '',
         zip: document.getElementById('zip')?.value || '',
         address: document.getElementById('address')?.value || '',
-        'select:city-select': document.querySelector('select[aria-label="City select"]')?.value || '',
+        'select:city-select': city,
       };
     }
     if (path === '/add-property-details') {
+      const amenityIds = ['tv', 'washing', 'kitchen', 'ac', 'workspace', 'fridge', 'drying', 'closet', 'patio', 'fireplace', 'shower', 'whirlpool', 'cctv', 'balcony', 'bar'];
+      const amenities = {};
+      amenityIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        amenities[id] = !!el.checked;
+      });
       return {
         wizard_session: ensureWizardSession(),
         ownership: selectedId('ownership'),
@@ -1058,6 +1454,7 @@ HTML;
         'radio:bedrooms': selectedId('bedrooms').replace('bedrooms-', ''),
         'radio:bathrooms': selectedId('bathrooms').replace('bathrooms-', ''),
         parking: selectedId('parking').replace('parking-', ''),
+        ...amenities,
       };
     }
     if (path === '/add-property-price') {
@@ -1097,12 +1494,53 @@ HTML;
       if (btn.tagName === 'BUTTON') btn.disabled = true;
     });
   };
+  const clearActionsSubmitting = () => {
+    document.querySelectorAll('.pt-5.d-flex.flex-wrap.gap-3.align-items-center .btn').forEach((btn) => {
+      btn.classList.remove('disabled');
+      btn.removeAttribute('aria-disabled');
+      if (btn.tagName === 'BUTTON') btn.disabled = false;
+    });
+  };
+
+  // Submit each step as a draft and move forward so required location data persists in DB (and editId exists).
+  // The backend merges `wizard_data` across steps, keyed by `wizard_session`/editId.
+  const enableStepSubmit = true;
 
   const submitStep = (nextPath = '', publishNow = false) => {
     if (isSubmitting) return;
+    const payload = buildPayloadForStep();
+
+    // Client-side guard: don't submit location step without required state/city, otherwise backend redirects back
+    // with `error=missing-state` and it looks like the button "did nothing".
+    if (window.location.pathname === '/add-property-location') {
+      const state = String(payload.state || '').trim();
+      const city = String(payload.city || payload['select:city-select'] || '').trim();
+      if (!state) {
+        const stateSelect = document.getElementById('state') || document.querySelector('select[aria-label="State select"]');
+        if (stateSelect) {
+          stateSelect.classList.add('is-invalid');
+          stateSelect.focus();
+        }
+        alert('Please select a state.');
+        isSubmitting = false;
+        clearActionsSubmitting();
+        return;
+      }
+      if (!city) {
+        const citySelect = document.getElementById('city') || document.querySelector('select[aria-label="City select"]');
+        if (citySelect) {
+          citySelect.classList.add('is-invalid');
+          citySelect.focus();
+        }
+        alert('Please select a city.');
+        isSubmitting = false;
+        clearActionsSubmitting();
+        return;
+      }
+    }
+
     isSubmitting = true;
     setActionsSubmitting();
-    const payload = buildPayloadForStep();
     const form = document.createElement('form');
     form.method = 'post';
     form.action = '/submit/property';
@@ -1125,10 +1563,19 @@ HTML;
   };
 
   // Contact info should only move to ad promotion step.
-  if (window.location.pathname === '/add-property-contact-info') {
+  if (enableStepSubmit && window.location.pathname === '/add-property-contact-info') {
     const actions = document.querySelector('.pt-5.d-flex.flex-wrap.gap-3.align-items-center');
     if (actions) actions.classList.add('justify-content-start');
     const nextBtn = actions?.querySelector('a.btn.btn-lg.btn-dark');
+    const draftBtn = actions?.querySelector('button.btn.btn-lg.btn-outline-secondary');
+    if (draftBtn && !draftBtn.dataset.propertyDraftBound) {
+      draftBtn.dataset.propertyDraftBound = '1';
+      draftBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        submitStep('');
+      }, true);
+    }
     if (actions && !actions.querySelector('button[data-property-publish]')) {
       const publishBtn = document.createElement('button');
       publishBtn.type = 'button';
@@ -1137,8 +1584,9 @@ HTML;
       publishBtn.setAttribute('data-property-publish', '1');
       publishBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        event.stopImmediatePropagation();
         submitStep('', true);
-      });
+      }, true);
       actions.appendChild(publishBtn);
     }
     if (nextBtn) {
@@ -1146,8 +1594,9 @@ HTML;
       nextBtn.setAttribute('href', '#');
       nextBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        event.stopImmediatePropagation();
         submitStep('/add-property-promotion');
-      });
+      }, true);
     }
   }
 
@@ -1158,18 +1607,32 @@ HTML;
     '/add-property-price': '/add-property-contact-info',
   };
   const path = window.location.pathname;
-  if (nextMap[path]) {
+  if (path === '/add-property-location') {
+    const stateSel = document.getElementById('state') || document.querySelector('select[aria-label="State select"]');
+    const citySel = document.getElementById('city') || document.querySelector('select[aria-label="City select"]');
+    stateSel?.addEventListener('change', () => stateSel.classList.remove('is-invalid'));
+    citySel?.addEventListener('change', () => citySel.classList.remove('is-invalid'));
+  }
+  if (enableStepSubmit && nextMap[path]) {
     const actions = document.querySelector('.pt-5.d-flex.flex-wrap.gap-3.align-items-center');
     if (actions) actions.classList.add('justify-content-start');
-    const draftBtn = actions?.querySelector('button.btn.btn-lg.btn-outline-secondary');
-    const nextBtn = actions?.querySelector('a.btn.btn-lg.btn-dark');
+    const replaceWithClone = (el) => {
+      if (!el || !el.parentNode) return el;
+      const clone = el.cloneNode(true);
+      el.parentNode.replaceChild(clone, el);
+      return clone;
+    };
+    const draftBtn = replaceWithClone(actions?.querySelector('button.btn.btn-lg.btn-outline-secondary'));
+    const nextBtn = replaceWithClone(actions?.querySelector('a.btn.btn-lg.btn-dark'));
     if (draftBtn) {
       if (!draftBtn.dataset.propertyBound) {
         draftBtn.dataset.propertyBound = '1';
         draftBtn.addEventListener('click', (event) => {
           event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
           submitStep('');
-        });
+        }, true);
       }
     }
     if (nextBtn) {
@@ -1178,8 +1641,10 @@ HTML;
         nextBtn.dataset.propertyBound = '1';
         nextBtn.addEventListener('click', (event) => {
           event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
           submitStep(nextMap[path]);
-        });
+        }, true);
       }
     }
   }
@@ -1331,6 +1796,52 @@ HTML;
 (() => {
   const search = new URLSearchParams(window.location.search);
   const editId = (search.get('edit') || '').trim();
+  const wizardKey = 'propertyWizardSession';
+  const ensureWizardSession = () => {
+    try {
+      let value = localStorage.getItem(wizardKey);
+      if (!value) {
+        value = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        localStorage.setItem(wizardKey, value);
+      }
+      return value;
+    } catch (_) {
+      return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+  };
+
+  const setSubmitting = () => {
+    document.querySelectorAll('.pt-5.d-flex.flex-wrap.gap-3.align-items-center .btn').forEach((btn) => {
+      btn.classList.add('disabled');
+      btn.setAttribute('aria-disabled', 'true');
+      if (btn.tagName === 'BUTTON') btn.disabled = true;
+    });
+  };
+
+  const submitProperty = (publishNow) => {
+    setSubmitting();
+    const payload = { wizard_session: ensureWizardSession() };
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = '/submit/property';
+    form.innerHTML = `
+      <input type="hidden" name="_token" value="__SCRIPT_CSRF__">
+      ${publishNow ? '' : '<input type="hidden" name="draft" value="1">'}
+      <input type="hidden" name="payload" value="${btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}">
+      ${editId ? `<input type="hidden" name="listing_id" value="${editId}">` : ''}
+    `;
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  const draftBtn = Array.from(document.querySelectorAll('button.btn.btn-lg.btn-outline-secondary'))
+    .find((btn) => (btn.textContent || '').trim().toLowerCase() === 'save draft');
+  if (draftBtn) {
+    draftBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitProperty(false);
+    });
+  }
 
   const publishBtn = Array.from(document.querySelectorAll('a.btn.btn-lg.btn-primary[href]'))
     .find((btn) => (btn.textContent || '').trim().toLowerCase().includes('publish property listing'));
@@ -1338,19 +1849,7 @@ HTML;
     publishBtn.setAttribute('href', '#');
     publishBtn.addEventListener('click', (event) => {
       event.preventDefault();
-      if (!editId) {
-        window.location.href = '/account/listings';
-        return;
-      }
-      const form = document.createElement('form');
-      form.method = 'post';
-      form.action = '/account/listings/publish';
-      form.innerHTML = `
-        <input type="hidden" name="_token" value="__SCRIPT_CSRF__">
-        <input type="hidden" name="listing_id" value="${editId}">
-      `;
-      document.body.appendChild(form);
-      form.submit();
+      submitProperty(true);
     });
   }
 })();
@@ -2596,20 +3095,18 @@ Route::get('/combined', fn () => $serve('home-combined.html'))->name('home.combi
 Route::get('/contractors', fn () => $serve('home-contractors.html'));
 Route::get('/real-estate', fn () => $serve('home-real-estate.html'));
 Route::get('/cars', fn () => $serve('home-cars.html'));
-Route::get('/events', fn () => $serve('home-events.html'));
+// Events module removed.
 Route::get('/restaurants', fn () => $serve('home-restaurants.html'));
 
 Route::get('/listings', fn () => $serve('listings-contractors.html'))->name('listings.index');
 Route::get('/listings/contractors', fn () => $serve('listings-contractors.html'))->name('listings.module');
 Route::get('/listings/real-estate', fn () => $serve('listings-real-estate.html'));
 Route::get('/listings/cars', fn () => $serve('listings-grid-cars.html'));
-Route::get('/listings/events', fn () => $serve('listings-events.html'));
 Route::get('/listings/restaurants', fn () => $serve('listings-restaurants.html'));
 
 Route::get('/entry/contractors', fn () => $serve('single-entry-contractors.html'))->name('finder.entry');
 Route::get('/entry/real-estate', fn () => $serve('single-entry-real-estate.html'));
 Route::get('/entry/cars', fn () => $serve('single-entry-cars.html'));
-Route::get('/entry/events', fn () => $serve('single-entry-events.html'));
 Route::get('/entry/restaurants', fn () => $serve('single-entry-restaurants.html'));
 Route::get('/add-listing', fn () => $serve('add-listing.html'));
 Route::get('/add-property', fn () => $serve('add-property-type.html'));
@@ -2619,11 +3116,91 @@ Route::get('/add-property-details', fn () => $serve('add-property-details.html')
 Route::get('/add-property-price', fn () => $serve('add-property-price.html'));
 Route::get('/add-property-contact-info', fn () => $serve('add-property-contact-info.html'));
 Route::get('/add-property-promotion', fn () => $serve('add-property-promotion.html'));
-Route::get('/add-contractor', fn () => $serve('add-contractor-location.html'));
-Route::get('/add-contractor-services', fn () => $serve('add-contractor-services.html'));
-Route::get('/add-contractor-price-hours', fn () => $serve('add-contractor-price-hours.html'));
-Route::get('/add-contractor-project', fn () => $serve('add-contractor-project.html'));
-Route::get('/add-contractor-profile', fn () => $serve('add-contractor-profile.html'));
+Route::get('/add-contractor', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'contractors')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-contractor-location.html');
+});
+Route::get('/add-contractor-services', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'contractors')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-contractor-services.html');
+});
+Route::get('/add-contractor-price-hours', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'contractors')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-contractor-price-hours.html');
+});
+Route::get('/add-contractor-project', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'contractors')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-contractor-project.html');
+});
+Route::get('/add-contractor-profile', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'contractors')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-contractor-profile.html');
+});
 Route::get('/sell-car', function (Request $request) use ($serve) {
     $editId = (int) $request->query('edit', 0);
     if ($editId > 0) {
@@ -2832,6 +3409,11 @@ Route::middleware('auth')->group(function () use ($serve) {
         $priceRaw = (string) ($editListing->price ?? '');
         $priceValue = preg_replace('/[^\d]/', '', $priceRaw) ?: '';
 
+        $stateCode = '';
+        if ($editListing->city && Schema::hasColumn('cities', 'state_code')) {
+            $stateCode = (string) ($editListing->city->state_code ?? '');
+        }
+
         return response()->json([
             'data' => [
                 'id' => $editListing->id,
@@ -2840,6 +3422,7 @@ Route::middleware('auth')->group(function () use ($serve) {
                 'project_description' => (string) ($editListing->excerpt ?? ''),
                 'price_value' => (string) $priceValue,
                 'city' => (string) ($editListing->city?->name ?? ''),
+                'state' => (string) $stateCode,
                 'service_area' => $serviceArea,
                 'address' => $address,
                 'zip' => $zip,
@@ -2931,12 +3514,14 @@ Route::middleware('auth')->group(function () use ($serve) {
         return redirect('/account/listings');
     });
     Route::post('/account/settings', function (Request $request) {
+        $hasLanguage = Schema::hasColumn('users', 'language');
         $validated = $request->validate([
             'first_name' => ['nullable', 'string', 'max:100'],
             'last_name' => ['nullable', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . Auth::id()],
             'phone' => ['nullable', 'string', 'max:50'],
             'birth_date' => ['nullable', 'string', 'max:100'],
+            'language' => $hasLanguage ? ['nullable', 'string', 'max:100'] : ['nullable'],
             'address' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string', 'max:2000'],
             'avatar' => ['nullable', 'image', 'max:4096'],
@@ -2953,6 +3538,9 @@ Route::middleware('auth')->group(function () use ($serve) {
         $user->email = strtolower((string) ($validated['email'] ?? $user->email));
         $user->phone = trim((string) ($validated['phone'] ?? ''));
         $user->birth_date = trim((string) ($validated['birth_date'] ?? ''));
+        if ($hasLanguage) {
+            $user->language = trim((string) ($validated['language'] ?? ''));
+        }
         $user->address = trim((string) ($validated['address'] ?? ''));
         $user->bio = trim((string) ($validated['bio'] ?? ''));
 
@@ -3017,7 +3605,7 @@ Route::prefix('app')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('app.home');
     Route::get('/listings', [ListingController::class, 'index'])->name('app.listings.index');
     Route::get('/listings/{module}', [ListingController::class, 'index'])
-        ->whereIn('module', ['contractors', 'real-estate', 'cars', 'events', 'restaurants'])
+        ->whereIn('module', ['contractors', 'real-estate', 'cars', 'restaurants'])
         ->name('app.listings.module');
     Route::get('/entry/{listing:slug}', [ListingController::class, 'show'])->name('app.listings.show');
 });
@@ -3026,6 +3614,12 @@ Route::prefix('app')->group(function () {
 Route::prefix('api/monaclick')->group(function () {
     Route::get('/listings', [PublicListingController::class, 'index']);
     Route::get('/entry', [PublicListingController::class, 'show']);
+    Route::get('/locations/states', [LocationController::class, 'states']);
+    Route::get('/locations/cities', [LocationController::class, 'cities']);
+    Route::get('/cars/drive-types', [CarCatalogController::class, 'driveTypes']);
+    Route::get('/cars/engines', [CarCatalogController::class, 'engines']);
+    Route::get('/cars/makes', [CarCatalogController::class, 'makes']);
+    Route::get('/cars/models', [CarCatalogController::class, 'models']);
 });
 
 Route::get('/dashboard', function () {

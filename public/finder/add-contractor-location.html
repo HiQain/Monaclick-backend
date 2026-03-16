@@ -353,94 +353,20 @@
             <h1 class="h3 pb-sm-1 pb-md-2">What is your business address?</h1>
             <div class="row row-cols-1 row-cols-sm-2 g-3 g-sm-4 mb-3 mb-md-4">
               <div class="col">
-                <label class="form-label">Country *</label>
-                <select class="form-select form-select-lg" data-select='{
-                  "classNames": {
-                    "containerInner": ["form-select", "form-select-lg"]
-                  },
-                  "searchEnabled": true
-                }' aria-label="Country select" required>
-                  <option value="">Select country</option>
-                  <optgroup label="Africa">
-                    <option value="Nigeria">Nigeria</option>
-                    <option value="South Africa">South Africa</option>
-                    <option value="Kenya">Kenya</option>
-                    <option value="Egypt">Egypt</option>
-                    <option value="Ethiopia">Ethiopia</option>
-                  </optgroup>
-                  <optgroup label="Asia">
-                    <option value="China">China</option>
-                    <option value="India">India</option>
-                    <option value="Japan">Japan</option>
-                    <option value="South Korea">South Korea</option>
-                    <option value="Saudi Arabia">Saudi Arabia</option>
-                  </optgroup>
-                  <optgroup label="Europe">
-                    <option value="Germany">Germany</option>
-                    <option value="France">France</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Italy">Italy</option>
-                    <option value="Spain">Spain</option>
-                  </optgroup>
-                  <optgroup label="North America">
-                    <option value="United States" selected>United States</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Mexico">Mexico</option>
-                    <option value="Jamaica">Jamaica</option>
-                    <option value="Costa Rica">Costa Rica</option>
-                  </optgroup>
-                  <optgroup label="South America">
-                    <option value="Brazil">Brazil</option>
-                    <option value="Argentina">Argentina</option>
-                    <option value="Colombia">Colombia</option>
-                    <option value="Chile">Chile</option>
-                    <option value="Peru">Peru</option>
-                  </optgroup>
-                  <optgroup label="Oceania">
-                    <option value="Australia">Australia</option>
-                    <option value="New Zealand">New Zealand</option>
-                    <option value="Papua New Guinea">Papua New Guinea</option>
-                    <option value="Fiji">Fiji</option>
-                    <option value="Solomon Islands">Solomon Islands</option>
-                  </optgroup>
+                <label class="form-label">State *</label>
+                <select class="form-select form-select-lg" id="state" name="state" aria-label="State select" required>
+                  <option value="">Select state</option>
                 </select>
               </div>
               <div class="col">
-                <label class="form-label">City *</label>
-                <select class="form-select form-select-lg" data-select='{
-                  "classNames": {
-                    "containerInner": ["form-select", "form-select-lg"]
-                  },
-                  "searchEnabled": true
-                }' aria-label="City select" required>
+                <label for="city" class="form-label">City *</label>
+                <select class="form-select form-select-lg" id="city" name="city" aria-label="City select" required>
                   <option value="">Select city</option>
-                  <option value="New York" selected>New York</option>
-                  <option value="Los Angeles">Los Angeles</option>
-                  <option value="Chicago">Chicago</option>
-                  <option value="Houston">Houston</option>
-                  <option value="Phoenix">Phoenix</option>
-                  <option value="Philadelphia">Philadelphia</option>
-                  <option value="San Antonio">San Antonio</option>
-                  <option value="San Diego">San Diego</option>
-                  <option value="Dallas">Dallas</option>
-                  <option value="San Jose">San Jose</option>
-                  <option value="Austin">Austin</option>
-                  <option value="Jacksonville">Jacksonville</option>
                 </select>
               </div>
               <div class="col">
-                <label class="form-label">District *</label>
-                <select class="form-select form-select-lg" data-select='{
-                  "classNames": {
-                    "containerInner": ["form-select", "form-select-lg"]
-                  }
-                }' aria-label="District select" required>
-                  <option value="">Select district</option>
-                  <option value="Manhattan">Manhattan</option>
-                  <option value="Brooklyn" selected>Brooklyn</option>
-                  <option value="The Bronx">The Bronx</option>
-                  <option value="Staten Island">Staten Island</option>
-                </select>
+                <label for="district" class="form-label">County (optional)</label>
+                <input type="text" class="form-control form-control-lg" id="district" placeholder="Enter county">
               </div>
               <div class="col">
                 <label for="zip" class="form-label">Zip code *</label>
@@ -457,21 +383,7 @@
                 <input type="text" class="form-control form-control-lg form-icon-start" id="area-search" placeholder="Search area where you provide your services">
               </div>
             </div>
-            <label class="form-label pb-1 pb-md-0 mb-md-3">Where do you offer your services? *</label>
-            <div class="d-flex flex-wrap gap-2">
-              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill">
-                <i class="fi-close fs-sm ms-n1 me-1"></i>
-                Brooklyn
-              </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill">
-                <i class="fi-close fs-sm ms-n1 me-1"></i>
-                Manhattan
-              </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill">
-                <i class="fi-close fs-sm ms-n1 me-1"></i>
-                Staten Island
-              </button>
-            </div>
+            <div class="d-flex flex-wrap gap-2" id="selected-service-areas"></div>
 
             <!-- Next step button -->
             <div class="pt-5 d-flex flex-wrap gap-3 align-items-center">

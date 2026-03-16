@@ -261,19 +261,42 @@
             </div>
           </div>
         </div>
-        <div class="row row-cols-1 row-cols-md-2 g-4 pb-3 mb-3">
-          <div class="col">
-            <h6>Price per month, $</h6>
-            <div class="d-flex align-items-center">
-              <input type="number" class="form-control w-50" min="0" step="50" placeholder="Min">
-              <i class="fi-minus mx-2"></i>
-              <input type="number" class="form-control w-50" step="50" placeholder="Max">
+          <div class="row row-cols-1 row-cols-md-2 g-4 pb-3 mb-3">
+           <div class="col">
+             <div data-rent-only>
+               <h6>Price per month, $</h6>
+               <div class="d-flex align-items-center">
+                 <input type="number" class="form-control w-50" min="0" step="50" placeholder="Min" data-price-min>
+                 <i class="fi-minus mx-2"></i>
+                 <input type="number" class="form-control w-50" step="50" placeholder="Max" data-price-max>
+               </div>
+             </div>
+             <div data-sale-only class="d-none" data-price-wrap>
+               <div class="d-flex align-items-center justify-content-between mb-2">
+                 <h6 class="mb-0">Price</h6>
+                 <span class="badge text-bg-secondary" data-price-label>Any</span>
+               </div>
+               <div class="position-relative mb-3" style="height: 1.5rem">
+                 <input type="range" class="form-range position-absolute top-0 start-0 w-100" min="0" max="500000" step="5000" value="0" data-price-min-slider aria-label="Min price">
+                 <input type="range" class="form-range position-absolute top-0 start-0 w-100" min="0" max="500000" step="5000" value="500000" data-price-max-slider aria-label="Max price">
+               </div>
+               <div class="d-flex align-items-center gap-2">
+                 <div class="input-group input-group-sm">
+                   <span class="input-group-text">$</span>
+                   <input type="number" class="form-control" min="0" step="5000" value="0" data-price-min-input aria-label="Min price">
+                 </div>
+                 <span class="text-body-secondary">–</span>
+                 <div class="input-group input-group-sm">
+                   <span class="input-group-text">$</span>
+                   <input type="number" class="form-control" min="0" step="5000" value="500000" data-price-max-input aria-label="Max price">
+                 </div>
+               </div>
+             </div>
             </div>
-          </div>
-          <div class="col">
-            <h6>Square metres</h6>
-            <div class="d-flex align-items-center">
-              <input type="number" class="form-control w-50" min="0" step="10" placeholder="Min">
+           <div class="col">
+             <h6>Square metres</h6>
+             <div class="d-flex align-items-center">
+               <input type="number" class="form-control w-50" min="0" step="10" placeholder="Min">
               <i class="fi-minus mx-2"></i>
               <input type="number" class="form-control w-50" step="10" placeholder="Max">
             </div>
@@ -427,19 +450,6 @@
           </div>
         </div>
         <div class="row row-cols-2 g-4">
-          <div class="col">
-            <h6>Pets</h6>
-            <div class="vstack gap-2">
-              <div class="form-check m-0">
-                <input type="checkbox" class="form-check-input" id="cats" checked>
-                <label for="cats" class="form-check-label">Cats allowed</label>
-              </div>
-              <div class="form-check m-0">
-                <input type="checkbox" class="form-check-input" id="dogs">
-                <label for="dogs" class="form-check-label">Dogs allowed</label>
-              </div>
-            </div>
-          </div>
           <div class="col">
             <h6>Additional options</h6>
             <div class="vstack gap-2">

@@ -220,25 +220,6 @@ class ListingForm
                     ->label('Body Type')
                     ->visible(fn (Get $get): bool => $get('module') === 'cars'),
 
-                Placeholder::make('event_heading')
-                    ->content('Event Details')
-                    ->visible(fn (Get $get): bool => $get('module') === 'events'),
-                DateTimePicker::make('event_starts_at')
-                    ->label('Starts At')
-                    ->required(fn (Get $get): bool => $get('module') === 'events' && $get('status') === 'published')
-                    ->visible(fn (Get $get): bool => $get('module') === 'events'),
-                DateTimePicker::make('event_ends_at')
-                    ->label('Ends At')
-                    ->required(fn (Get $get): bool => $get('module') === 'events' && $get('status') === 'published')
-                    ->visible(fn (Get $get): bool => $get('module') === 'events'),
-                TextInput::make('event_venue')
-                    ->label('Venue')
-                    ->required(fn (Get $get): bool => $get('module') === 'events' && $get('status') === 'published')
-                    ->visible(fn (Get $get): bool => $get('module') === 'events'),
-                TextInput::make('event_capacity')
-                    ->label('Capacity')
-                    ->numeric()
-                    ->visible(fn (Get $get): bool => $get('module') === 'events'),
             ]);
     }
 }

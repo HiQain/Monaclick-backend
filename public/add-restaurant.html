@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light" data-pwa="true">
+<html lang="en" data-bs-theme="light" data-pwa="false">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
     <title>Monaclick | Add a Restaurant</title>
     <meta name="description" content="Submit your restaurant to Monaclick.">
 
-    <link rel="manifest" href="/finder/manifest.json">
+    <!-- PWA manifest disabled for stability on submission flow -->
     <link rel="icon" type="image/png" href="/finder/assets/app-icons/icon-32x32.png" sizes="32x32">
     <link rel="apple-touch-icon" href="/finder/assets/app-icons/icon-180x180.png">
 
@@ -61,7 +61,8 @@
           <p class="text-body-secondary mb-0">Fill out your restaurant profile to start receiving bookings.</p>
         </div></div>
 
-      <form class="card border-0 shadow-sm" action="/listings/restaurants" method="get">
+      <form class="card border-0 shadow-sm" action="/submit/restaurant" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_token" value="__CSRF_TOKEN__">
         <div class="card-body p-4 p-md-5">
           <div class="row g-4">
             <div class="col-12">
@@ -87,10 +88,10 @@
               <label class="form-label" for="priceRange">Price range</label>
               <select class="form-select" id="priceRange" name="price_range">
                 <option value="">Select range</option>
-                <option>$</option>
-                <option>$$</option>
-                <option>$$$</option>
-                <option>$$$$</option>
+                <option value="500">$500</option>
+                <option value="1000">$1,000</option>
+                <option value="1500">$1,500</option>
+                <option value="2000">$2,000</option>
               </select>
             </div>
             <div class="col-md-6">
@@ -106,16 +107,21 @@
               <input class="form-control" id="addressLine" name="address" type="text" placeholder="123 Main St" required>
             </div>
             <div class="col-md-4">
+              <label class="form-label" for="state">State</label>
+              <select class="form-select" id="state" name="state" aria-label="State select" required>
+                <option value="">Select state</option>
+              </select>
+            </div>
+            <div class="col-md-4">
               <label class="form-label" for="city">City</label>
-              <input class="form-control" id="city" name="city" type="text" placeholder="Dallas" required>
+              <select class="form-select" id="city" name="city" aria-label="City select" required>
+                <option value="">Select city</option>
+              </select>
             </div>
             <div class="col-md-4">
               <label class="form-label" for="zipCode">Zip code</label>
               <input class="form-control" id="zipCode" name="zip_code" type="text" placeholder="75201" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label" for="country">Country</label>
-              <input class="form-control" id="country" name="country" type="text" value="United States">
+              <input type="hidden" id="country" name="country" value="United States">
             </div>
 
             <div class="col-12 pt-2">

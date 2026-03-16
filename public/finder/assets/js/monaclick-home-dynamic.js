@@ -9,8 +9,6 @@
     '/home-real-estate.html': 'real-estate',
     '/cars': 'cars',
     '/home-cars.html': 'cars',
-    '/events': 'events',
-    '/home-events.html': 'events',
     '/restaurants': 'restaurants',
     '/home-restaurants.html': 'restaurants',
   };
@@ -21,7 +19,6 @@
     if (p.includes('real-estate')) return 'real-estate';
     if (p.includes('contractors')) return 'contractors';
     if (p.includes('cars')) return 'cars';
-    if (p.includes('events')) return 'events';
     if (p.includes('restaurants')) return 'restaurants';
     return '';
   };
@@ -34,7 +31,6 @@
     contractors: 'Contractors',
     'real-estate': 'Real Estate',
     cars: 'Cars',
-    events: 'Events',
     restaurants: 'Restaurants',
   }[selectedModule] || 'Listings';
   const persistedState = {
@@ -122,7 +118,6 @@
     if (clean === '/' || clean === '/contractors' || clean === '/listings' || clean === '/listings/contractors') return 'contractors';
     if (clean === '/real-estate' || clean === '/listings/real-estate') return 'real-estate';
     if (clean === '/cars' || clean === '/listings/cars') return 'cars';
-    if (clean === '/events' || clean === '/listings/events') return 'events';
     if (clean === '/restaurants' || clean === '/listings/restaurants') return 'restaurants';
     return '';
   };
@@ -131,7 +126,7 @@
     const fullQs = stateToQueryString(state);
     const targets = Array.from(
       document.querySelectorAll(
-        'a[href="/"], a[href="/contractors"], a[href="/real-estate"], a[href="/cars"], a[href="/events"], a[href="/restaurants"], a[href="/listings"], a[href^="/listings/"]'
+        'a[href="/"], a[href="/contractors"], a[href="/real-estate"], a[href="/cars"], a[href="/restaurants"], a[href="/listings"], a[href^="/listings/"]'
       )
     );
 
@@ -175,14 +170,6 @@
       { contains: 'popular categories', strategy: 'popular', slots: 6 },
       { contains: 'recent', strategy: 'latest', slots: 6 },
       { contains: 'latest', strategy: 'latest', slots: 6 },
-    ],
-    events: [
-      { contains: 'upcoming online events', strategy: 'latest', slots: 8 },
-      { contains: 'discover events near you', strategy: 'latest', slots: 5 },
-      { contains: 'featured events', strategy: 'latest', slots: 5 },
-      { contains: 'popular near you', strategy: 'popular', slots: 8 },
-      { contains: 'featured news', strategy: 'latest', slots: 6 },
-      { contains: 'top-rated app', strategy: 'popular', slots: 6 },
     ],
   };
 
@@ -276,7 +263,6 @@
     contractors: '/contractors',
     'real-estate': '/real-estate',
     cars: '/cars',
-    events: '/events',
     restaurants: '/restaurants',
   }[module] || '/');
 
@@ -284,7 +270,6 @@
     contractors: '/listings/contractors',
     'real-estate': '/listings/real-estate',
     cars: '/listings/cars',
-    events: '/listings/events',
     restaurants: '/listings/restaurants',
   }[module] || '/listings/contractors');
 
@@ -298,18 +283,15 @@
       'home-contractors.html': '/contractors',
       'home-real-estate.html': '/real-estate',
       'home-cars.html': '/cars',
-      'home-events.html': '/events',
       'home-restaurants.html': '/restaurants',
       'listings-contractors.html': '/listings/contractors',
       'listings-real-estate.html': '/listings/real-estate',
       'listings-grid-cars.html': '/listings/cars',
       'listings-list-cars.html': '/listings/cars',
-      'listings-events.html': '/listings/events',
       'listings-restaurants.html': '/listings/restaurants',
       'single-entry-contractors.html': '/entry/contractors',
       'single-entry-real-estate.html': '/entry/real-estate',
       'single-entry-cars.html': '/entry/cars',
-      'single-entry-events.html': '/entry/events',
       'single-entry-restaurants.html': '/entry/restaurants',
     };
 
@@ -328,7 +310,6 @@
     if (t.includes('contractor')) return '/contractors';
     if (t.includes('real estate')) return '/real-estate';
     if (t === 'cars' || t.includes('car ')) return '/cars';
-    if (t.includes('event')) return '/events';
     if (t.includes('restaurant')) return '/restaurants';
     if (t.includes('sign in') || t.includes('log in') || t === 'login') return '/login';
     if (t.includes('join') || t.includes('register') || t.includes('sign up')) return '/register';
@@ -373,7 +354,6 @@
       { href: '/listings/contractors', label: 'Contractors' },
       { href: '/listings/real-estate', label: 'Real Estate' },
       { href: '/listings/cars', label: 'Cars' },
-      { href: '/listings/events', label: 'Events' },
       { href: '/listings/restaurants', label: 'Restaurants' },
     ];
 
@@ -513,11 +493,38 @@
     }
   };
 
+  const syncCarBadges = (card, item) => {
+    const conditionRaw = String(item?.details?.car?.condition || '').toLowerCase();
+    const stock = conditionRaw.includes('used') ? 'Used' : (conditionRaw.includes('new') ? 'New' : '');
+    const features = Array.isArray(item?.features) ? item.features : [];
+    const isVerified = features.some((f) => String(f || '').toLowerCase().includes('verified'));
+    if (!stock && !isVerified) return;
+
+    const root = card.matches('article, .card') ? card : card.closest('article, .card') || card;
+    const img = root.querySelector('img');
+    if (!img) return;
+
+    let overlay = root.querySelector('.mc-car-badges');
+    if (!overlay) {
+      root.classList.add('position-relative');
+      overlay = document.createElement('div');
+      overlay.className = 'card-img-overlay mc-car-badges d-flex flex-column align-items-start gap-2 p-3';
+      overlay.style.pointerEvents = 'none';
+      img.insertAdjacentElement('afterend', overlay);
+    }
+
+    const badges = [];
+    if (isVerified) badges.push('<span class="badge text-bg-success">Verified</span>');
+    if (stock) badges.push(`<span class="badge text-bg-warning text-dark">${stock}</span>`);
+    overlay.innerHTML = badges.join('');
+  };
+
   const syncCardMeta = (card, item) => {
     syncCity(card, item);
     syncRating(card, item);
     syncPrice(card, item);
     if (selectedModule === 'events') syncEventDateTime(card, item);
+    if (selectedModule === 'cars') syncCarBadges(card, item);
   };
 
   const sectionConfig = (heading) => {
