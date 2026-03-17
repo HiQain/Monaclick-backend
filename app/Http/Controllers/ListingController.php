@@ -136,9 +136,15 @@ class ListingController extends Controller
         return view('listings.index', compact('listings', 'categories', 'cities', 'selectedModule'));
     }
 
-    public function show(Listing $listing)
+    public function show(Request $request, Listing $listing)
     {
-        abort_if(strtolower(trim((string) $listing->status)) !== 'published', 404);
+        $status = strtolower(trim((string) $listing->status));
+        $isPreview = $request->boolean('preview');
+        $isAdmin = auth()->check() && auth()->user()?->hasRole('admin');
+
+        if ($status !== 'published' && !($isPreview && $isAdmin)) {
+            abort(404);
+        }
 
         $listing->loadMissing([
             'category',

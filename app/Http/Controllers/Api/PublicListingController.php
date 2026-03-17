@@ -32,6 +32,9 @@ class PublicListingController extends Controller
             if (Schema::hasColumn('car_details', 'condition')) {
                 $cols[] = 'condition';
             }
+            if (Schema::hasColumn('car_details', 'is_verified')) {
+                $cols[] = 'is_verified';
+            }
             $with[] = 'carDetail:' . implode(',', $cols);
         }
 
@@ -272,7 +275,24 @@ class PublicListingController extends Controller
                     'price' => $listing->display_price,
                     'budget_tier' => (int) $listing->budget_tier,
                     'availability_now' => (bool) $listing->availability_now,
-                    'features' => $listing->module === 'restaurants' ? [] : array_values($listing->features ?? []),
+                    'features' => (function () use ($listing) {
+                        if ($listing->module === 'restaurants') {
+                            return [];
+                        }
+
+                        $features = array_values($listing->features ?? []);
+
+                        if (
+                            $listing->module === 'cars'
+                            && $listing->carDetail
+                            && Schema::hasColumn('car_details', 'is_verified')
+                            && (bool) $listing->carDetail->is_verified
+                        ) {
+                            $features[] = 'verified';
+                        }
+
+                        return array_values(array_unique(array_filter($features)));
+                    })(),
                     'rating' => (float) $listing->rating,
                     'reviews_count' => (int) $listing->reviews_count,
                     'image_url' => $listing->image_url,
@@ -288,6 +308,7 @@ class PublicListingController extends Controller
                         'car' => $listing->carDetail ? [
                             'year' => $listing->carDetail->year,
                             'condition' => Schema::hasColumn('car_details', 'condition') ? $listing->carDetail->condition : null,
+                            'is_verified' => Schema::hasColumn('car_details', 'is_verified') ? (bool) $listing->carDetail->is_verified : false,
                         ] : null,
                     ],
                 ];
@@ -374,6 +395,10 @@ class PublicListingController extends Controller
             ? []
             : array_values(array_unique(array_filter(array_merge($listing->features ?? [], $extraFeatures))));
 
+        if ($moduleNormalized === 'cars' && $listing->carDetail && Schema::hasColumn('car_details', 'is_verified') && (bool) $listing->carDetail->is_verified) {
+            $features = array_values(array_unique(array_filter(array_merge($features, ['verified']))));
+        }
+
         $propertyWizard = [];
         if ($moduleNormalized === 'real-estate' && $listing->propertyDetail) {
             $propertyWizard = is_array($listing->propertyDetail->wizard_data) ? $listing->propertyDetail->wizard_data : [];
@@ -450,6 +475,7 @@ class PublicListingController extends Controller
                         'contact_last_name' => $listing->carDetail->contact_last_name,
                         'contact_email' => $listing->carDetail->contact_email,
                         'contact_phone' => $listing->carDetail->contact_phone,
+                        'is_verified' => Schema::hasColumn('car_details', 'is_verified') ? (bool) $listing->carDetail->is_verified : false,
                         'negotiated' => (bool) $listing->carDetail->negotiated,
                         'installments' => (bool) $listing->carDetail->installments,
                         'exchange' => (bool) $listing->carDetail->exchange,

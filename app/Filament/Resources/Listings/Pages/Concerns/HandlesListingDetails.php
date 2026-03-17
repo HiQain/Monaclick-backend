@@ -20,7 +20,7 @@ trait HandlesListingDetails
         return $data;
     }
 
-    protected function assertPublishRequirements(array $data): void
+    protected function assertPublishRequirements(array $data, bool $isCreate = false): void
     {
         $status = (string) ($data['status'] ?? 'draft');
         if ($status !== 'published') {
@@ -109,7 +109,9 @@ trait HandlesListingDetails
             }
         }
 
-        if (in_array($module, ['real-estate', 'cars'], true)) {
+        // Gallery images enforcement can be strict for new listings, but for existing listings we allow saving
+        // (admin may be fixing metadata/badges) even if the listing currently has no gallery yet.
+        if ($isCreate && in_array($module, ['real-estate', 'cars'], true)) {
             $galleryCount = count($galleryImages);
             if ($galleryCount < 1) {
                 $errors['gallery_images'][] = 'Add at least one gallery image for published listings.';
@@ -139,11 +141,58 @@ trait HandlesListingDetails
             $data['car_fuel_type'],
             $data['car_transmission'],
             $data['car_body_type'],
+            $data['car_is_verified'],
+            $data['restaurant_address'],
+            $data['restaurant_zip_code'],
+            $data['restaurant_state'],
+            $data['restaurant_seating_capacity'],
+            $data['restaurant_services'],
+            $data['restaurant_opening_hours_json'],
+            $data['restaurant_contact_name'],
+            $data['restaurant_phone'],
+            $data['restaurant_email'],
             $data['event_starts_at'],
             $data['event_ends_at'],
             $data['event_venue'],
             $data['event_capacity'],
         );
+
+        return $data;
+    }
+
+    protected function mergeRestaurantMetaIntoExcerpt(array $data): array
+    {
+        if (($data['module'] ?? '') !== 'restaurants') {
+            return $data;
+        }
+
+        $openingHours = [];
+        $openingHoursRaw = trim((string) ($data['restaurant_opening_hours_json'] ?? ''));
+        if ($openingHoursRaw !== '') {
+            $decoded = json_decode($openingHoursRaw, true);
+            if (is_array($decoded)) {
+                $openingHours = $decoded;
+            }
+        }
+
+        $services = (array) ($data['restaurant_services'] ?? []);
+        $services = array_values(array_unique(array_values(array_filter(array_map(fn ($v) => trim((string) $v), $services)))));
+
+        $meta = [
+            '_mc_restaurant_v1' => true,
+            'address' => trim((string) ($data['restaurant_address'] ?? '')),
+            'zip_code' => trim((string) ($data['restaurant_zip_code'] ?? '')),
+            'country' => 'United States',
+            'state' => trim((string) ($data['restaurant_state'] ?? '')),
+            'seating_capacity' => trim((string) ($data['restaurant_seating_capacity'] ?? '')),
+            'services' => $services,
+            'opening_hours' => $openingHours,
+            'contact_name' => trim((string) ($data['restaurant_contact_name'] ?? '')),
+            'phone' => trim((string) ($data['restaurant_phone'] ?? '')),
+            'email' => trim((string) ($data['restaurant_email'] ?? '')),
+        ];
+
+        $data['excerpt'] = json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         return $data;
     }
@@ -174,6 +223,25 @@ trait HandlesListingDetails
         $data['car_fuel_type'] = $car?->fuel_type;
         $data['car_transmission'] = $car?->transmission;
         $data['car_body_type'] = $car?->body_type;
+        $data['car_is_verified'] = (bool) ($car?->is_verified ?? false);
+
+        if (($record->module ?? '') === 'restaurants') {
+            $excerpt = trim((string) ($record->excerpt ?? ''));
+            if ($excerpt !== '' && (str_starts_with($excerpt, '{') || str_starts_with($excerpt, '['))) {
+                $decoded = json_decode($excerpt, true);
+                if (is_array($decoded) && ($decoded['_mc_restaurant_v1'] ?? false)) {
+                    $data['restaurant_address'] = $decoded['address'] ?? null;
+                    $data['restaurant_zip_code'] = $decoded['zip_code'] ?? null;
+                    $data['restaurant_state'] = $decoded['state'] ?? ($record->city?->state_code ?? null);
+                    $data['restaurant_seating_capacity'] = $decoded['seating_capacity'] ?? null;
+                    $data['restaurant_services'] = is_array($decoded['services'] ?? null) ? $decoded['services'] : [];
+                    $data['restaurant_opening_hours_json'] = json_encode($decoded['opening_hours'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    $data['restaurant_contact_name'] = $decoded['contact_name'] ?? null;
+                    $data['restaurant_phone'] = $decoded['phone'] ?? null;
+                    $data['restaurant_email'] = $decoded['email'] ?? null;
+                }
+            }
+        }
 
         $event = $record->eventDetail;
         $data['event_starts_at'] = $event?->starts_at;
@@ -229,10 +297,17 @@ trait HandlesListingDetails
                     'fuel_type' => $data['car_fuel_type'] ?? null,
                     'transmission' => $data['car_transmission'] ?? null,
                     'body_type' => $data['car_body_type'] ?? null,
+                    'is_verified' => (bool) ($data['car_is_verified'] ?? false),
                 ]
             );
         } else {
             $listing->carDetail()->delete();
+        }
+
+        if ($module === 'restaurants') {
+            $data = $this->mergeRestaurantMetaIntoExcerpt($data);
+            $listing->excerpt = $data['excerpt'] ?? $listing->excerpt;
+            $listing->save();
         }
 
         $listing->eventDetail()->delete();

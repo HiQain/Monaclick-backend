@@ -23,6 +23,7 @@ class EditListing extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data = $this->normalizePriceForListing($data);
+        $data = $this->mergeRestaurantMetaIntoExcerpt($data);
 
         $status = (string) ($data['status'] ?? 'draft');
 
@@ -35,7 +36,7 @@ class EditListing extends EditRecord
         }
 
         $this->listingFormData = $data;
-        $this->assertPublishRequirements($data);
+        $this->assertPublishRequirements($data, false);
 
         return $this->stripExtraFormData($data);
     }

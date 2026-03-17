@@ -3,12 +3,45 @@
 @section('content')
   <article class="row g-4">
     <div class="col-lg-7">
-      <img src="{{ $listing->image }}" class="img-fluid rounded-4 shadow-sm w-100" alt="{{ $listing->title }}" style="max-height: 480px; object-fit: cover;">
+      <div class="position-relative">
+        @php
+          $badges = [];
+          if ($listing->module === 'cars' && $listing->carDetail) {
+            $condition = strtolower(trim((string) ($listing->carDetail->condition ?? '')));
+            if ($condition !== '') {
+              $badges[] = [
+                'label' => str_contains($condition, 'new') ? 'New' : 'Used',
+                'class' => 'text-bg-warning',
+              ];
+            }
+            if ((bool) ($listing->carDetail->is_verified ?? false)) {
+              array_unshift($badges, [
+                'label' => 'Verified',
+                'class' => 'text-bg-success',
+              ]);
+            }
+          }
+          if ($listing->module === 'contractors' && (bool) ($listing->contractorDetail?->is_verified ?? false)) {
+            $badges[] = [
+              'label' => 'Verified',
+              'class' => 'text-bg-success',
+            ];
+          }
+        @endphp
+        @if ($badges)
+          <div class="d-flex flex-column gap-2 align-items-start position-absolute top-0 start-0 z-1 mt-3 ms-3">
+            @foreach ($badges as $badge)
+              <span class="badge {{ $badge['class'] }}">{{ $badge['label'] }}</span>
+            @endforeach
+          </div>
+        @endif
+        <img src="{{ $listing->image_url }}" class="img-fluid rounded-4 shadow-sm w-100" alt="{{ $listing->title }}" style="max-height: 480px; object-fit: cover;" onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';">
+      </div>
       @if ($listing->images->isNotEmpty())
         <div class="row g-2 mt-2">
           @foreach ($listing->images->take(4) as $galleryImage)
             <div class="col-3">
-              <img src="{{ $galleryImage->image_path }}" class="img-fluid rounded-3" alt="{{ $listing->title }}">
+              <img src="{{ $galleryImage->image_url }}" class="img-fluid rounded-3" alt="{{ $listing->title }}" onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';">
             </div>
           @endforeach
         </div>
@@ -17,7 +50,13 @@
     <div class="col-lg-5">
       <p class="text-muted mb-2">{{ ucwords(str_replace('-', ' ', $listing->module)) }} - {{ $listing->city->name }}</p>
       <h1 class="h2 mb-3">{{ $listing->title }}</h1>
-      <p class="mb-3">{{ $listing->excerpt }}</p>
+      @php
+        $excerpt = trim((string) ($listing->excerpt ?? ''));
+        $showExcerpt = $excerpt !== '' && !str_starts_with($excerpt, '{') && !str_starts_with($excerpt, '[');
+      @endphp
+      @if ($showExcerpt)
+        <p class="mb-3">{{ $excerpt }}</p>
+      @endif
       <div class="d-flex justify-content-between py-2 border-top border-bottom mb-3">
         <span class="fw-semibold">Price</span>
         <span>{{ $listing->display_price }}</span>
@@ -64,6 +103,7 @@
           <p class="mb-1"><strong>Mileage:</strong> {{ $listing->carDetail->mileage ?: 'N/A' }}</p>
           <p class="mb-1"><strong>Fuel:</strong> {{ ucfirst($listing->carDetail->fuel_type ?: 'n/a') }}</p>
           <p class="mb-0"><strong>Transmission:</strong> {{ ucfirst($listing->carDetail->transmission ?: 'n/a') }}</p>
+          <p class="mb-0"><strong>Verified:</strong> {{ $listing->carDetail->is_verified ? 'Yes' : 'No' }}</p>
         </div>
       @endif
 

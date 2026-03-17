@@ -81,7 +81,23 @@
                       <i class="fi-bullet fs-base align-middle"></i>
                       <span class="fw-medium text-dark-emphasis">{{ $listing->category->name }}</span>
                     </div>
-                    <p class="fs-sm mb-0">{{ $listing->excerpt }}</p>
+                    @php
+                      $excerpt = trim((string) ($listing->excerpt ?? ''));
+                      if ($excerpt !== '' && (str_starts_with($excerpt, '{') || str_starts_with($excerpt, '['))) {
+                        $decoded = json_decode($excerpt, true);
+                        if (is_array($decoded) && ($decoded['_mc_restaurant_v1'] ?? false)) {
+                          $cuisine = (string) ($listing->category?->name ?? '');
+                          $cityName = (string) ($listing->city?->name ?? '');
+                          $bits = array_values(array_filter([$cuisine !== '' ? "{$cuisine} restaurant" : 'Restaurant', $cityName !== '' ? "in {$cityName}" : '']));
+                          $excerpt = $bits ? (implode(' ', $bits) . '.') : '';
+                        } else {
+                          $excerpt = '';
+                        }
+                      }
+                    @endphp
+                    @if ($excerpt !== '')
+                      <p class="fs-sm mb-0">{{ $excerpt }}</p>
+                    @endif
                   </div>
                   <hr class="vr flex-shrink-0 d-none d-lg-block m-0">
                   <div class="col-lg-4 d-flex flex-column pt-3 pt-lg-1 ps-lg-4">
@@ -96,7 +112,7 @@
                         {{ $listing->city->name }}
                       </li>
                     </ul>
-                    <div class="fw-semibold mb-2">{{ \$listing->display_price }}</div>
+                    <div class="fw-semibold mb-2">{{ $listing->display_price }}</div>
                     <a class="btn btn-outline-dark position-relative z-2 mt-auto" href="{{ $entryUrl }}">
                       View
                     </a>

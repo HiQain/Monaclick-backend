@@ -453,6 +453,7 @@
       add('Contact', [d.contact_phone, d.contact_email].filter(Boolean).join('\n'), { preLine: true });
       add('Car', [d.brand, d.model].filter(Boolean).join(' '));
       add('Condition', d.condition || '');
+      add('Verified', d.is_verified ? 'Yes' : 'No');
       add('Year', d.year || '');
       add('Mileage', d.mileage ? formatNumber(d.mileage) : '');
       add('Body', d.body_type || '');

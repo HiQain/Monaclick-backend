@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class Listing extends Model
 {
@@ -37,6 +38,10 @@ class Listing extends Model
         'reviews_count',
         'image',
         'status',
+        'admin_status',
+        'rejection_reason',
+        'reviewed_at',
+        'reviewed_by',
         'published_at',
     ];
 
@@ -45,6 +50,8 @@ class Listing extends Model
         'availability_now' => 'boolean',
         'features' => 'array',
         'price_amount' => 'integer',
+        'reviewed_at' => 'datetime',
+        'reviewed_by' => 'integer',
     ];
 
     public function getRouteKeyName(): string
@@ -90,6 +97,36 @@ class Listing extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ListingImage::class)->orderBy('sort_order');
+    }
+
+    public function moderationLogs(): HasMany
+    {
+        return $this->hasMany(ListingModerationLog::class)->orderByDesc('id');
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(ListingReport::class)->orderByDesc('id');
+    }
+
+    public function logModeration(string $action, ?string $message = null, ?array $fromTo = null): void
+    {
+        try {
+            $from = $fromTo['from'] ?? null;
+            $to = $fromTo['to'] ?? null;
+
+            $this->moderationLogs()->create([
+                'admin_user_id' => Auth::id(),
+                'action' => $action,
+                'message' => $message,
+                'from_status' => is_array($from) ? ($from['status'] ?? null) : null,
+                'to_status' => is_array($to) ? ($to['status'] ?? null) : null,
+                'from_admin_status' => is_array($from) ? ($from['admin_status'] ?? null) : null,
+                'to_admin_status' => is_array($to) ? ($to['admin_status'] ?? null) : null,
+            ]);
+        } catch (\Throwable $e) {
+            // Logging should never break moderation actions.
+        }
     }
 
     public function getImageUrlAttribute(): string

@@ -52,10 +52,10 @@
     @forelse ($listings as $listing)
       <article class="card hover-effect-opacity overflow-hidden">
         <div class="row g-0">
-          <div class="col-sm-4 position-relative bg-body-tertiary" style="min-height: 220px">
+              <div class="col-sm-4 position-relative bg-body-tertiary" style="min-height: 220px">
             <a href="{{ route('listings.show', $listing) }}" class="d-block position-absolute top-0 start-0 w-100 h-100 z-1">
               <img
-                src="{{ $listing->image }}"
+                src="{{ $listing->image_url }}"
                 class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
                 alt="{{ $listing->title }}"
                 onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';">
@@ -76,10 +76,26 @@
               <h3 class="h5 mb-2">
                 <a class="hover-effect-underline stretched-link" href="{{ route('listings.show', $listing) }}">{{ $listing->title }}</a>
               </h3>
-              <p class="mb-3 text-body">{{ $listing->excerpt }}</p>
+              @php
+                $excerpt = trim((string) ($listing->excerpt ?? ''));
+                if ($excerpt !== '' && (str_starts_with($excerpt, '{') || str_starts_with($excerpt, '['))) {
+                  $decoded = json_decode($excerpt, true);
+                  if (is_array($decoded) && ($decoded['_mc_restaurant_v1'] ?? false)) {
+                    $cuisine = (string) ($listing->category?->name ?? '');
+                    $cityName = (string) ($listing->city?->name ?? '');
+                    $bits = array_values(array_filter([$cuisine !== '' ? "{$cuisine} restaurant" : 'Restaurant', $cityName !== '' ? "in {$cityName}" : '']));
+                    $excerpt = $bits ? (implode(' ', $bits) . '.') : '';
+                  } else {
+                    $excerpt = '';
+                  }
+                }
+              @endphp
+              @if ($excerpt !== '')
+                <p class="mb-3 text-body">{{ $excerpt }}</p>
+              @endif
 
               <div class="d-flex align-items-center justify-content-between mt-auto">
-                <span class="fs-4 fw-semibold text-dark-emphasis">{{ \$listing->display_price }}</span>
+                <span class="fs-4 fw-semibold text-dark-emphasis">{{ $listing->display_price }}</span>
                 <span class="btn btn-outline-dark btn-sm">
                   View details
                   <i class="fi-chevron-right fs-xs ms-1"></i>

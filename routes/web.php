@@ -8,6 +8,9 @@ use App\Http\Controllers\CarListingSubmissionController;
 use App\Http\Controllers\Api\PublicListingController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\CarCatalogController;
+use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\TaxonomyController;
+use App\Http\Controllers\Admin\ExportController;
 use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -3614,6 +3617,9 @@ Route::prefix('app')->group(function () {
 Route::prefix('api/monaclick')->group(function () {
     Route::get('/listings', [PublicListingController::class, 'index']);
     Route::get('/entry', [PublicListingController::class, 'show']);
+    Route::post('/reports', [ReportController::class, 'store']);
+    Route::get('/taxonomy/{type}', [TaxonomyController::class, 'index'])
+        ->whereIn('type', ['features', 'amenities', 'services']);
     Route::get('/locations/states', [LocationController::class, 'states']);
     Route::get('/locations/cities', [LocationController::class, 'cities']);
     Route::get('/cars/drive-types', [CarCatalogController::class, 'driveTypes']);
@@ -3625,6 +3631,11 @@ Route::prefix('api/monaclick')->group(function () {
 Route::get('/dashboard', function () {
     return redirect('/admin');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->prefix('admin/exports')->group(function () {
+    Route::get('/listings.csv', [ExportController::class, 'listings']);
+    Route::get('/reports.csv', [ExportController::class, 'reports']);
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

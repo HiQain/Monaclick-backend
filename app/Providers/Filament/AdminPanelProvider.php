@@ -4,13 +4,19 @@ namespace App\Providers\Filament;
 
 use App\Filament\Resources\Categories\CategoryResource;
 use App\Filament\Resources\Cities\CityResource;
+use App\Filament\Resources\Features\FeatureResource;
 use App\Filament\Resources\Listings\ListingResource;
+use App\Filament\Resources\Reports\ReportResource;
+use App\Filament\Resources\Amenities\AmenityResource;
 use App\Filament\Resources\Permissions\PermissionResource;
 use App\Filament\Resources\Roles\RoleResource;
+use App\Filament\Resources\Services\ServiceResource;
 use App\Filament\Resources\States\StateResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Filament\Widgets\ListingsOverviewWidget;
 use App\Filament\Widgets\ModuleCountsWidget;
+use App\Filament\Widgets\ReportsOverviewWidget;
+use App\Filament\Pages\Ops;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -44,16 +50,22 @@ class AdminPanelProvider extends PanelProvider
                 StateResource::class,
                 CityResource::class,
                 ListingResource::class,
+                FeatureResource::class,
+                AmenityResource::class,
+                ServiceResource::class,
+                ReportResource::class,
                 RoleResource::class,
                 PermissionResource::class,
                 UserResource::class,
             ])
             ->pages([
                 Dashboard::class,
+                Ops::class,
             ])
             ->widgets([
                 ListingsOverviewWidget::class,
                 ModuleCountsWidget::class,
+                ReportsOverviewWidget::class,
                 AccountWidget::class,
             ])
             ->middleware([

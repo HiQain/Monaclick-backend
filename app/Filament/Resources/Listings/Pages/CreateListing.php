@@ -19,6 +19,7 @@ class CreateListing extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data = $this->normalizePriceForListing($data);
+        $data = $this->mergeRestaurantMetaIntoExcerpt($data);
 
         $status = (string) ($data['status'] ?? 'draft');
 
@@ -31,7 +32,7 @@ class CreateListing extends CreateRecord
         }
 
         $this->listingFormData = $data;
-        $this->assertPublishRequirements($data);
+        $this->assertPublishRequirements($data, true);
 
         return $this->stripExtraFormData($data);
     }

@@ -50,7 +50,23 @@
             <div class="fw-semibold fs-4">{{ $listing->display_price }}</div>
           </div>
 
-          <p class="mb-4">{{ $listing->excerpt }}</p>
+          @php
+            $excerpt = trim((string) ($listing->excerpt ?? ''));
+            if ($excerpt !== '' && (str_starts_with($excerpt, '{') || str_starts_with($excerpt, '['))) {
+              $decoded = json_decode($excerpt, true);
+              if (is_array($decoded) && ($decoded['_mc_restaurant_v1'] ?? false)) {
+                $cuisine = (string) ($listing->category?->name ?? '');
+                $cityName = (string) ($listing->city?->name ?? '');
+                $bits = array_values(array_filter([$cuisine !== '' ? "{$cuisine} restaurant" : 'Restaurant', $cityName !== '' ? "in {$cityName}" : '']));
+                $excerpt = $bits ? (implode(' ', $bits) . '.') : '';
+              } else {
+                $excerpt = '';
+              }
+            }
+          @endphp
+          @if ($excerpt !== '')
+            <p class="mb-4">{{ $excerpt }}</p>
+          @endif
 
           @if (!empty($listing->features) && count($listing->features) > 0)
             <div class="card border-0 bg-body-tertiary mb-3">

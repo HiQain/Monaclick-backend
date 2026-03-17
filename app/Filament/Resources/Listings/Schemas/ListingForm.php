@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Listings\Schemas;
 
 use App\Models\Listing;
+use App\Models\TaxonomyTerm;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -72,7 +73,8 @@ class ListingForm
                     ->required()
                     ->maxLength(255),
                 Textarea::make('excerpt')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->visible(fn (Get $get, ?Listing $record): bool => ($get('module') ?? $record?->module) !== 'restaurants'),
                 TextInput::make('price')
                     ->prefix('$')
                     ->helperText('For real estate rent listings, /mo is auto added.')
@@ -93,14 +95,14 @@ class ListingForm
                     ->default(true),
                 CheckboxList::make('features')
                     ->label('Listing Features')
-                    ->options([
+                    ->options(fn (): array => TaxonomyTerm::optionsFor(TaxonomyTerm::TYPE_FEATURE, [
                         'eco-friendly' => 'Eco-friendly',
                         'free-consultation' => 'Free consultation',
                         'online-consultation' => 'Online consultation',
                         'free-estimate' => 'Free estimate',
                         'verified-hires' => 'Verified hires',
                         'weekend-consultations' => 'Weekend consultations',
-                    ])
+                    ]))
                     ->visible(fn (Get $get): bool => in_array($get('module'), ['contractors', 'restaurants'], true))
                     ->columns(2),
                 TextInput::make('rating')
@@ -136,6 +138,19 @@ class ListingForm
                     ->options(['draft' => 'Draft', 'published' => 'Published'])
                     ->default('published')
                     ->required(),
+                Select::make('admin_status')
+                    ->label('Review Status')
+                    ->options([
+                        'approved' => 'Approved',
+                        'pending' => 'Pending',
+                        'rejected' => 'Rejected',
+                    ])
+                    ->default('approved')
+                    ->required(),
+                Textarea::make('rejection_reason')
+                    ->label('Rejection Reason')
+                    ->columnSpanFull()
+                    ->visible(fn (Get $get): bool => $get('admin_status') === 'rejected'),
                 DateTimePicker::make('published_at'),
 
                 Placeholder::make('contractor_heading')
@@ -219,6 +234,55 @@ class ListingForm
                 TextInput::make('car_body_type')
                     ->label('Body Type')
                     ->visible(fn (Get $get): bool => $get('module') === 'cars'),
+                Toggle::make('car_is_verified')
+                    ->label('Verified Badge')
+                    ->default(false)
+                    ->visible(fn (Get $get): bool => $get('module') === 'cars'),
+
+                Placeholder::make('restaurant_heading')
+                    ->content('Restaurant Details')
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
+                TextInput::make('restaurant_address')
+                    ->label('Address')
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
+                TextInput::make('restaurant_zip_code')
+                    ->label('ZIP Code')
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
+                TextInput::make('restaurant_state')
+                    ->label('State Code')
+                    ->maxLength(2)
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
+                TextInput::make('restaurant_seating_capacity')
+                    ->label('Seating Capacity')
+                    ->numeric()
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
+                CheckboxList::make('restaurant_services')
+                    ->label('Services')
+                    ->options([
+                        'dine-in' => 'Dine-in',
+                        'takeaway' => 'Takeaway',
+                        'delivery' => 'Delivery',
+                        'reservations' => 'Reservations',
+                        'outdoor-seating' => 'Outdoor seating',
+                        'family-friendly' => 'Family friendly',
+                    ])
+                    ->columns(2)
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
+                Textarea::make('restaurant_opening_hours_json')
+                    ->label('Opening Hours (JSON)')
+                    ->rows(6)
+                    ->helperText('Paste JSON object for opening_hours (keys: monday..sunday).')
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
+                TextInput::make('restaurant_contact_name')
+                    ->label('Contact Name')
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
+                TextInput::make('restaurant_phone')
+                    ->label('Phone')
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
+                TextInput::make('restaurant_email')
+                    ->label('Email')
+                    ->email()
+                    ->visible(fn (Get $get): bool => $get('module') === 'restaurants'),
 
             ]);
     }

@@ -52,6 +52,10 @@ if (-not (Test-Path $frontController)) {
 
 Write-Host "Starting PHP dev server on http://$hostIp`:$port (mbstring loaded)..." -ForegroundColor Cyan
 & $php `
+  -d "opcache.enable=0" `
+  -d "opcache.enable_cli=0" `
+  -d "opcache.validate_timestamps=1" `
+  -d "opcache.revalidate_freq=0" `
   -d "extension_dir=$extDir" `
   -d "extension=php_mbstring.dll" `
   -d "extension=php_openssl.dll" `
