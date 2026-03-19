@@ -148,6 +148,24 @@
 
   if (!listContainer) return;
 
+  const initialListMarkup = listContainer.innerHTML;
+  const restoreInitialListIfEmpty = () => {
+    try {
+      if (!listContainer) return;
+      listContainer.style.opacity = '1';
+      if (!String(listContainer.innerHTML || '').trim() && String(initialListMarkup || '').trim()) {
+        listContainer.innerHTML = initialListMarkup;
+      }
+    } catch (_) {
+      // ignore
+    }
+  };
+
+  // If any runtime error happens after we clear/hide the container, restore the initial server-rendered markup
+  // so listings don't "flash then disappear" on production.
+  window.addEventListener('error', restoreInitialListIfEmpty);
+  window.addEventListener('unhandledrejection', restoreInitialListIfEmpty);
+
   // Prevent template placeholder cards from flashing before the API response replaces them.
   try {
     listContainer.style.opacity = '0';
