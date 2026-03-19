@@ -3267,20 +3267,32 @@ Route::get('/password-recovery', function () use ($serve) {
     return $serve('account-password-recovery.html');
 });
 Route::post('/signup', function (Request $request) {
+    $email = strtolower(trim($request->string('email')->toString()));
+    $request->merge(['email' => $email]);
+
     $data = $request->validate([
-        'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+        'email' => ['required', 'email', 'max:255'],
         'password' => ['required', 'string', 'min:8'],
     ]);
 
-    $name = ucfirst(str_replace(['.', '_', '-'], ' ', explode('@', $data['email'])[0]));
+    // Prevent duplicate signups even if the database collation is case-sensitive.
+    $exists = User::query()
+        ->whereRaw('LOWER(TRIM(email)) = ?', [$email])
+        ->exists();
+
+    if ($exists) {
+        return redirect('/signup?error=exists&email=' . urlencode($email));
+    }
+
+    $name = ucfirst(str_replace(['.', '_', '-'], ' ', explode('@', $email)[0]));
 
     User::create([
         'name' => $name ?: 'Monaclick User',
-        'email' => strtolower($data['email']),
+        'email' => $email,
         'password' => Hash::make($data['password']),
     ]);
 
-    return redirect('/signin?created=1&email=' . urlencode($data['email']));
+    return redirect('/signin?created=1&email=' . urlencode($email));
 });
 Route::post('/signin', function (Request $request) {
     $credentials = $request->validate([
@@ -3288,11 +3300,13 @@ Route::post('/signin', function (Request $request) {
         'password' => ['required', 'string'],
     ]);
 
+    $email = strtolower(trim((string) $credentials['email']));
+
     if (! Auth::attempt(
-        ['email' => strtolower($credentials['email']), 'password' => $credentials['password']],
+        ['email' => $email, 'password' => $credentials['password']],
         $request->boolean('remember')
     )) {
-        return redirect('/signin?error=invalid&email=' . urlencode($credentials['email']));
+        return redirect('/signin?error=invalid&email=' . urlencode($email));
     }
 
     $request->session()->regenerate();
