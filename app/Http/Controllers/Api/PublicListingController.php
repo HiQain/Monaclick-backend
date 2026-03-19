@@ -12,10 +12,30 @@ use Illuminate\Support\Facades\Schema;
 
 class PublicListingController extends Controller
 {
+    /**
+     * Some older data uses singular module values ("contractor") while routes use plural ("contractors").
+     * Keep the public API tolerant to both, so local/live datasets behave consistently.
+     *
+     * @return array<int, string>
+     */
+    private function moduleAliases(string $moduleNormalized): array
+    {
+        $moduleNormalized = strtolower(trim($moduleNormalized));
+
+        return match ($moduleNormalized) {
+            'contractors' => ['contractors', 'contractor'],
+            'restaurants' => ['restaurants', 'restaurant'],
+            'cars' => ['cars', 'car'],
+            'real-estate' => ['real-estate', 'real_estate', 'realestate', 'property', 'properties'],
+            default => $moduleNormalized === '' ? [] : [$moduleNormalized],
+        };
+    }
+
     public function index(Request $request): JsonResponse
     {
         $module = $request->string('module')->toString();
         $moduleNormalized = strtolower(trim($module));
+        $moduleAliases = $this->moduleAliases($moduleNormalized);
         $perPage = min(max((int) $request->integer('per_page', 8), 1), 24);
         $budgetMax = (int) $request->integer('budget_max', 0);
         $listingType = strtolower(trim($request->string('listing_type')->toString()));
@@ -53,8 +73,12 @@ class PublicListingController extends Controller
             // Be tolerant to legacy data like "Published" or trailing spaces.
             ->whereRaw('LOWER(TRIM(status)) = ?', ['published']);
 
-        if ($module !== '') {
-            $query->whereRaw('LOWER(TRIM(module)) = ?', [$moduleNormalized]);
+        if ($module !== '' && count($moduleAliases) > 0) {
+            $query->where(function ($builder) use ($moduleAliases): void {
+                foreach ($moduleAliases as $alias) {
+                    $builder->orWhereRaw('LOWER(TRIM(module)) = ?', [$alias]);
+                }
+            });
         }
 
         if (
@@ -227,7 +251,13 @@ class PublicListingController extends Controller
         $paginated = $query->paginate($perPage)->withQueryString();
 
         $categories = Category::query()
-            ->when($module !== '', fn ($builder) => $builder->where('module', $module))
+            ->when($module !== '' && count($moduleAliases) > 0, function ($builder) use ($moduleAliases): void {
+                $builder->where(function ($inner) use ($moduleAliases): void {
+                    foreach ($moduleAliases as $alias) {
+                        $inner->orWhereRaw('LOWER(TRIM(module)) = ?', [$alias]);
+                    }
+                });
+            })
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('name')
