@@ -128,6 +128,16 @@ class ListingSubmissionController extends Controller
             : [];
         $wizardData = array_merge($existingWizardData, $payload);
         $wizardSession = trim((string) ($wizardData['wizard_session'] ?? ''));
+
+        // Before the location step creates the listing id, keep step-1 data in cache keyed by wizard_session.
+        // This prevents redirect loops like `?error=missing-state` when moving from the type step to location.
+        if (auth()->check() && $wizardSession !== '') {
+            $wizardCacheKey = 'property-wizard-payload:' . auth()->id() . ':' . md5($wizardSession);
+            $cachedWizardData = Cache::get($wizardCacheKey);
+            if (is_array($cachedWizardData) && $cachedWizardData) {
+                $wizardData = array_merge($cachedWizardData, $wizardData);
+            }
+        }
         $wizardSessionMapKey = null;
         if (auth()->check() && $wizardSession !== '') {
             $wizardSessionMapKey = 'property-wizard-map:' . auth()->id() . ':' . md5($wizardSession);
@@ -189,6 +199,13 @@ class ListingSubmissionController extends Controller
         $category = $this->resolveCategory('real-estate', $categorySlug);
         $stateCode = $this->normalizeUsStateCode((string) ($wizardData['state'] ?? ''));
         if ($stateCode === '' || ! $this->resolveUsState($stateCode)) {
+            $nextPath = trim((string) $request->input('next', ''));
+            if ($status === 'draft' && $wizardSession !== '' && str_starts_with($nextPath, '/add-property-location')) {
+                $wizardCacheKey = 'property-wizard-payload:' . auth()->id() . ':' . md5($wizardSession);
+                Cache::put($wizardCacheKey, $wizardData, now()->addHours(6));
+                return redirect('/add-property-location');
+            }
+
             return redirect('/add-property-location?error=missing-state');
         }
         $city = $this->resolveCity($this->firstNonEmpty($wizardData, [
