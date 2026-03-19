@@ -197,7 +197,13 @@ class ListingSubmissionController extends Controller
 
         $categorySlug = $this->mapPropertyCategorySlug((string) ($wizardData['radio:type'] ?? ''));
         $category = $this->resolveCategory('real-estate', $categorySlug);
-        $stateCode = $this->normalizeUsStateCode((string) ($wizardData['state'] ?? ''));
+        $rawState = $this->firstNonEmpty($wizardData, [
+            'state',
+            'select:state',
+            'select:state-select',
+            'state-select',
+        ]);
+        $stateCode = $this->normalizeUsStateCode($rawState);
         if ($stateCode === '' || ! $this->resolveUsState($stateCode)) {
             $nextPath = trim((string) $request->input('next', ''));
             if ($status === 'draft' && $wizardSession !== '' && str_starts_with($nextPath, '/add-property-location')) {
