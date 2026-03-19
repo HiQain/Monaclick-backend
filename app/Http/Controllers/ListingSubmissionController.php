@@ -833,11 +833,25 @@ class ListingSubmissionController extends Controller
             ]);
         }
 
-        return State::query()
+        $state = State::query()
             ->where('country_code', 'US')
             ->where('code', $stateCode)
             ->where('is_active', true)
             ->first();
+
+        // Be tolerant when the `states` table exists but isn't seeded (common on fresh deployments).
+        // Public listing forms should still work as long as the state code is valid.
+        if (! $state) {
+            return new State([
+                'country_code' => 'US',
+                'code' => $stateCode,
+                'name' => $stateCode,
+                'is_active' => true,
+                'sort_order' => 0,
+            ]);
+        }
+
+        return $state;
     }
 
     private function resolveCity(string $rawValue, string $stateCode = ''): ?City
