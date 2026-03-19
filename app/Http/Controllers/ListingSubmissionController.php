@@ -18,6 +18,84 @@ use Illuminate\Support\Facades\Schema;
 
 class ListingSubmissionController extends Controller
 {
+    private function normalizeUsStateCode(string $raw): string
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return '';
+        }
+
+        if (preg_match('/^[A-Za-z]{2}$/', $raw) === 1) {
+            return strtoupper($raw);
+        }
+
+        if (preg_match('/\\(([A-Za-z]{2})\\)\\s*$/', $raw, $m) === 1) {
+            return strtoupper($m[1]);
+        }
+
+        $key = preg_replace('/\\([A-Za-z]{2}\\)\\s*$/', '', $raw) ?? $raw;
+        $key = strtolower(trim(preg_replace('/\\s+/', ' ', $key) ?? $key));
+        if ($key === '') {
+            return '';
+        }
+
+        $map = [
+            'alabama' => 'AL',
+            'alaska' => 'AK',
+            'arizona' => 'AZ',
+            'arkansas' => 'AR',
+            'california' => 'CA',
+            'colorado' => 'CO',
+            'connecticut' => 'CT',
+            'delaware' => 'DE',
+            'district of columbia' => 'DC',
+            'florida' => 'FL',
+            'georgia' => 'GA',
+            'hawaii' => 'HI',
+            'idaho' => 'ID',
+            'illinois' => 'IL',
+            'indiana' => 'IN',
+            'iowa' => 'IA',
+            'kansas' => 'KS',
+            'kentucky' => 'KY',
+            'louisiana' => 'LA',
+            'maine' => 'ME',
+            'maryland' => 'MD',
+            'massachusetts' => 'MA',
+            'michigan' => 'MI',
+            'minnesota' => 'MN',
+            'mississippi' => 'MS',
+            'missouri' => 'MO',
+            'montana' => 'MT',
+            'nebraska' => 'NE',
+            'nevada' => 'NV',
+            'new hampshire' => 'NH',
+            'new jersey' => 'NJ',
+            'new mexico' => 'NM',
+            'new york' => 'NY',
+            'north carolina' => 'NC',
+            'north dakota' => 'ND',
+            'ohio' => 'OH',
+            'oklahoma' => 'OK',
+            'oregon' => 'OR',
+            'pennsylvania' => 'PA',
+            'rhode island' => 'RI',
+            'south carolina' => 'SC',
+            'south dakota' => 'SD',
+            'tennessee' => 'TN',
+            'texas' => 'TX',
+            'utah' => 'UT',
+            'vermont' => 'VT',
+            'virginia' => 'VA',
+            'washington' => 'WA',
+            'west virginia' => 'WV',
+            'wisconsin' => 'WI',
+            'wyoming' => 'WY',
+        ];
+
+        return $map[$key] ?? '';
+    }
+
     private function storePublicUpload(\Illuminate\Http\UploadedFile $file, string $dir): ?string
     {
         if (! $file->isValid()) {
@@ -109,7 +187,7 @@ class ListingSubmissionController extends Controller
 
         $categorySlug = $this->mapPropertyCategorySlug((string) ($wizardData['radio:type'] ?? ''));
         $category = $this->resolveCategory('real-estate', $categorySlug);
-        $stateCode = strtoupper(trim((string) ($wizardData['state'] ?? '')));
+        $stateCode = $this->normalizeUsStateCode((string) ($wizardData['state'] ?? ''));
         if ($stateCode === '' || ! $this->resolveUsState($stateCode)) {
             return redirect('/add-property-location?error=missing-state');
         }
@@ -315,7 +393,7 @@ class ListingSubmissionController extends Controller
             'category',
         ]);
         $category = $this->resolveCategory('contractors', $selectedCategory !== '' ? $selectedCategory : 'Remodeling');
-        $stateCode = strtoupper(trim((string) ($payload['state'] ?? '')));
+        $stateCode = $this->normalizeUsStateCode((string) ($payload['state'] ?? ''));
         $hasValidState = $stateCode !== '' && $this->resolveUsState($stateCode);
         $city = null;
 
@@ -502,7 +580,7 @@ class ListingSubmissionController extends Controller
         }
 
         $category = $this->resolveCategory('restaurants', (string) $request->input('cuisine_type', ''));
-        $stateCode = strtoupper(trim((string) $request->input('state', '')));
+        $stateCode = $this->normalizeUsStateCode((string) $request->input('state', ''));
         if ($stateCode === '' || ! $this->resolveUsState($stateCode)) {
             return redirect('/add-restaurant?error=missing-state');
         }
