@@ -27,6 +27,17 @@ $serve = static function (string $file) {
     $html = file_get_contents($path);
     $html = str_replace('data-pwa="true"', 'data-pwa="false"', $html);
     $html = str_replace('__CSRF_TOKEN__', csrf_token(), $html);
+    $html = str_replace(
+        [
+            'href="/terms-and-conditions">Privacy</a>',
+            'href="/terms-and-conditions.html" target="_blank" rel="noopener">Privacy Policy</a>',
+        ],
+        [
+            'href="/privacy-policy">Privacy</a>',
+            'href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>',
+        ],
+        $html
+    );
 
     // Cache-bust frequently updated dynamic scripts without touching every template file.
     $scriptVersions = [
@@ -92,12 +103,68 @@ HTML;
         $html = str_replace('</head>', $noFlashStyles . '</head>', $html);
     }
 
+    if ($accountAuthPage) {
+        $accountThemeReset = <<<'HTML'
+<script id="mc-account-theme-reset">
+(() => {
+  const disableCustomizerTheme = () => {
+    const customizerStyles = document.getElementById('customizer-styles');
+    if (customizerStyles) customizerStyles.remove();
+
+    const root = document.documentElement;
+    [
+      '--fn-primary',
+      '--fn-primary-rgb',
+      '--fn-primary-text-emphasis',
+      '--fn-primary-bg-subtle',
+      '--fn-primary-border-subtle',
+      '--fn-success',
+      '--fn-success-rgb',
+      '--fn-success-text-emphasis',
+      '--fn-success-bg-subtle',
+      '--fn-success-border-subtle',
+      '--fn-warning',
+      '--fn-warning-rgb',
+      '--fn-warning-text-emphasis',
+      '--fn-warning-bg-subtle',
+      '--fn-warning-border-subtle',
+      '--fn-danger',
+      '--fn-danger-rgb',
+      '--fn-danger-text-emphasis',
+      '--fn-danger-bg-subtle',
+      '--fn-danger-border-subtle',
+      '--fn-info',
+      '--fn-info-rgb',
+      '--fn-info-text-emphasis',
+      '--fn-info-bg-subtle',
+      '--fn-info-border-subtle',
+      '--fn-border-width',
+      '--fn-border-radius',
+      '--fn-btn-bg',
+      '--fn-btn-border-color',
+      '--fn-btn-hover-bg',
+      '--fn-btn-hover-border-color',
+      '--fn-btn-active-bg',
+      '--fn-btn-active-border-color',
+      '--fn-btn-disabled-bg',
+      '--fn-btn-disabled-border-color',
+      '--fn-btn-color',
+      '--fn-btn-disabled-color'
+    ].forEach((name) => root.style.removeProperty(name));
+  };
+
+  disableCustomizerTheme();
+})();
+</script>
+HTML;
+        $html = str_replace('</head>', $accountThemeReset . '</head>', $html);
+    }
+
     if (str_starts_with($file, 'single-entry-')) {
         $entryNoFlash = <<<'HTML'
 <style id="entry-noflash-style">
-body.monaclick-entry-shell[data-entry-ready="0"] .content-wrapper{opacity:0;transition:opacity .12s ease;animation:mc-entry-unhide 0s linear .35s forwards}
-@keyframes mc-entry-unhide{to{opacity:1}}
-body.monaclick-entry-shell[data-entry-ready="1"] .content-wrapper{opacity:1;animation:none}
+body.monaclick-entry-shell[data-entry-ready="0"] .content-wrapper{opacity:0;visibility:hidden;transition:opacity .12s ease}
+body.monaclick-entry-shell[data-entry-ready="1"] .content-wrapper{opacity:1;visibility:visible}
 </style>
 HTML;
         $html = str_replace('</head>', $entryNoFlash . '</head>', $html);
@@ -217,6 +284,71 @@ HTML;
             $avatarAndDefaultsStripScript = str_replace('__AUTH_AVATAR__', $authAvatarJson ?: "''", $avatarAndDefaultsStripScript);
             $html = str_replace('</body>', $avatarAndDefaultsStripScript . '</body>', $html);
         }
+
+        if (str_starts_with($file, 'account-')) {
+            $accountLogoutFallback = <<<'HTML'
+<script>
+(() => {
+  if (document.body?.dataset.mcAccountLogoutReady === '1') return;
+  if (document.body) document.body.dataset.mcAccountLogoutReady = '1';
+
+  let modal = document.getElementById('globalLogoutModal');
+  let confirmAction = document.getElementById('logoutConfirmAction');
+
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'globalLogoutModal';
+    modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+      <div style="width:min(520px,95vw);background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <h5 style="margin:0;">Confirm logout</h5>
+          <button type="button" data-logout-close style="border:0;background:transparent;font-size:28px;line-height:1;cursor:pointer;">x</button>
+        </div>
+        <p style="margin:0 0 18px 0;color:#5b6475;">Are you sure you want to log out?</p>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button type="button" class="btn btn-outline-secondary" data-logout-close>Cancel</button>
+          <a href="/signout" class="btn btn-primary" id="logoutConfirmAction">Yes, log out</a>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    confirmAction = document.getElementById('logoutConfirmAction');
+  }
+
+  const open = () => {
+    if (modal) modal.style.display = 'flex';
+  };
+  const close = () => {
+    if (modal) modal.style.display = 'none';
+  };
+
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-logout-trigger]');
+    if (trigger) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      const targetHref = trigger.getAttribute('href') || '/signout';
+      if (confirmAction) confirmAction.setAttribute('href', targetHref);
+      open();
+      return;
+    }
+
+    if (event.target.closest('[data-logout-close]') || event.target === modal) {
+      event.preventDefault();
+      close();
+    }
+  }, true);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') close();
+  });
+})();
+</script>
+HTML;
+            $html = str_replace('</body>', $accountLogoutFallback . '</body>', $html);
+        }
     }
     if (! Auth::check()) {
         $guestNavScript = <<<'HTML'
@@ -261,13 +393,68 @@ HTML;
         $html = str_replace($namePlaceholders, $name, $html);
         $html = str_replace($emailPlaceholders, $email, $html);
 
-        $listingCount = Listing::query()->where('user_id', $user?->id)->count();
-        $userListings = Listing::query()
-            ->with('city')
-            ->where('user_id', $user?->id)
-            ->latest('id')
-            ->take(50)
-            ->get();
+        $userEmail = strtolower(trim((string) ($user?->email ?? '')));
+        $userListings = $user?->id
+            ? Listing::query()
+                ->with('city')
+                ->where('user_id', $user->id)
+                ->latest('id')
+                ->take(50)
+                ->get()
+            : collect();
+        $directListingIds = $userListings->pluck('id');
+        $recoveredListingIds = collect();
+
+        if ($user && $userEmail !== '') {
+            if (Schema::hasTable('property_details') && Schema::hasColumn('property_details', 'wizard_data')) {
+                $recoveredListingIds = $recoveredListingIds->merge(
+                    DB::table('property_details')
+                        ->join('listings', 'listings.id', '=', 'property_details.listing_id')
+                        ->whereNull('listings.user_id')
+                        ->where(function ($query) use ($userEmail) {
+                            $query
+                                ->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(property_details.wizard_data, '$.email'))) = ?", [$userEmail])
+                                ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(property_details.wizard_data, '$.contact_email'))) = ?", [$userEmail]);
+                        })
+                        ->pluck('listings.id')
+                );
+            }
+
+            if (Schema::hasTable('car_details') && Schema::hasColumn('car_details', 'contact_email')) {
+                $recoveredListingIds = $recoveredListingIds->merge(
+                    DB::table('car_details')
+                        ->join('listings', 'listings.id', '=', 'car_details.listing_id')
+                        ->whereNull('listings.user_id')
+                        ->whereRaw('LOWER(TRIM(car_details.contact_email)) = ?', [$userEmail])
+                        ->pluck('listings.id')
+                );
+            }
+
+            $recoveredListingIds = $recoveredListingIds->merge(
+                Listing::query()
+                    ->whereNull('user_id')
+                    ->where('module', 'restaurants')
+                    ->whereRaw('LOWER(excerpt) LIKE ?', ['%"email":"' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $userEmail) . '"%'])
+                    ->pluck('id')
+            );
+            $recoveredListingIds = $recoveredListingIds->unique()->values();
+        }
+
+        if ($recoveredListingIds->isNotEmpty()) {
+            $recoveredListings = Listing::query()
+                ->with('city')
+                ->whereIn('id', $recoveredListingIds)
+                ->latest('id')
+                ->get();
+            $userListings = $userListings
+                ->concat($recoveredListings)
+                ->unique('id')
+                ->sortByDesc('id')
+                ->take(50)
+                ->values();
+        }
+
+        $listingCount = $userListings->count();
         $hasReviewsTable = DB::getSchemaBuilder()->hasTable('reviews');
         $hasFavoritesTable = DB::getSchemaBuilder()->hasTable('favorites');
         $reviewCount = $hasReviewsTable ? DB::table('reviews')->where('user_id', $user?->id)->count() : 0;
@@ -302,6 +489,8 @@ HTML;
                     'city' => (string) ($listing->city?->name ?? ''),
                     'image' => (string) $listing->image_url,
                     'status' => (string) $listing->status,
+                    'admin_status' => (string) ($listing->admin_status ?? ''),
+                    'published_at' => optional($listing->published_at)->toIso8601String() ?? '',
                     'created_at' => optional($listing->created_at)->format('d/m/Y') ?? '',
                 ];
             })->values()->all();
@@ -336,7 +525,10 @@ HTML;
     <form method="post" action="/account/listings/delete" class="d-inline">
       <input type="hidden" name="_token" value="${esc(csrfToken)}">
       <input type="hidden" name="listing_id" value="${esc(item.id)}">
-      <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this listing?')">Delete</button>
+      <button type="submit" class="dropdown-item text-start" style="color:#f03d3d" onclick="return confirm('Delete this listing?')">
+        <i class="fi-trash opacity-75 me-2"></i>
+        Delete
+      </button>
     </form>
   `;
 
@@ -365,6 +557,117 @@ HTML;
       </div>
     </article>
   `;
+
+  const normalizeListingStatus = (item) => {
+    const raw = String(item?.status || '').trim().toLowerCase();
+    const admin = String(item?.admin_status || '').trim().toLowerCase();
+    const hasPublishedAt = !!String(item?.published_at || '').trim();
+    if (raw === 'draft') return 'draft';
+    if (raw === 'archived') return 'archived';
+    if (hasPublishedAt) return 'published';
+    if (admin === 'published' || admin === 'approved' || admin === 'live' || admin === 'active') return 'published';
+    if (raw === 'published' || raw === 'active' || raw === 'live') return 'published';
+    return 'published';
+  };
+
+  const emptyStateCard = (title, body) => `
+    <div class="card border-0 bg-body-tertiary">
+      <div class="card-body py-5 text-center">
+        <h3 class="h5 mb-2">${title}</h3>
+        <p class="text-body-secondary mb-4">${body}</p>
+        <a class="btn btn-primary" href="/add-listing">Add new listing</a>
+      </div>
+    </div>
+  `;
+
+  const publishForm = (item, label = 'Finish and publish') => `
+    <form method="post" action="/account/listings/publish" class="d-inline">
+      <input type="hidden" name="_token" value="${esc(csrfToken)}">
+      <input type="hidden" name="listing_id" value="${esc(item.id)}">
+      <button type="submit" class="btn btn-outline-dark">${label}</button>
+    </form>
+  `;
+
+  const finderAccountCard = (item) => {
+    const isDraft = normalizeListingStatus(item) === 'draft';
+    const metaLine = [item.module_label, item.city].filter(Boolean).join(' • ');
+    return `
+      <div class="d-sm-flex align-items-center">
+        <div class="d-inline-flex position-relative z-2 pt-1 pb-2 ps-2 p-sm-0 ms-2 ms-sm-0 me-sm-2">
+          <div class="form-check position-relative z-1 fs-lg m-0">
+            <input type="checkbox" class="form-check-input">
+          </div>
+          <span class="position-absolute top-0 start-0 w-100 h-100 bg-body border rounded d-sm-none"></span>
+        </div>
+        <article class="card w-100">
+          <div class="d-sm-none" style="margin-top: -44px"></div>
+          <div class="row g-0">
+            <div class="col-sm-4 col-md-3 rounded overflow-hidden pb-2 pb-sm-0 pe-sm-2">
+              <a class="position-relative d-flex h-100 bg-body-tertiary" href="${viewHref(item)}" style="min-height: 174px">
+                <img src="${esc(item.image)}" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" alt="${esc(item.title)}">
+                <div class="ratio d-none d-sm-block" style="--fn-aspect-ratio: calc(180 / 240 * 100%)"></div>
+                <div class="ratio ratio-16x9 d-sm-none"></div>
+              </a>
+            </div>
+            <div class="col-sm-8 col-md-9 align-self-center">
+              <div class="card-body d-flex justify-content-between p-3 py-sm-4 ps-sm-2 ps-md-3 pe-md-4 mt-n1 mt-sm-0">
+                <div class="position-relative pe-3">
+                  <span class="badge text-body-emphasis bg-body-secondary mb-2">${esc(item.module_label || (isDraft ? 'Draft' : 'Published'))}</span>
+                  <div class="h5 mb-2">${esc(item.price || 'Price on request')}</div>
+                  <a class="stretched-link d-block fs-sm text-body text-decoration-none mb-2" href="${viewHref(item)}">${esc(item.title)}</a>
+                  <div class="h6 fs-sm mb-0">${esc(metaLine || 'No additional details')}</div>
+                </div>
+                <div class="text-end">
+                  <div class="fs-xs text-body-secondary mb-3">Created: ${esc(item.created_at)}</div>
+                  <div class="d-flex justify-content-end gap-2 mb-3 flex-wrap">
+                    ${isDraft ? publishForm(item) : `<a class="btn btn-outline-secondary" href="${viewHref(item)}">View</a>`}
+                    <div class="dropdown">
+                      <button type="button" class="btn btn-icon btn-outline-secondary" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Settings">
+                        <i class="fi-settings fs-base"></i>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end">
+                        ${editHref(item) ? `
+                          <li>
+                            <a class="dropdown-item" href="${editHref(item)}">
+                              <i class="fi-edit opacity-75 me-2"></i>
+                              Edit
+                            </a>
+                          </li>
+                        ` : ''}
+                        <li>
+                          <a class="dropdown-item" href="${viewHref(item)}">
+                            <i class="fi-eye opacity-75 me-2"></i>
+                            View
+                          </a>
+                        </li>
+                        <li>
+                          ${deleteForm(item)}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <ul class="list-unstyled flex-row flex-wrap justify-content-end fs-sm mb-0">
+                    <li class="d-flex align-items-center me-2 me-md-3">
+                      <i class="fi-eye fs-base me-1"></i>
+                      0
+                    </li>
+                    <li class="d-flex align-items-center me-2 me-md-3">
+                      <i class="fi-heart fs-base me-1"></i>
+                      0
+                    </li>
+                    <li class="d-flex align-items-center">
+                      <i class="fi-phone-incoming fs-base me-1"></i>
+                      0
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    `;
+  };
 
   if (location.pathname === '/account/profile') {
     const root = document.querySelector('.col-lg-9');
@@ -512,21 +815,103 @@ HTML;
   if (location.pathname === '/account/listings') {
     const root = document.querySelector('.col-lg-9');
     if (!root) return;
+    const publishedListings = listings.filter((item) => normalizeListingStatus(item) === 'published');
+    const draftListings = listings.filter((item) => normalizeListingStatus(item) === 'draft');
+    const url = new URL(window.location.href);
+    const savedState = String(url.searchParams.get('saved') || '').trim().toLowerCase();
+    const hasEditParam = String(url.searchParams.get('edit') || '').trim() !== '';
+
     root.innerHTML = `
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-2 pb-lg-3">
-        <h1 class="h2 mb-0">My listings</h1>
-        ${listings.length ? '<a class="btn btn-primary" href="/add-listing">Add new listing</a>' : ''}
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pb-2 pb-lg-3">
+        <div class="d-flex align-items-center">
+          <h1 class="h2 mb-0">My listings</h1>
+        </div>
+        <a class="btn btn-primary" href="/add-listing" data-mc-add-listing-btn>
+          <i class="fi-plus fs-base me-2"></i>
+          Add new listing
+        </a>
       </div>
-      ${listings.length ? listings.map((item) => card(item)).join('') : `
-        <div class="card border-0 bg-body-tertiary">
-          <div class="card-body py-5 text-center">
-            <h3 class="h5 mb-2">No listings yet</h3>
-            <p class="text-body-secondary mb-4">Your listings will appear here after you publish them.</p>
-            <a class="btn btn-primary" href="/add-listing">Add your first listing</a>
+
+      <div class="nav overflow-x-auto mb-2">
+        <ul class="nav nav-pills flex-nowrap gap-2 pb-2 mb-1" role="tablist">
+          <li class="nav-item me-1" role="presentation">
+            <button type="button" class="nav-link text-nowrap active" id="published-tab" data-bs-toggle="pill" data-bs-target="#published" role="tab" aria-controls="published" aria-selected="true">
+              Published (${publishedListings.length})
+            </button>
+          </li>
+          <li class="nav-item me-1" role="presentation">
+            <button type="button" class="nav-link text-nowrap" id="drafts-tab" data-bs-toggle="pill" data-bs-target="#drafts" role="tab" aria-controls="drafts" aria-selected="false">
+              Drafts (${draftListings.length})
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link text-nowrap" id="archived-tab" data-bs-toggle="pill" data-bs-target="#archived" role="tab" aria-controls="archived" aria-selected="false">
+              Archived (0)
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="published" role="tabpanel" aria-labelledby="published-tab">
+          <div class="vstack gap-4 pt-2" id="publishedSelection">
+            ${publishedListings.length
+              ? publishedListings.map((item) => finderAccountCard(item)).join('')
+              : emptyStateCard('No published listings yet', 'Your published listings will appear here once you publish them.')}
           </div>
         </div>
-      `}
+        <div class="tab-pane fade" id="drafts" role="tabpanel" aria-labelledby="drafts-tab">
+          <div class="vstack gap-4 pt-2" id="draftsSelection">
+            ${draftListings.length
+              ? draftListings.map((item) => finderAccountCard(item)).join('')
+              : emptyStateCard('No drafts yet', 'Draft listings you save for later will appear here.')}
+          </div>
+        </div>
+        <div class="tab-pane fade" id="archived" role="tabpanel" aria-labelledby="archived-tab">
+          <h2 class="h6 pt-2 mb-2">You have no archived ads</h2>
+          <p class="fs-sm mb-4" style="max-width: 640px">Archived listings will appear here when you move items out of your active account.</p>
+        </div>
+      </div>
     `;
+
+    const publishedTab = root.querySelector('#published-tab');
+    const draftsTab = root.querySelector('#drafts-tab');
+    const archivedTab = root.querySelector('#archived-tab');
+    const publishedPane = root.querySelector('#published');
+    const draftsPane = root.querySelector('#drafts');
+    const archivedPane = root.querySelector('#archived');
+
+    const activateListingsTab = (target) => {
+      const tabMap = {
+        published: { button: publishedTab, pane: publishedPane },
+        drafts: { button: draftsTab, pane: draftsPane },
+        archived: { button: archivedTab, pane: archivedPane },
+      };
+      const selected = tabMap[target];
+      if (!selected?.button || !selected?.pane) return;
+
+      Object.values(tabMap).forEach((entry) => {
+        if (!entry?.button || !entry?.pane) return;
+        const isActive = entry === selected;
+        entry.button.classList.toggle('active', isActive);
+        entry.button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        entry.pane.classList.toggle('show', isActive);
+        entry.pane.classList.toggle('active', isActive);
+      });
+
+      if (window.bootstrap?.Tab) {
+        try {
+          window.bootstrap.Tab.getOrCreateInstance(selected.button).show();
+        } catch (e) {
+          // Fall back to the manual class toggles above.
+        }
+      }
+    };
+
+    const preferredTab = savedState === 'draft' || hasEditParam || (publishedListings.length === 0 && draftListings.length > 0)
+      ? 'drafts'
+      : 'published';
+    activateListingsTab(preferredTab);
   }
 })();
 </script>
@@ -641,25 +1026,125 @@ HTML;
             }
 
             if ($file === 'account-favorites.html') {
-                $emptyFavoritesScript = <<<'HTML'
+                $favoritesScript = <<<'HTML'
 <script>
 (() => {
   const root = document.querySelector('.col-lg-9');
   if (!root) return;
-  root.innerHTML = `
+
+  const STORAGE_KEY = 'mc_related_favorite_items_v1';
+
+  const escapeHtml = (value) =>
+    String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+
+  const readItems = () => {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  };
+
+  const writeItems = (items) => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items || {}));
+    } catch (e) {}
+  };
+
+  const emptyState = () => `
     <h1 class="h2 pb-2 pb-lg-3">Favorites</h1>
     <div class="card border-0 bg-body-tertiary">
       <div class="card-body py-5 text-center">
         <h3 class="h5 mb-2">No favorites yet</h3>
-        <p class="text-body-secondary mb-4">Save listings to quickly find them later.</p>
-        <a class="btn btn-primary" href="/listings">Browse listings</a>
+        <p class="text-body-secondary mb-4">Save listings to see them here.</p>
+        <a class="btn btn-primary" href="/listings/cars">Browse listings</a>
       </div>
     </div>
   `;
+
+  const card = (item) => `
+    <div class="col">
+      <article class="card h-100 border-0 bg-body-tertiary shadow-sm">
+        <div class="position-relative">
+          <a href="${escapeHtml(item.detail_url || '/listings/cars')}" class="d-block">
+            <img src="${escapeHtml(item.image_url || '/finder/assets/img/placeholders/preview-square.svg')}" alt="${escapeHtml(item.title || 'Favorite listing')}" class="card-img-top" style="height:220px;object-fit:cover;" onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';">
+          </a>
+          <button type="button" class="btn btn-sm btn-light position-absolute top-0 end-0 m-3 rounded-circle" data-remove-favorite="${escapeHtml(item.slug || '')}" aria-label="Remove favorite">
+            <i class="fi-heart-filled text-danger"></i>
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+            <div class="fs-sm text-body-secondary">${escapeHtml(item.city || 'Location')}</div>
+            <div class="fs-xs text-body-secondary">${escapeHtml(item.year || '')}</div>
+          </div>
+          <h3 class="h5 mb-2">
+            <a class="text-decoration-none text-dark-emphasis hover-effect-underline" href="${escapeHtml(item.detail_url || '/listings/cars')}">${escapeHtml(item.title || 'Listing')}</a>
+          </h3>
+          <div class="h5 mb-3">${escapeHtml(item.price || 'Price on request')}</div>
+          <div class="row row-cols-2 g-2 fs-sm text-body-secondary">
+            <div class="col d-flex align-items-center gap-2">
+              <i class="fi-tachometer"></i>
+              ${escapeHtml(item.mileage || 'N/A')}
+            </div>
+            <div class="col d-flex align-items-center gap-2">
+              <i class="fi-gas-pump"></i>
+              ${escapeHtml(item.fuel_type || 'N/A')}
+            </div>
+            <div class="col d-flex align-items-center gap-2">
+              <i class="fi-gearbox"></i>
+              ${escapeHtml(item.transmission || 'N/A')}
+            </div>
+            <div class="col d-flex align-items-center gap-2">
+              <i class="fi-heart-filled text-danger"></i>
+              Saved
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  `;
+
+  const render = () => {
+    const items = Object.values(readItems()).filter(Boolean);
+    if (!items.length) {
+      root.innerHTML = emptyState();
+      return;
+    }
+
+    root.innerHTML = `
+      <div class="d-flex align-items-center justify-content-between gap-3 pb-2 pb-lg-3">
+        <h1 class="h2 mb-0">Favorites</h1>
+        <div class="fs-sm text-body-secondary">${items.length} saved listing${items.length === 1 ? '' : 's'}</div>
+      </div>
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        ${items.map(card).join('')}
+      </div>
+    `;
+
+    root.querySelectorAll('[data-remove-favorite]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const slug = String(button.getAttribute('data-remove-favorite') || '').trim();
+        if (!slug) return;
+        const itemsMap = readItems();
+        delete itemsMap[slug];
+        writeItems(itemsMap);
+        render();
+      });
+    });
+  };
+
+  render();
 })();
 </script>
 HTML;
-                $html = str_replace('</body>', $emptyFavoritesScript . '</body>', $html);
+                $html = str_replace('</body>', $favoritesScript . '</body>', $html);
             }
 
         }
@@ -955,25 +1440,138 @@ HTML;
     }
 
     if ($file === 'account-favorites.html') {
-        $forceEmptyFavoritesScript = <<<'HTML'
+        $favoritesScript = <<<'HTML'
 <script>
 (() => {
   const root = document.querySelector('.col-lg-9');
   if (!root) return;
-  root.innerHTML = `
+
+  const STORAGE_KEY = 'mc_related_favorite_items_v1';
+
+  const escapeHtml = (value) =>
+    String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+
+  const readItems = () => {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  };
+
+  const writeItems = (items) => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items || {}));
+    } catch (e) {}
+  };
+
+  const emptyState = () => `
     <h1 class="h2 pb-2 pb-lg-3">Favorites</h1>
     <div class="card border-0 bg-body-tertiary">
       <div class="card-body py-5 text-center">
         <h3 class="h5 mb-2">No favorites yet</h3>
         <p class="text-body-secondary mb-4">Save listings to see them here.</p>
-        <a class="btn btn-primary" href="/listings">Browse listings</a>
+        <a class="btn btn-primary" href="/listings/cars">Browse listings</a>
       </div>
     </div>
   `;
+
+  const card = (item) => `
+    <div class="col">
+      <article class="card h-100 border-0 bg-body-tertiary shadow-sm">
+        <div class="position-relative">
+          <a href="${escapeHtml(item.detail_url || '/listings/cars')}" class="d-block">
+            <img src="${escapeHtml(item.image_url || '/finder/assets/img/placeholders/preview-square.svg')}" alt="${escapeHtml(item.title || 'Favorite listing')}" class="card-img-top" style="height:220px;object-fit:cover;" onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';">
+          </a>
+          <button type="button" class="btn btn-sm btn-light position-absolute top-0 end-0 m-3 rounded-circle" data-remove-favorite="${escapeHtml(item.slug || '')}" aria-label="Remove favorite">
+            <i class="fi-heart-filled text-danger"></i>
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+            <div class="fs-sm text-body-secondary">${escapeHtml(item.city || 'Location')}</div>
+            <div class="fs-xs text-body-secondary">${escapeHtml(item.year || '')}</div>
+          </div>
+          <h3 class="h5 mb-2">
+            <a class="text-decoration-none text-dark-emphasis hover-effect-underline" href="${escapeHtml(item.detail_url || '/listings/cars')}">${escapeHtml(item.title || 'Listing')}</a>
+          </h3>
+          <div class="h5 mb-3">${escapeHtml(item.price || 'Price on request')}</div>
+          <div class="row row-cols-2 g-2 fs-sm text-body-secondary">
+            <div class="col d-flex align-items-center gap-2">
+              <i class="fi-tachometer"></i>
+              ${escapeHtml(item.mileage || 'N/A')}
+            </div>
+            <div class="col d-flex align-items-center gap-2">
+              <i class="fi-gas-pump"></i>
+              ${escapeHtml(item.fuel_type || 'N/A')}
+            </div>
+            <div class="col d-flex align-items-center gap-2">
+              <i class="fi-gearbox"></i>
+              ${escapeHtml(item.transmission || 'N/A')}
+            </div>
+            <div class="col d-flex align-items-center gap-2">
+              <i class="fi-heart-filled text-danger"></i>
+              Saved
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  `;
+
+  const render = () => {
+    const items = Object.values(readItems()).filter(Boolean);
+    if (!items.length) {
+      root.innerHTML = emptyState();
+      return;
+    }
+
+    root.innerHTML = `
+      <div class="d-flex align-items-center justify-content-between gap-3 pb-2 pb-lg-3">
+        <h1 class="h2 mb-0">Favorites</h1>
+        <div class="fs-sm text-body-secondary">${items.length} saved listing${items.length === 1 ? '' : 's'}</div>
+      </div>
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        ${items.map(card).join('')}
+      </div>
+    `;
+
+    root.querySelectorAll('[data-remove-favorite]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const slug = String(button.getAttribute('data-remove-favorite') || '').trim();
+        if (!slug) return;
+        const itemsMap = readItems();
+        delete itemsMap[slug];
+        writeItems(itemsMap);
+        render();
+      });
+    });
+  };
+
+  render();
 })();
 </script>
 HTML;
-        $html = str_replace('</body>', $forceEmptyFavoritesScript . '</body>', $html);
+        $html = str_replace('</body>', $favoritesScript . '</body>', $html);
+    }
+
+    if ($file === 'add-listing.html') {
+        $resetPropertyWizardScript = <<<'HTML'
+<script>
+(() => {
+  try {
+    localStorage.removeItem('propertyWizardSession');
+  } catch (_) {}
+})();
+</script>
+HTML;
+        $html = str_replace('</body>', $resetPropertyWizardScript . '</body>', $html);
     }
 
     if ($file === 'add-property-type.html') {
@@ -1001,7 +1599,9 @@ HTML;
         $propertyScript = <<<'HTML'
 <script>
 (() => {
-  const editData = __PROPERTY_EDIT_DATA__;
+  const search = new URLSearchParams(window.location.search);
+  const forceFresh = search.get('fresh') === '1';
+  const editData = forceFresh ? null : __PROPERTY_EDIT_DATA__;
   const isEdit = !!(editData && editData.id);
   let isSubmitting = false;
   const wizardKey = 'propertyWizardSession';
@@ -1025,6 +1625,11 @@ HTML;
     try {
       localStorage.setItem(wizardKey, randomWizardSession());
     } catch (_) {}
+    if (forceFresh && window.location.search.includes('fresh=1')) {
+      try {
+        window.history.replaceState({}, '', '/add-property');
+      } catch (_) {}
+    }
   }
   const heading = document.querySelector('h1.h2');
   if (isEdit && heading) heading.textContent = 'Edit property';
@@ -1044,11 +1649,12 @@ HTML;
   const submitPayload = (isDraft, nextPath = '') => {
     if (isSubmitting) return;
     isSubmitting = true;
+    const wizardSession = ensureWizardSession();
     const payload = {
       'radio:category': getCheckedLabel('category').toLowerCase().includes('rent') ? 'rent' : 'sell',
       'radio:type': getCheckedLabel('type') || 'House',
       'radio:condition': getCheckedLabel('condition') || 'Secondary market',
-      'wizard_session': ensureWizardSession()
+      'wizard_session': wizardSession
     };
     const form = document.createElement('form');
     form.method = 'post';
@@ -1056,6 +1662,7 @@ HTML;
     form.innerHTML = `
       <input type="hidden" name="_token" value="__SCRIPT_CSRF__">
       <input type="hidden" name="payload" value="${btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}">
+      ${isEdit ? '' : '<input type="hidden" name="fresh_start" value="1">'}
       ${isDraft ? '<input type="hidden" name="draft" value="1">' : ''}
       ${isEdit ? `<input type="hidden" name="listing_id" value="${String(editData.id)}">` : ''}
       ${nextPath ? `<input type="hidden" name="next" value="${nextPath}">` : ''}
@@ -1152,7 +1759,9 @@ HTML;
         $propertyNavScript = <<<'HTML'
 <script>
 (() => {
-  const editData = __PROPERTY_EDIT_DATA__ || null;
+  const search = new URLSearchParams(window.location.search);
+  const forceFresh = search.get('fresh') === '1';
+  const editData = forceFresh ? null : (__PROPERTY_EDIT_DATA__ || null);
   const wizard = (editData && editData.wizard_data && typeof editData.wizard_data === 'object') ? editData.wizard_data : {};
   let isSubmitting = false;
   const wizardKey = 'propertyWizardSession';
@@ -1179,11 +1788,16 @@ HTML;
     { key: 'price', url: '/add-property-price' },
     { key: 'contact info', url: '/add-property-contact-info' }
   ];
-  const search = new URLSearchParams(window.location.search);
-  const editId = (search.get('edit') || (editData?.id ? String(editData.id) : '')).trim();
+  const editId = forceFresh ? '' : (search.get('edit') || (editData?.id ? String(editData.id) : '')).trim();
   // Starting a new listing (no editId): always rotate wizard session when landing on the first step.
-  if (!editId && window.location.pathname === '/add-property') {
+  if ((!editId || forceFresh) && window.location.pathname === '/add-property') {
     try { localStorage.setItem(wizardKey, randomWizardSession()); } catch (_) {}
+  }
+  if (forceFresh && !editId && window.location.pathname.startsWith('/add-property')) {
+    try {
+      const cleanPath = window.location.pathname;
+      window.history.replaceState({}, '', cleanPath);
+    } catch (_) {}
   }
   window.__propertyEditData = editData;
   const withEdit = (url) => (editId ? `${url}?edit=${encodeURIComponent(editId)}` : url);
@@ -1305,6 +1919,44 @@ HTML;
     el.dispatchEvent(new Event('change', { bubbles: true }));
   };
   const selectedId = (name) => document.querySelector(`input[name="${name}"]:checked`)?.id || '';
+  const hasAnyWizardValue = (keys) => keys.some((key) => {
+    const value = wizard[key];
+    if (typeof value === 'boolean') return value;
+    if (Array.isArray(value)) return value.length > 0;
+    return String(value ?? '').trim() !== '';
+  });
+  const resetStepFields = (config) => {
+    (config.inputs || []).forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = '';
+      el.defaultValue = '';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    (config.radios || []).forEach(({ name, fallbackId }) => {
+      document.querySelectorAll(`input[name="${name}"]`).forEach((el) => {
+        el.checked = false;
+        el.defaultChecked = false;
+      });
+      if (fallbackId) {
+        const fallback = document.getElementById(fallbackId);
+        if (fallback) {
+          fallback.checked = true;
+          fallback.defaultChecked = true;
+          fallback.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    });
+    (config.checkboxes || []).forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.checked = false;
+      el.defaultChecked = false;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  };
+  const detailAmenityIds = ['tv', 'washing', 'kitchen', 'ac', 'workspace', 'fridge', 'drying', 'closet', 'patio', 'fireplace', 'shower', 'whirlpool', 'cctv', 'balcony', 'bar'];
 
   if (editId) {
     const path = window.location.pathname;
@@ -1317,8 +1969,7 @@ HTML;
     }
     if (path === '/add-property-details') {
       if (wizard.ownership) setChecked(String(wizard.ownership));
-      setInput('floors-total', wizard.floors_total);
-      setInput('floor', wizard.floor);
+      setInput('floor', wizard.floor || wizard.floors_total);
       setInput('total-area', wizard.total_area);
       setInput('living-area', wizard.living_area);
       setInput('kitchen-area', wizard.kitchen_area);
@@ -1342,6 +1993,43 @@ HTML;
       setInput('phone', wizard.phone);
       setChecked('tour', !!wizard.tour);
     }
+  }
+
+  const path = window.location.pathname;
+  if (path === '/add-property-details' && !hasAnyWizardValue([
+    'ownership', 'floor', 'floors_total', 'total_area', 'total-area', 'living_area', 'kitchen_area',
+    'radio:bedrooms', 'radio:bathrooms', 'parking', ...detailAmenityIds
+  ])) {
+    resetStepFields({
+      inputs: ['floor', 'total-area', 'living-area', 'kitchen-area'],
+      radios: [
+        { name: 'ownership', fallbackId: 'secondary-estate' },
+        { name: 'bedrooms', fallbackId: 'bedrooms-any' },
+        { name: 'bathrooms', fallbackId: 'bathrooms-any' },
+        { name: 'parking', fallbackId: 'parking-any' },
+      ],
+      checkboxes: detailAmenityIds,
+    });
+  }
+  if (path === '/add-property-price' && !hasAnyWizardValue([
+    'price', 'negotiated', 'offer_type', 'no_credit', 'ready_agents', 'exchange'
+  ])) {
+    resetStepFields({
+      inputs: ['price'],
+      radios: [],
+      checkboxes: ['negotiated', 'no-credit', 'ready-agents', 'exchange'],
+    });
+    setChecked('private', true);
+    setChecked('agent', false);
+  }
+  if (path === '/add-property-contact-info' && !hasAnyWizardValue([
+    'fn', 'ln', 'email', 'phone', 'tour'
+  ])) {
+    resetStepFields({
+      inputs: ['fn', 'ln', 'email', 'phone'],
+      radios: [],
+      checkboxes: ['tour'],
+    });
   }
 
   const buildPayloadForStep = () => {
@@ -1448,7 +2136,7 @@ HTML;
       return {
         wizard_session: ensureWizardSession(),
         ownership: selectedId('ownership'),
-        floors_total: document.getElementById('floors-total')?.value || '',
+        floors_total: document.getElementById('floor')?.value || '',
         floor: document.getElementById('floor')?.value || '',
         total_area: document.getElementById('total-area')?.value || '',
         living_area: document.getElementById('living-area')?.value || '',
@@ -1490,14 +2178,25 @@ HTML;
     return {};
   };
 
-  const setActionsSubmitting = () => {
-    document.querySelectorAll('.pt-5.d-flex.flex-wrap.gap-3.align-items-center .btn').forEach((btn) => {
-      btn.classList.add('disabled');
-      btn.setAttribute('aria-disabled', 'true');
-      if (btn.tagName === 'BUTTON') btn.disabled = true;
-    });
+  const setActionsSubmitting = (activeBtn = null) => {
+    const actions = document.querySelector('.pt-5.d-flex.flex-wrap.gap-3.align-items-center');
+    if (actions) {
+      actions.dataset.mcSubmitting = '1';
+      // Prevent the "both buttons pressed" feel: block clicks without visually disabling every button.
+      actions.style.pointerEvents = 'none';
+    }
+    if (activeBtn) {
+      activeBtn.classList.add('disabled');
+      activeBtn.setAttribute('aria-disabled', 'true');
+      if (activeBtn.tagName === 'BUTTON') activeBtn.disabled = true;
+    }
   };
   const clearActionsSubmitting = () => {
+    const actions = document.querySelector('.pt-5.d-flex.flex-wrap.gap-3.align-items-center');
+    if (actions) {
+      delete actions.dataset.mcSubmitting;
+      actions.style.pointerEvents = '';
+    }
     document.querySelectorAll('.pt-5.d-flex.flex-wrap.gap-3.align-items-center .btn').forEach((btn) => {
       btn.classList.remove('disabled');
       btn.removeAttribute('aria-disabled');
@@ -1509,7 +2208,7 @@ HTML;
   // The backend merges `wizard_data` across steps, keyed by `wizard_session`/editId.
   const enableStepSubmit = true;
 
-  const submitStep = (nextPath = '', publishNow = false) => {
+  const submitStep = (nextPath = '', publishNow = false, activeBtn = null) => {
     if (isSubmitting) return;
     const payload = buildPayloadForStep();
 
@@ -1543,7 +2242,7 @@ HTML;
     }
 
     isSubmitting = true;
-    setActionsSubmitting();
+    setActionsSubmitting(activeBtn);
     const form = document.createElement('form');
     form.method = 'post';
     form.action = '/submit/property';
@@ -1576,7 +2275,7 @@ HTML;
       draftBtn.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopImmediatePropagation();
-        submitStep('');
+        submitStep('', false, event.currentTarget);
       }, true);
     }
     if (actions && !actions.querySelector('button[data-property-publish]')) {
@@ -1588,7 +2287,7 @@ HTML;
       publishBtn.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopImmediatePropagation();
-        submitStep('', true);
+        submitStep('', true, event.currentTarget);
       }, true);
       actions.appendChild(publishBtn);
     }
@@ -1598,7 +2297,7 @@ HTML;
       nextBtn.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopImmediatePropagation();
-        submitStep('/add-property-promotion');
+        submitStep('/add-property-promotion', false, event.currentTarget);
       }, true);
     }
   }
@@ -1609,7 +2308,6 @@ HTML;
     '/add-property-details': '/add-property-price',
     '/add-property-price': '/add-property-contact-info',
   };
-  const path = window.location.pathname;
   if (path === '/add-property-location') {
     const stateSel = document.getElementById('state') || document.querySelector('select[aria-label="State select"]');
     const citySel = document.getElementById('city') || document.querySelector('select[aria-label="City select"]');
@@ -1634,7 +2332,7 @@ HTML;
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
-          submitStep('');
+          submitStep('', false, event.currentTarget);
         }, true);
       }
     }
@@ -1646,7 +2344,7 @@ HTML;
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
-          submitStep(nextMap[path]);
+          submitStep(nextMap[path], false, event.currentTarget);
         }, true);
       }
     }
@@ -1663,6 +2361,169 @@ HTML;
         $contractorCsrfScript = <<<'HTML'
 <script>
 window.__mcCsrf = '__SCRIPT_CSRF__';
+(function () {
+  const disableCustomizerTheme = () => {
+    const customizerStyles = document.getElementById('customizer-styles');
+    if (customizerStyles) customizerStyles.remove();
+
+    const root = document.documentElement;
+    [
+      '--fn-primary',
+      '--fn-primary-rgb',
+      '--fn-primary-text-emphasis',
+      '--fn-primary-bg-subtle',
+      '--fn-primary-border-subtle',
+      '--fn-success',
+      '--fn-success-rgb',
+      '--fn-success-text-emphasis',
+      '--fn-success-bg-subtle',
+      '--fn-success-border-subtle',
+      '--fn-warning',
+      '--fn-warning-rgb',
+      '--fn-warning-text-emphasis',
+      '--fn-warning-bg-subtle',
+      '--fn-warning-border-subtle',
+      '--fn-danger',
+      '--fn-danger-rgb',
+      '--fn-danger-text-emphasis',
+      '--fn-danger-bg-subtle',
+      '--fn-danger-border-subtle',
+      '--fn-info',
+      '--fn-info-rgb',
+      '--fn-info-text-emphasis',
+      '--fn-info-bg-subtle',
+      '--fn-info-border-subtle',
+      '--fn-border-width',
+      '--fn-border-radius',
+      '--fn-btn-bg',
+      '--fn-btn-border-color',
+      '--fn-btn-hover-bg',
+      '--fn-btn-hover-border-color',
+      '--fn-btn-active-bg',
+      '--fn-btn-active-border-color',
+      '--fn-btn-disabled-bg',
+      '--fn-btn-disabled-border-color',
+      '--fn-btn-color',
+      '--fn-btn-disabled-color'
+    ].forEach((name) => root.style.removeProperty(name));
+  };
+
+  const isEdit = new URLSearchParams(window.location.search).get('edit');
+  disableCustomizerTheme();
+  if (isEdit) return;
+
+  const page = window.location.pathname.replace(/\/+$/, '');
+
+  const clearField = (field) => {
+    if (!field) return;
+    const tag = field.tagName.toLowerCase();
+    const type = String(field.type || '').toLowerCase();
+    if (tag === 'select') {
+      field.selectedIndex = 0;
+      return;
+    }
+    if (type === 'checkbox' || type === 'radio') {
+      field.checked = false;
+      return;
+    }
+    if (type === 'file') {
+      try { field.value = ''; } catch (_) {}
+      return;
+    }
+    field.value = '';
+  };
+
+  const clearSelectors = (selectors) => {
+    selectors.forEach((selector) => {
+      document.querySelectorAll(selector).forEach(clearField);
+    });
+  };
+
+  const clearHours = () => {
+    const dayIds = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    dayIds.forEach((dayId) => {
+      const toggle = document.getElementById(dayId);
+      if (toggle) toggle.checked = false;
+
+      const panel = document.getElementById(dayId + 'Hours');
+      if (panel) panel.classList.remove('show');
+
+      document.querySelectorAll('#' + dayId + 'Hours input').forEach(clearField);
+    });
+  };
+
+  const bootPageDefaults = () => {
+    if (page.endsWith('/add-contractor') || page.endsWith('/add-contractor-location')) {
+      clearSelectors([
+        '#address',
+        '#zip',
+        '#area-search',
+      ]);
+      return;
+    }
+
+    if (page.endsWith('/add-contractor-services')) {
+      clearSelectors([
+        'select[name="project-type"]',
+        '#rendering',
+        '#architectural-design',
+        '#bathroom-design',
+        '#home-renovations',
+        '#floor-leveling',
+        '#custom-home-building',
+        '#kitchen-remodeling',
+      ]);
+      return;
+    }
+
+    if (page.endsWith('/add-contractor-profile')) {
+      clearSelectors([
+        '#about',
+        '#website',
+        'textarea[name="user-info"]',
+        'input[name="license-number"]',
+        'input[name="first-name"]',
+        'input[name="last-name"]',
+        'input[name="email"]',
+        'input[name="phone"]',
+        'input[name="business-name"]',
+      ]);
+      return;
+    }
+
+    if (page.endsWith('/add-contractor-price-hours')) {
+      clearSelectors([
+        '#price',
+        'select[aria-label="Select per period"]',
+      ]);
+      clearHours();
+      return;
+    }
+
+    if (page.endsWith('/add-contractor-project')) {
+      clearSelectors([
+        '#project-name',
+        '#project-description',
+        '#price',
+        '#link',
+        'select[aria-label="Select per period"]',
+      ]);
+    }
+  };
+
+  const boot = () => {
+    document.querySelectorAll('form').forEach((form) => {
+      form.setAttribute('autocomplete', 'off');
+    });
+    bootPageDefaults();
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+})();
 </script>
 HTML;
         $contractorCsrfScript = str_replace('__SCRIPT_CSRF__', csrf_token(), $contractorCsrfScript);
@@ -2382,6 +3243,8 @@ HTML;
   if (!form) return;
   let editData = __CAR_EDIT_DATA__;
   const editIdFromUrl = new URLSearchParams(window.location.search).get('edit');
+  let isEditHydrating = false;
+  let editHydrationDone = false;
 
   const photosSection = Array.from(form.querySelectorAll('section'))
     .find((section) => (section.querySelector('h2')?.textContent || '').toLowerCase().includes('photos / videos'));
@@ -2690,6 +3553,7 @@ HTML;
 
   const applyEditData = () => {
     if (!editData || !editData.id) return;
+    isEditHydrating = true;
     try { forceNativeForCarDropdowns(); } catch (_) {}
     const wizardData = (editData.wizard_data && typeof editData.wizard_data === 'object') ? editData.wizard_data : {};
     const pref = (key, fallback = '') => {
@@ -2792,36 +3656,18 @@ HTML;
       ? editData.features
       : (Array.isArray(wizardData.features) ? wizardData.features : []);
     setCheckedByIdList(featureIds);
+    setTimeout(() => {
+      isEditHydrating = false;
+      editHydrationDone = true;
+    }, 0);
   };
 
   const forceApplyEditData = () => {
     if (!(editData && editData.id)) return;
     applyEditData();
-    [120, 450, 900, 1500, 2200].forEach((ms) => setTimeout(applyEditData, ms));
-    // Hard-sync dropdowns for delayed plugin hydration.
-    let dropdownRetries = 0;
-    const dropdownSync = setInterval(() => {
-      const wizardData = (editData.wizard_data && typeof editData.wizard_data === 'object') ? editData.wizard_data : {};
-      enforceDropdownPrefill({
-        brand: wizardData.brand ?? editData.brand,
-        model: wizardData.model ?? editData.model,
-        year: wizardData.year ?? editData.year,
-        city: wizardData.city ?? editData.city,
-        radius: wizardData.radius ?? editData.radius,
-        drive_type: wizardData.drive_type ?? editData.drive_type,
-        engine: wizardData.engine ?? editData.engine,
-        fuel_type: wizardData.fuel_type ?? editData.fuel_type,
-        transmission: wizardData.transmission ?? editData.transmission,
-      });
-      dropdownRetries += 1;
-      if (dropdownRetries >= 20) clearInterval(dropdownSync);
-    }, 600);
-    let retries = 0;
-    const hardSync = setInterval(() => {
-      applyEditData();
-      retries += 1;
-      if (retries >= 12) clearInterval(hardSync);
-    }, 500);
+    [120, 450, 900].forEach((ms) => setTimeout(() => {
+      if (!editHydrationDone) applyEditData();
+    }, ms));
   };
 
   if (editData && editData.id) {
@@ -2882,6 +3728,7 @@ HTML;
   }
 
   const updatePreview = () => {
+    if (isEditHydrating) return;
     const brand = selectedOptionText(['select[aria-label="Car brand select"]', 'select[name="brand"]']);
     const model = selectedOptionText(['select[aria-label="Car model select"]', 'select[name="model"]']);
     const year = selectedOptionText(['select[aria-label="Manufacturing year select"]', 'select[name="year"]']);
@@ -2936,11 +3783,14 @@ HTML;
 
   const syncPreviewImage = () => {
     if (!galleryGrid || !uploadTile || !previewImage) return;
-    const firstUploaded = Array.from(galleryGrid.children)
+    const images = Array.from(galleryGrid.children)
       .filter((col) => col !== uploadTile)
       .map((col) => col.querySelector('img'))
-      .find(Boolean);
-    previewImage.src = firstUploaded ? firstUploaded.src : defaultImage;
+      .filter(Boolean);
+    const preferred = images.find((img) => String(img.src || '').startsWith('blob:'))
+      || images[images.length - 1]
+      || null;
+    previewImage.src = preferred ? preferred.src : defaultImage;
   };
 
   const buildDetailedPreviewUrl = () => {
@@ -2995,6 +3845,16 @@ HTML;
     el.addEventListener('input', updatePreview);
     el.addEventListener('change', updatePreview);
   });
+
+  form.addEventListener('change', (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
+    if (input.type !== 'file') return;
+    editHydrationDone = true;
+    isEditHydrating = false;
+    setTimeout(syncPreviewImage, 0);
+    setTimeout(updatePreview, 0);
+  }, true);
 
   form.addEventListener('submit', () => {
     const ensureHidden = (name, value) => {
@@ -3248,6 +4108,14 @@ Route::get('/about', fn () => $serve('about-v2.html'));
 Route::get('/blog', fn () => $serve('blog-layout-v1.html'));
 Route::get('/contact', fn () => $serve('contact-v2.html'));
 Route::get('/terms-and-conditions', fn () => $serve('terms-and-conditions.html'));
+Route::get('/privacy-policy', fn () => $serve('privacy-policy.html'));
+Route::get('/help-topics-v1.html', fn () => $serve('help-topics-v1.html'));
+Route::get('/help-topics-v2.html', fn () => $serve('help-topics-v2.html'));
+Route::get('/help-topics-v3.html', fn () => $serve('help-topics-v3.html'));
+Route::get('/help-single-article-v1.html', fn () => $serve('help-single-article-v1.html'));
+Route::get('/help-single-article-v2.html', fn () => $serve('help-single-article-v2.html'));
+Route::get('/help-single-article-v3.html', fn () => $serve('help-single-article-v3.html'));
+Route::get('/help-center', fn () => redirect('/help-topics-v1.html'));
 Route::get('/signin', function () use ($serve) {
     if (Auth::check()) {
         return redirect('/account/profile');
@@ -3337,6 +4205,13 @@ Route::middleware('auth')->group(function () use ($serve) {
     Route::get('/account/reviews', fn () => $serve('account-reviews.html'));
     Route::get('/account/favorites', fn () => $serve('account-favorites.html'));
     Route::get('/account/payment', fn () => $serve('account-payment.html'));
+    Route::get('/account/help-topics-v1.html', fn () => $serve('help-topics-v1.html'));
+    Route::get('/account/help-topics-v2.html', fn () => $serve('help-topics-v2.html'));
+    Route::get('/account/help-topics-v3.html', fn () => $serve('help-topics-v3.html'));
+    Route::get('/account/help-single-article-v1.html', fn () => $serve('help-single-article-v1.html'));
+    Route::get('/account/help-single-article-v2.html', fn () => $serve('help-single-article-v2.html'));
+    Route::get('/account/help-single-article-v3.html', fn () => $serve('help-single-article-v3.html'));
+    Route::get('/account/help-center', fn () => redirect('/account/help-topics-v1.html'));
     Route::get('/account/cars/{listing}/edit-data', function (int $listing) {
         $editListing = Listing::query()
             ->with(['carDetail', 'city'])
@@ -3443,6 +4318,11 @@ Route::middleware('auth')->group(function () use ($serve) {
                 'service_area' => $serviceArea,
                 'address' => $address,
                 'zip' => $zip,
+                'profile_image' => (string) (
+                    Schema::hasColumn('contractor_details', 'profile_image_path') && !empty($editListing->contractorDetail?->profile_image_path)
+                        ? asset('storage/' . ltrim((string) $editListing->contractorDetail->profile_image_path, '/'))
+                        : ''
+                ),
                 'image' => (string) $editListing->image_url,
                 'gallery_images' => $editListing->images
                     ->sortBy('sort_order')
@@ -3475,6 +4355,12 @@ Route::middleware('auth')->group(function () use ($serve) {
         $path = $file->store('listings/contractors/profile', 'public');
         $record->image = $path;
         $record->save();
+        if (Schema::hasColumn('contractor_details', 'profile_image_path')) {
+            $record->contractorDetail()->updateOrCreate(
+                ['listing_id' => $record->id],
+                ['profile_image_path' => $path]
+            );
+        }
 
         return response()->json([
             'ok' => true,

@@ -128,10 +128,22 @@ class ListingSubmissionController extends Controller
             : [];
         $wizardData = array_merge($existingWizardData, $payload);
         $wizardSession = trim((string) ($wizardData['wizard_session'] ?? ''));
+        $freshStart = $request->boolean('fresh_start');
+        $forceNewDraft = $freshStart && ! $request->filled('listing_id');
+
+        if ($freshStart && auth()->check() && $wizardSession !== '') {
+            $sessionHash = md5($wizardSession);
+            Cache::forget('property-wizard-payload:' . auth()->id() . ':' . $sessionHash);
+            Cache::forget('property-wizard-map:' . auth()->id() . ':' . $sessionHash);
+            Cache::forget('property-draft-inflight:' . auth()->id() . ':' . $sessionHash);
+            $editListing = null;
+            $existingWizardData = [];
+            $wizardData = $payload;
+        }
 
         // Before the location step creates the listing id, keep step-1 data in cache keyed by wizard_session.
         // This prevents redirect loops like `?error=missing-state` when moving from the type step to location.
-        if (auth()->check() && $wizardSession !== '') {
+        if (! $forceNewDraft && auth()->check() && $wizardSession !== '') {
             $wizardCacheKey = 'property-wizard-payload:' . auth()->id() . ':' . md5($wizardSession);
             $cachedWizardData = Cache::get($wizardCacheKey);
             if (is_array($cachedWizardData) && $cachedWizardData) {
@@ -139,7 +151,7 @@ class ListingSubmissionController extends Controller
             }
         }
         $wizardSessionMapKey = null;
-        if (auth()->check() && $wizardSession !== '') {
+        if (! $forceNewDraft && auth()->check() && $wizardSession !== '') {
             $wizardSessionMapKey = 'property-wizard-map:' . auth()->id() . ':' . md5($wizardSession);
             if (! $editListing) {
                 $mappedListingId = (int) Cache::get($wizardSessionMapKey, 0);
@@ -156,7 +168,7 @@ class ListingSubmissionController extends Controller
             }
         }
         $inFlightDraftLockKey = null;
-        if ($status === 'draft' && ! $editListing && auth()->check() && $wizardSession !== '') {
+        if (! $forceNewDraft && $status === 'draft' && ! $editListing && auth()->check() && $wizardSession !== '') {
             $inFlightDraftLockKey = 'property-draft-inflight:' . auth()->id() . ':' . md5($wizardSession);
             if (! Cache::add($inFlightDraftLockKey, 1, now()->addSeconds(20))) {
                 // A near-simultaneous click can hit here before the first request finishes.
@@ -170,6 +182,56 @@ class ListingSubmissionController extends Controller
                     return redirect('/add-property?edit=' . $mappedListingId);
                 }
 
+                // If the mapping key wasn't written yet, fall back to the wizard_session stored in property_details.
+                // This prevents "first click stays on the same page, second click works" race conditions.
+                $sessionDraft = Listing::query()
+                    ->where('user_id', auth()->id())
+                    ->where('module', 'real-estate')
+                    ->where('status', 'draft')
+                    ->whereHas('propertyDetail', function ($query) use ($wizardSession) {
+                        $query->where('wizard_data->wizard_session', $wizardSession);
+                    })
+                    ->latest('id')
+                    ->first();
+                if ($sessionDraft) {
+                    if ($nextPath !== '' && str_starts_with($nextPath, '/add-property')) {
+                        return redirect($nextPath . '?edit=' . $sessionDraft->id);
+                    }
+
+                    return redirect('/add-property-location?edit=' . $sessionDraft->id);
+                }
+
+                // Last-chance: the first request may still be creating the draft listing.
+                // Briefly wait for the mapping to appear, then route forward instead of "reloading" the same page.
+                $deadline = microtime(true) + 1.2;
+                while (microtime(true) < $deadline) {
+                    usleep(150000);
+                    $mappedListingId = $wizardSessionMapKey ? (int) Cache::get($wizardSessionMapKey, 0) : 0;
+                    if ($mappedListingId > 0 && $nextPath !== '' && str_starts_with($nextPath, '/add-property')) {
+                        return redirect($nextPath . '?edit=' . $mappedListingId);
+                    }
+                    if ($mappedListingId > 0) {
+                        return redirect('/add-property?edit=' . $mappedListingId);
+                    }
+
+                    $sessionDraft = Listing::query()
+                        ->where('user_id', auth()->id())
+                        ->where('module', 'real-estate')
+                        ->where('status', 'draft')
+                        ->whereHas('propertyDetail', function ($query) use ($wizardSession) {
+                            $query->where('wizard_data->wizard_session', $wizardSession);
+                        })
+                        ->latest('id')
+                        ->first();
+                    if ($sessionDraft) {
+                        if ($nextPath !== '' && str_starts_with($nextPath, '/add-property')) {
+                            return redirect($nextPath . '?edit=' . $sessionDraft->id);
+                        }
+
+                        return redirect('/add-property-location?edit=' . $sessionDraft->id);
+                    }
+                }
+
                 // If we don't have a mapped listing yet, keep the user in the wizard instead of dumping them
                 // to account listings. This is usually caused by duplicate event handlers / double submits.
                 $referer = (string) ($request->headers->get('referer') ?? '');
@@ -180,18 +242,17 @@ class ListingSubmissionController extends Controller
                 return redirect('/account/listings?saved=draft');
             }
         }
-        if (! $editListing && $status === 'draft' && $wizardSession !== '' && auth()->check()) {
-            $sessionDraft = Listing::query()
+        if (! $forceNewDraft && ! $editListing && $wizardSession !== '' && auth()->check()) {
+            $sessionListing = Listing::query()
                 ->where('user_id', auth()->id())
                 ->where('module', 'real-estate')
-                ->where('status', 'draft')
                 ->whereHas('propertyDetail', function ($query) use ($wizardSession) {
                     $query->where('wizard_data->wizard_session', $wizardSession);
                 })
                 ->latest('id')
                 ->first();
-            if ($sessionDraft) {
-                $editListing = $sessionDraft;
+            if ($sessionListing) {
+                $editListing = $sessionListing;
             }
         }
 
@@ -243,7 +304,7 @@ class ListingSubmissionController extends Controller
         }
 
         $draftLockKey = null;
-        if ($status === 'draft' && ! $editListing && auth()->check()) {
+        if (! $forceNewDraft && $status === 'draft' && ! $editListing && $wizardSession === '' && auth()->check()) {
             $payloadHash = md5(json_encode($wizardData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '');
             $draftLockKey = 'property-draft-lock:' . auth()->id() . ':' . $payloadHash;
             $lockedId = (int) Cache::get($draftLockKey, 0);
@@ -302,7 +363,7 @@ class ListingSubmissionController extends Controller
             $listing = $editListing->fresh(['city']);
         } else {
             $recentDraft = null;
-            if ($status === 'draft' && auth()->check()) {
+            if (! $forceNewDraft && $status === 'draft' && $wizardSession === '' && auth()->check()) {
                 $recentDraft = Listing::query()
                     ->where('user_id', auth()->id())
                     ->where('module', 'real-estate')
@@ -389,10 +450,14 @@ class ListingSubmissionController extends Controller
             return redirect($nextPath . '?edit=' . $listing->id);
         }
 
+        if ($status === 'published' && ! empty($listing->slug)) {
+            return redirect('/entry/real-estate?created=1&slug=' . urlencode((string) $listing->slug));
+        }
+
         return $this->redirectAfterSubmission(
             $status,
             '/account/listings',
-            '/listings/real-estate',
+            '/account/listings',
             $title,
             $listing->id
         );
@@ -529,14 +594,28 @@ class ListingSubmissionController extends Controller
                 'license_number' => $this->firstNonEmpty($payload, ['license-number', 'license_number', 'license']) ?: null,
                 'is_verified' => (bool) ($payload['is-verified'] ?? false),
                 'business_hours' => $businessHours,
+                ...(
+                    Schema::hasColumn('contractor_details', 'profile_image_path')
+                        ? ['profile_image_path' => $editListing?->contractorDetail?->profile_image_path]
+                        : []
+                ),
             ]
         );
 
-          $coverPath = null;
-          $profilePhoto = $request->file('profile_photo');
-          if ($profilePhoto instanceof \Illuminate\Http\UploadedFile && $profilePhoto->isValid()) {
-              $coverPath = $this->storePublicUpload($profilePhoto, 'listings/contractors/profile');
-          }
+        $listing->refresh();
+        $existingProfilePath = trim((string) (
+            (
+                Schema::hasColumn('contractor_details', 'profile_image_path')
+                    ? ($listing->contractorDetail?->profile_image_path ?? '')
+                    : ''
+            ) ?: ($listing->image ?? '')
+        ));
+        $profileImagePath = '';
+        $galleryCoverPath = '';
+        $profilePhoto = $request->file('profile_photo');
+        if ($profilePhoto instanceof \Illuminate\Http\UploadedFile && $profilePhoto->isValid()) {
+            $profileImagePath = (string) ($this->storePublicUpload($profilePhoto, 'listings/contractors/profile') ?? '');
+        }
 
         if ($request->hasFile('photos')) {
             $files = $request->file('photos');
@@ -562,34 +641,39 @@ class ListingSubmissionController extends Controller
                     'sort_order' => $sort,
                     'is_cover' => $sort === 0,
                 ]);
+                if ($sort === 0) {
+                    $galleryCoverPath = $path;
+                }
                 $sort++;
             }
-            if (! $coverPath && count($stored) > 0) {
-                $coverPath = $stored[0];
-            }
         }
 
-        if (! $coverPath) {
-            if ($listing->image) {
-                $coverPath = $listing->image;
-            } else {
-                $firstExisting = $listing->images()->orderBy('sort_order')->first();
-                $coverPath = $firstExisting?->image_path;
+        if ($profileImagePath !== '') {
+            if (Schema::hasColumn('contractor_details', 'profile_image_path')) {
+                $listing->contractorDetail()->updateOrCreate(
+                    ['listing_id' => $listing->id],
+                    ['profile_image_path' => $profileImagePath]
+                );
             }
-        }
-
-        if ($coverPath !== null && $coverPath !== '') {
-            $listing->image = $coverPath;
+            $listing->image = $profileImagePath;
+            $listing->save();
+        } elseif ($existingProfilePath !== '') {
+            $listing->image = $existingProfilePath;
+            $listing->save();
+        } elseif ($galleryCoverPath !== '') {
+            $listing->image = $galleryCoverPath;
             $listing->save();
         }
 
-        return $this->redirectAfterSubmission(
-            $status,
-            '/account/listings',
-            '/listings/contractors',
-            $title,
-            $listing->id
-        );
+        if ($status === 'draft') {
+            return redirect('/account/listings?saved=draft&edit=' . $listing->id);
+        }
+
+        if (! empty($listing->slug)) {
+            return redirect('/entry/contractors?created=1&slug=' . urlencode((string) $listing->slug));
+        }
+
+        return redirect('/listings/contractors?created=1');
     }
 
     public function restaurant(Request $request): RedirectResponse
@@ -1122,6 +1206,11 @@ class ListingSubmissionController extends Controller
         if ($status === 'draft') {
             $qs = $listingId ? ('?saved=draft&edit=' . $listingId) : '?saved=draft';
             return redirect($draftPath . $qs);
+        }
+
+        if ($publishedPath === '/account/listings') {
+            $qs = $listingId ? ('?created=1&published=' . $listingId) : '?created=1';
+            return redirect($publishedPath . $qs);
         }
 
         return redirect($publishedPath . '?created=1&q=' . urlencode($title));

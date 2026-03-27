@@ -16,6 +16,7 @@ class ContractorDetail extends Model
         'license_number',
         'is_verified',
         'business_hours',
+        'profile_image_path',
     ];
 
     protected $casts = [

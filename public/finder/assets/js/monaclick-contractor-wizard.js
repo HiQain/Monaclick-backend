@@ -262,6 +262,7 @@
           if (!remoteUrl) return;
           img.src = remoteUrl;
           if (loadedEditData && typeof loadedEditData === 'object') {
+            loadedEditData.profile_image = remoteUrl;
             loadedEditData.image = remoteUrl;
           }
         })
@@ -607,7 +608,7 @@
       const btn = Array.from(document.querySelectorAll('button, a'))
         .find((el) => (el.textContent || '').trim().toLowerCase() === 'update photo');
       const img = btn?.closest('.d-flex')?.querySelector('img') || document.querySelector('img');
-      const savedUrl = String(data.image || '').trim();
+      const savedUrl = String(data.profile_image || data.image || '').trim();
       if (img && savedUrl) img.src = savedUrl;
     } catch (_) {
       // ignore
