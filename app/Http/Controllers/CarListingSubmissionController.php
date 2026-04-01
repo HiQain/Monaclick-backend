@@ -125,7 +125,49 @@ class CarListingSubmissionController extends Controller
             ? Listing::normalizePrice($priceRaw)
             : ($existingListing?->price ?: null);
         $priceAmount = $priceRaw !== '' ? (int) preg_replace('/[^\d]/', '', $priceRaw) : null;
-        $features = $this->normalizeFeatures($request, $existingListing?->features ?? []);
+        $existingFeatures = is_array($existingListing?->features) ? $existingListing->features : [];
+        $existingPromotionTokens = collect($existingFeatures)
+            ->map(fn ($value) => trim((string) $value))
+            ->filter(fn ($value) => str_starts_with($value, 'promo-package:') || str_starts_with($value, 'promo-service:'))
+            ->values()
+            ->all();
+        $baseFeatures = collect($existingFeatures)
+            ->map(fn ($value) => trim((string) $value))
+            ->filter()
+            ->reject(fn ($value) => str_starts_with($value, 'promo-package:') || str_starts_with($value, 'promo-service:'))
+            ->values()
+            ->all();
+        $features = $this->normalizeFeatures($request, $baseFeatures);
+
+        $promotionPackage = strtolower(trim((string) $request->input('promotion_package', $request->input('package', ''))));
+        $promotionServices = [
+            'certify' => $request->boolean('service_certify'),
+            'lifts' => $request->boolean('service_lifts'),
+            'analytics' => $request->boolean('service_analytics'),
+        ];
+        $hasPromotionPayload = $promotionPackage !== ''
+            || $request->exists('service_certify')
+            || $request->exists('service_lifts')
+            || $request->exists('service_analytics');
+
+        if ($hasPromotionPayload) {
+            if ($promotionPackage !== '') {
+                $features[] = 'promo-package:' . $promotionPackage;
+            }
+
+            foreach ($promotionServices as $serviceKey => $enabled) {
+                if ($enabled) {
+                    $features[] = 'promo-service:' . $serviceKey;
+                }
+            }
+        } else {
+            $features = array_merge($features, $existingPromotionTokens);
+        }
+
+        $features = array_values(array_unique(array_filter(array_map(
+            fn ($feature) => trim((string) $feature),
+            $features
+        ))));
 
         $amount = (int) preg_replace('/[^\d]/', '', (string) $priceRaw);
         if ($priceRaw === '' && $existingListing) {
@@ -144,6 +186,15 @@ class CarListingSubmissionController extends Controller
             : (strtolower((string) $request->input('status', 'published')) === 'draft' ? 'draft' : 'published');
 
         $coverImage = (string) ($existingListing?->image ?: '/finder/assets/img/placeholders/preview-square.svg');
+                $request->validate(
+            [
+                'cover_image' => ['nullable', 'array'],
+                'cover_image.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:8192', 'dimensions:max_height=1000'],
+            ],
+            [
+                'cover_image.*.dimensions' => 'Image height 1000px se zyada nahi ho sakti. Recommended: 1200x675 (16:9).',
+            ]
+        );
         $uploadedImage = $request->file('cover_image');
         if (is_array($uploadedImage)) {
             $uploadedImage = $uploadedImage[0] ?? null;
@@ -179,8 +230,8 @@ class CarListingSubmissionController extends Controller
             'budget_tier' => $budgetTier,
             'availability_now' => true,
             'features' => $features,
-            'rating' => 0,
-            'reviews_count' => 0,
+            'rating' => $existingListing?->rating ?? 0,
+            'reviews_count' => $existingListing?->reviews_count ?? 0,
             'image' => $coverImage,
             'status' => $status,
             'published_at' => $status === 'published'
@@ -264,10 +315,19 @@ class CarListingSubmissionController extends Controller
         );
 
         if ($status === 'draft') {
+            $nextPath = trim((string) $request->input('next', ''));
+            if ($nextPath !== '' && str_starts_with($nextPath, '/add-car-promotion')) {
+                return redirect($nextPath . '?edit=' . $listing->id);
+            }
+
             return redirect('/account/listings?saved=draft&edit=' . $listing->id);
         }
 
-        return redirect('/listings/cars?created=1&q=' . urlencode($title));
+        if (! empty($listing->slug)) {
+            return redirect('/entry/cars?created=1&slug=' . urlencode((string) $listing->slug));
+        }
+
+        return redirect('/listings/cars?created=1');
     }
 
     private function makeUniqueSlug(string $title, string $fallback, ?int $ignoreId = null): string

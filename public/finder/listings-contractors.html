@@ -356,24 +356,25 @@
                   <h4 class="h6">Location and radius</h4>
                   <div class="vstack gap-3">
                     <div class="position-relative">
+                      <i class="fi-map position-absolute top-50 start-0 translate-middle-y z-1 ms-3"></i>
+                      <select class="form-select form-icon-start" data-select='{
+                        "classNames": {
+                          "containerInner": ["form-select", "form-icon-start"]
+                        },
+                        "searchEnabled": true
+                      }' aria-label="Car state select" data-location-state>
+                        <option value="">Any state</option>
+                      </select>
+                    </div>
+                    <div class="position-relative">
                       <i class="fi-map-pin position-absolute top-50 start-0 translate-middle-y z-1 ms-3"></i>
                       <select class="form-select form-icon-start" data-select='{
                         "classNames": {
                           "containerInner": ["form-select", "form-icon-start"]
                         },
                         "searchEnabled": true
-                      }' aria-label="Car location select">
-                        <option value="">Any location</option>
-                        <option value="New York" selected>New York</option>
-                        <option value="Los Angeles">Los Angeles</option>
-                        <option value="Chicago">Chicago</option>
-                        <option value="Houston">Houston</option>
-                        <option value="Phoenix">Phoenix</option>
-                        <option value="Philadelphia">Philadelphia</option>
-                        <option value="San Antonio">San Antonio</option>
-                        <option value="San Diego">San Diego</option>
-                        <option value="Dallas">Dallas</option>
-                        <option value="San Jose">San Jose</option>
+                      }' aria-label="Car location select" data-location-city>
+                        <option value="">Select state first</option>
                       </select>
                     </div>
                     <div class="position-relative">
@@ -384,12 +385,10 @@
                         }
                       }' aria-label="Location radius select">
                         <option value="">Any radius</option>
-                        <option value="10 mi">10 mi</option>
-                        <option value="20 mi">20 mi</option>
-                        <option value="30 mi">30 mi</option>
-                        <option value="40 mi">40 mi</option>
-                        <option value="50 mi" selected>50 mi</option>
-                        <option value="60 mi">60 mi</option>
+                        <option value="50 mi">50 mi</option>
+                        <option value="100 mi">100 mi</option>
+                        <option value="150 mi">150 mi</option>
+                        <option value="200 mi">200 mi</option>
                       </select>
                     </div>
                   </div>
@@ -655,14 +654,6 @@
             <div class="d-flex align-items-center gap-3 pb-sm-2">
               <div class="w-100 pb-3 overflow-x-auto">
                 <div class="d-flex gap-2">
-                  <button type="button" class="btn btn-sm btn-secondary rounded-pill">
-                    <i class="fi-close fs-sm me-1 ms-n1"></i>
-                    New York
-                  </button>
-                  <button type="button" class="btn btn-sm btn-secondary rounded-pill">
-                    <i class="fi-close fs-sm me-1 ms-n1"></i>
-                    50 mi
-                  </button>
                   <button type="button" class="btn btn-sm btn-secondary rounded-pill">
                     <i class="fi-close fs-sm me-1 ms-n1"></i>
                     Heating &amp; fernace

@@ -20,6 +20,29 @@
   };
 
   const entryUrl = (item) => `/entry/${encodeURIComponent(item.module)}?slug=${encodeURIComponent(item.slug)}`;
+  const slugify = (value) =>
+    String(value ?? '')
+      .trim()
+      .toLowerCase()
+      .replaceAll('&', ' and ')
+      .replaceAll(/[^a-z0-9]+/g, '-')
+      .replaceAll(/-+/g, '-')
+      .replaceAll(/^-|-$/g, '');
+
+  const buildCombinedSearchParams = (module, serviceValue, cityValue) => {
+    const params = { per_page: '3' };
+    const serviceSlug = slugify(serviceValue);
+
+    if (module === 'contractors') {
+      if (serviceSlug) params.category = serviceSlug;
+      if (cityValue) params.q = cityValue;
+      return params;
+    }
+
+    const q = [serviceValue, cityValue].filter(Boolean).join(' ').trim();
+    if (q) params.q = q;
+    return params;
+  };
 
   const readCache = () => {
     const parseCache = (raw) => {
@@ -145,7 +168,8 @@
     if (!wrap) return;
     wrap.innerHTML = items.slice(0, 6).map((item, index) => `
       <div class="swiper-slide h-auto">
-        <article class="card h-100 position-relative">
+        <article class="card h-100 hover-effect-scale bg-body-tertiary border-0">
+          <div class="card-img-top position-relative overflow-hidden">
           <img class="card-img-top module-card-img" src="${escapeHtml(item.image_url || '/finder/assets/img/placeholders/preview-square.svg')}" alt="${escapeHtml(item.title)}" loading="${index === 0 ? 'eager' : 'lazy'}" fetchpriority="${index === 0 ? 'high' : 'auto'}" decoding="async" onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';">
           ${(() => {
             const badges = [];
@@ -153,15 +177,42 @@
             const stock = conditionRaw.includes('used') ? 'Used' : (conditionRaw.includes('new') ? 'New' : '');
             const features = Array.isArray(item?.features) ? item.features : [];
             const isVerified = features.some((f) => String(f || '').toLowerCase().includes('verified'));
-            if (isVerified) badges.push('<span class="badge text-bg-success">Verified</span>');
-            if (stock) badges.push(`<span class="badge text-bg-warning text-dark">${escapeHtml(stock)}</span>`);
+            if (isVerified) badges.push('<span class="badge text-bg-info d-inline-flex align-items-center">Verified<i class="fi-shield ms-1"></i></span>');
+            if (stock) badges.push(`<span class="badge ${stock === 'New' ? 'text-bg-primary' : 'text-bg-warning'}">${escapeHtml(stock)}</span>`);
             if (!badges.length) return '';
-            return `<div class="card-img-overlay d-flex flex-column align-items-start gap-2 p-3" style="pointer-events:none">${badges.join('')}</div>`;
+            return `<div class="d-flex flex-column gap-2 align-items-start position-absolute top-0 start-0 z-1 pt-1 pt-sm-0 ps-1 ps-sm-0 mt-2 mt-sm-3 ms-2 ms-sm-3" style="pointer-events:none">${badges.join('')}</div>`;
           })()}
-          <div class="card-body">
-            <div class="fs-sm text-body-secondary mb-2">${escapeHtml(item.city?.name || 'City')}</div>
-            <a class="stretched-link text-decoration-none" href="${entryUrl(item)}"><h3 class="h5 mb-1">${escapeHtml(item.title)}</h3></a>
-            <div class="h5 mb-0">${escapeHtml(item.price || '')}</div>
+          </div>
+          <div class="card-body pb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="fs-xs text-body-secondary me-3">Recently added</div>
+              <div class="d-flex gap-2 position-relative z-2">
+                <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-pulse rounded-circle" aria-label="Add to wishlist">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+                <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-shake rounded-circle" aria-label="Notify">
+                  <i class="fi-bell animate-target fs-sm"></i>
+                </button>
+                <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-rotate rounded-circle" aria-label="Compare">
+                  <i class="fi-repeat animate-target fs-sm"></i>
+                </button>
+              </div>
+            </div>
+            <h3 class="h6 mb-2">
+              <a class="hover-effect-underline stretched-link me-1 text-decoration-none" href="${entryUrl(item)}">${escapeHtml(item.title)}</a>
+              ${item?.details?.car?.year ? `<span class="fs-xs fw-normal text-body-secondary">(${escapeHtml(item.details.car.year)})</span>` : ''}
+            </h3>
+            <div class="h6 mb-0">${escapeHtml(item.price || '')}</div>
+          </div>
+          <div class="card-footer bg-transparent border-0 pt-0 pb-4">
+            <div class="border-top pt-3">
+              <div class="row row-cols-2 g-2 fs-sm">
+                <div class="col d-flex align-items-center gap-2"><i class="fi-map-pin"></i>${escapeHtml(item.city?.name || 'Location')}</div>
+                <div class="col d-flex align-items-center gap-2"><i class="fi-tachometer"></i>${escapeHtml(item?.details?.car?.mileage ? `${item.details.car.mileage} mi` : 'N/A')}</div>
+                <div class="col d-flex align-items-center gap-2"><i class="fi-gas-pump"></i>${escapeHtml(item?.details?.car?.fuel_type || 'N/A')}</div>
+                <div class="col d-flex align-items-center gap-2"><i class="fi-gearbox"></i>${escapeHtml(item?.details?.car?.transmission || 'N/A')}</div>
+              </div>
+            </div>
           </div>
         </article>
       </div>
@@ -290,20 +341,43 @@
     const wrap = document.getElementById('combinedSearchResults');
     const grid = document.getElementById('combinedSearchResultsGrid');
     const viewAll = document.getElementById('combinedSearchViewAll');
+    const meta = document.getElementById('combinedSearchMeta');
+    const summary = document.getElementById('combinedSearchSummary');
     if (!wrap || !grid) return;
+
+    const serviceValue = (document.getElementById('serviceQuery')?.value || '').trim();
+    const cityValue = (document.getElementById('cityZip')?.value || '').trim();
+
+    if (meta) {
+      meta.innerHTML = [
+        serviceValue ? `<span class="combined-search-chip"><i class="fi-search"></i>${escapeHtml(serviceValue)}</span>` : '',
+        cityValue ? `<span class="combined-search-chip"><i class="fi-map-pin"></i>${escapeHtml(cityValue)}</span>` : '',
+      ].filter(Boolean).join('');
+    }
 
     if (!items.length) {
       wrap.classList.remove('d-none');
+      if (summary) summary.textContent = 'No listings matched this search yet. Try another service or city.';
       grid.innerHTML = '<div class="col-12"><div class="alert alert-warning mb-0">No listings found for this search.</div></div>';
       return;
     }
 
     if (viewAll) {
       const first = items[0];
-      viewAll.setAttribute('href', `/listings/${encodeURIComponent(first.module)}?q=${encodeURIComponent(document.getElementById('serviceQuery')?.value || '')}`);
+      if (first?.module === 'contractors') {
+        const params = new URLSearchParams();
+        const serviceSlug = slugify(serviceValue);
+        if (serviceSlug) params.set('category', serviceSlug);
+        viewAll.setAttribute('href', `/listings/contractors${params.toString() ? `?${params.toString()}` : ''}`);
+      } else {
+        viewAll.setAttribute('href', `/listings/${encodeURIComponent(first.module)}?q=${encodeURIComponent(serviceValue)}`);
+      }
     }
 
     wrap.classList.remove('d-none');
+    if (summary) {
+      summary.textContent = `Showing ${items.length} result${items.length === 1 ? '' : 's'} for your current search.`;
+    }
     grid.innerHTML = items.map((item) => `
       <div class="col-sm-6 col-xl-3">
         <article class="card h-100">
@@ -367,8 +441,12 @@
 
   const searchForm = document.getElementById('combinedSearchForm');
   if (searchForm) {
+    searchForm.setAttribute('data-mc-no-loader', '1');
     searchForm.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (typeof window.__MC_HIDE_PAGE_LOADER__ === 'function') {
+        window.__MC_HIDE_PAGE_LOADER__();
+      }
       const serviceValue = (document.getElementById('serviceQuery')?.value || '').trim();
       const cityValue = (document.getElementById('cityZip')?.value || '').trim();
       const q = [serviceValue, cityValue].filter(Boolean).join(' ').trim();
@@ -378,16 +456,24 @@
         return;
       }
 
-      const modules = ['contractors', 'real-estate', 'cars', 'restaurants'];
-      const results = await Promise.allSettled(modules.map((module) => fetchListings(module, { q, per_page: '3' })));
+      try {
+        const modules = ['contractors', 'real-estate', 'cars', 'restaurants'];
+        const results = await Promise.allSettled(
+          modules.map((module) => fetchListings(module, buildCombinedSearchParams(module, serviceValue, cityValue)))
+        );
 
-      const merged = results
-        .filter((result) => result.status === 'fulfilled')
-        .flatMap((result) => result.value)
-        .slice(0, 8);
+        const merged = results
+          .filter((result) => result.status === 'fulfilled')
+          .flatMap((result) => result.value)
+          .slice(0, 8);
 
-      renderSearchResults(merged);
-      document.getElementById('combinedSearchResults')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        renderSearchResults(merged);
+        document.getElementById('combinedSearchResults')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } finally {
+        if (typeof window.__MC_HIDE_PAGE_LOADER__ === 'function') {
+          window.__MC_HIDE_PAGE_LOADER__();
+        }
+      }
     });
   }
 

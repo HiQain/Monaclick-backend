@@ -7,6 +7,8 @@ use App\Models\City;
 use App\Models\State;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class LocationController extends Controller
@@ -73,19 +75,71 @@ class LocationController extends Controller
             return response()->json(['data' => $fallback]);
         }
 
-        $states = State::query()
-            ->where('country_code', 'US')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get(['code', 'name'])
-            ->map(fn (State $state) => [
-                'code' => $state->code,
-                'name' => $state->name,
-            ])
-            ->values();
+        $states = Cache::remember('locations:states:us', now()->addHours(12), function () use ($fallback) {
+            $cityStateCodes = [];
 
-        if ($states->isEmpty()) {
+            if (Schema::hasTable('cities') && Schema::hasColumn('cities', 'state_code')) {
+                $cityStateCodes = DB::table('cities')
+                    ->selectRaw('DISTINCT UPPER(TRIM(state_code)) as code')
+                    ->whereNotNull('state_code')
+                    ->whereRaw("TRIM(state_code) <> ''")
+                    ->pluck('code')
+                    ->map(fn ($code) => strtoupper(trim((string) $code)))
+                    ->filter(fn ($code) => preg_match('/^[A-Z]{2}$/', $code) === 1)
+                    ->values()
+                    ->all();
+            }
+
+            if (!empty($cityStateCodes)) {
+                if (Schema::hasTable('states')) {
+                    $states = State::query()
+                        ->where('country_code', 'US')
+                        ->where('is_active', true)
+                        ->whereIn('code', $cityStateCodes)
+                        ->orderBy('sort_order')
+                        ->orderBy('name')
+                        ->get(['code', 'name'])
+                        ->map(fn (State $state) => [
+                            'code' => $state->code,
+                            'name' => $state->name,
+                        ])
+                        ->values()
+                        ->all();
+
+                    if (!empty($states)) {
+                        return $states;
+                    }
+                }
+
+                $fallbackMap = collect($fallback)->keyBy(fn ($item) => strtoupper((string) ($item['code'] ?? '')));
+
+                $states = collect($cityStateCodes)
+                    ->map(fn ($code) => $fallbackMap->get($code))
+                    ->filter(fn ($item) => is_array($item) && !empty($item['code']) && !empty($item['name']))
+                    ->sortBy('name')
+                    ->values()
+                    ->all();
+
+                if (!empty($states)) {
+                    return $states;
+                }
+            }
+
+            return State::query()
+                ->where('country_code', 'US')
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(['code', 'name'])
+                ->map(fn (State $state) => [
+                    'code' => $state->code,
+                    'name' => $state->name,
+                ])
+                ->values()
+                ->all();
+        });
+
+        if (empty($states)) {
             return response()->json(['data' => $fallback]);
         }
 
@@ -114,44 +168,49 @@ class LocationController extends Controller
             }
         }
 
-        $hasIsActive = Schema::hasColumn('cities', 'is_active');
-        $hasSortOrder = Schema::hasColumn('cities', 'sort_order');
+        $cities = Cache::remember("locations:cities:{$state}", now()->addHours(12), function () use ($state) {
+            $hasIsActive = Schema::hasColumn('cities', 'is_active');
+            $hasSortOrder = Schema::hasColumn('cities', 'sort_order');
 
-        $citiesQuery = City::query()
-            // Be tolerant to legacy/dirty imports (lowercase or extra spaces).
-            ->whereRaw('UPPER(TRIM(state_code)) = ?', [$state]);
+            $citiesQuery = City::query()
+                // Be tolerant to legacy/dirty imports (lowercase or extra spaces).
+                ->whereRaw('UPPER(TRIM(state_code)) = ?', [$state]);
 
-        if ($hasIsActive) {
-            // Treat NULL as active (common when importing via phpMyAdmin/CSV with empty values).
-            $citiesQuery->where(function ($q) {
-                $q->whereNull('is_active')->orWhere('is_active', true);
-            });
-        }
+            if ($hasIsActive) {
+                // Treat NULL as active (common when importing via phpMyAdmin/CSV with empty values).
+                $citiesQuery->where(function ($q) {
+                    $q->whereNull('is_active')->orWhere('is_active', true);
+                });
+            }
 
-        if ($hasSortOrder) {
-            $citiesQuery->orderBy('sort_order');
-        }
+            if ($hasSortOrder) {
+                $citiesQuery->orderBy('sort_order');
+            }
 
-        $baseQuery = clone $citiesQuery;
+            $baseQuery = clone $citiesQuery;
 
-        $fetch = function ($query) {
-            return $query
-                ->orderBy('name')
-                ->limit(200)
-                ->get(['name', 'slug'])
-                ->map(fn (City $city) => [
-                    'name' => $city->name,
-                    'slug' => $city->slug,
-                ])
-                ->values();
-        };
+            $fetch = function ($query) {
+                return $query
+                    ->orderBy('name')
+                    ->get(['name', 'slug'])
+                    ->unique(fn (City $city) => mb_strtolower(trim((string) $city->name)))
+                    ->map(fn (City $city) => [
+                        'name' => $city->name,
+                        'slug' => $city->slug,
+                    ])
+                    ->values()
+                    ->all();
+            };
 
-        $cities = $fetch($citiesQuery);
+            $cities = $fetch($citiesQuery);
 
-        // If data exists but flags are wrong (e.g. imported is_active=0), don't show an empty dropdown.
-        if ($hasIsActive && $cities->isEmpty()) {
-            $cities = $fetch($baseQuery);
-        }
+            // If data exists but flags are wrong (e.g. imported is_active=0), don't show an empty dropdown.
+            if ($hasIsActive && empty($cities)) {
+                $cities = $fetch($baseQuery);
+            }
+
+            return $cities;
+        });
 
         return response()->json(['data' => $cities]);
     }

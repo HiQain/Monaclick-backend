@@ -1,5 +1,5 @@
 (() => {
-  window.__MC_ENTRY_DYNAMIC_VERSION__ = '2026-03-14-r1';
+  window.__MC_ENTRY_DYNAMIC_VERSION__ = '2026-03-27-r5';
   try { console.log('[Monaclick] entry dynamic', window.__MC_ENTRY_DYNAMIC_VERSION__); } catch (e) {}
 
   const path = window.location.pathname;
@@ -14,6 +14,162 @@
     if (document.body?.classList.contains('monaclick-entry-shell')) {
       document.body.setAttribute('data-entry-ready', '1');
     }
+    if (typeof window.__MC_HIDE_PAGE_LOADER__ === 'function') {
+      window.__MC_HIDE_PAGE_LOADER__();
+    }
+  };
+
+  const ensureEntryLoaderStyles = () => {
+    const styleId = 'mc-entry-loader-style';
+    if (document.getElementById(styleId)) return;
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      .mc-entry-loader-wrap{
+        min-height: clamp(320px, 58vh, 560px);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:24px 0;
+      }
+      .mc-entry-loader-card{
+        width:72px;
+        height:72px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+      .mc-entry-loader-spinner{
+        position:relative;
+        width:52px;
+        height:52px;
+        filter:drop-shadow(0 6px 18px rgba(249, 115, 22, .18));
+      }
+      .mc-entry-inline-loader{
+        width:28px;
+        height:28px;
+        position:relative;
+      }
+      .mc-inline-loading-text{
+        width:28px;
+        height:28px;
+        display:inline-block;
+        vertical-align:middle;
+        font-size:0 !important;
+        line-height:0 !important;
+        color:transparent !important;
+        position:relative;
+        overflow:hidden;
+      }
+      [data-mc-car-features="1"].text-body-secondary.small{
+        width:28px;
+        height:28px;
+        font-size:0;
+        line-height:0;
+        color:transparent !important;
+        position:relative;
+        overflow:hidden;
+      }
+      .mc-entry-loader-spinner::before,
+      .mc-entry-loader-spinner::after,
+      .mc-entry-inline-loader::before,
+      .mc-entry-inline-loader::after,
+      .mc-inline-loading-text::before,
+      .mc-inline-loading-text::after,
+      [data-mc-car-features="1"].text-body-secondary.small::before,
+      [data-mc-car-features="1"].text-body-secondary.small::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:50%;
+      }
+      .mc-entry-loader-spinner::before{
+        border:4px solid rgba(15, 23, 42, .10);
+        border-top-color:#fd7e14;
+        border-right-color:#f59e0b;
+        animation:mc-entry-loader-spin .9s linear infinite;
+      }
+      .mc-entry-loader-spinner::after{
+        inset:9px;
+        border:4px solid rgba(249, 115, 22, .20);
+        border-bottom-color:#f97316;
+        border-left-color:#fb923c;
+        animation:mc-entry-loader-spin-reverse .72s linear infinite;
+      }
+      .mc-entry-inline-loader::before{
+        border:3px solid rgba(15, 23, 42, .10);
+        border-top-color:#fd7e14;
+        border-right-color:#f59e0b;
+        animation:mc-entry-loader-spin .9s linear infinite;
+      }
+      .mc-entry-inline-loader::after{
+        inset:6px;
+        border:3px solid rgba(249, 115, 22, .20);
+        border-bottom-color:#f97316;
+        border-left-color:#fb923c;
+        animation:mc-entry-loader-spin-reverse .72s linear infinite;
+      }
+      .mc-inline-loading-text::before{
+        border:3px solid rgba(15, 23, 42, .10);
+        border-top-color:#fd7e14;
+        border-right-color:#f59e0b;
+        animation:mc-entry-loader-spin .9s linear infinite;
+      }
+      .mc-inline-loading-text::after{
+        inset:6px;
+        border:3px solid rgba(249, 115, 22, .20);
+        border-bottom-color:#f97316;
+        border-left-color:#fb923c;
+        animation:mc-entry-loader-spin-reverse .72s linear infinite;
+      }
+      [data-mc-car-features="1"].text-body-secondary.small::before{
+        border:3px solid rgba(15, 23, 42, .10);
+        border-top-color:#fd7e14;
+        border-right-color:#f59e0b;
+        animation:mc-entry-loader-spin .9s linear infinite;
+      }
+      [data-mc-car-features="1"].text-body-secondary.small::after{
+        inset:6px;
+        border:3px solid rgba(249, 115, 22, .20);
+        border-bottom-color:#f97316;
+        border-left-color:#fb923c;
+        animation:mc-entry-loader-spin-reverse .72s linear infinite;
+      }
+      @keyframes mc-entry-loader-spin{
+        to{transform:rotate(360deg)}
+      }
+      @keyframes mc-entry-loader-spin-reverse{
+        to{transform:rotate(-360deg)}
+      }
+    `;
+    document.head.appendChild(style);
+  };
+
+  const ensureEntryLightboxStyles = () => {
+    const styleId = 'mc-entry-lightbox-style';
+    if (document.getElementById(styleId)) return;
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      .glightbox-container .gloader{
+        display:none !important;
+        opacity:0 !important;
+        visibility:hidden !important;
+      }
+    `;
+    document.head.appendChild(style);
+  };
+
+  const renderEntryLoader = () => {
+    ensureEntryLoaderStyles();
+    container.innerHTML = `
+      <div class="mc-entry-loader-wrap" aria-live="polite" aria-busy="true">
+        <div class="mc-entry-loader-card" role="status" aria-live="polite" aria-busy="true">
+          <div class="mc-entry-loader-spinner" aria-hidden="true"></div>
+        </div>
+      </div>
+    `;
+    try { container.style.opacity = '1'; } catch (e) {}
   };
 
   const wireDeadPlaceholderLinks = () => {
@@ -104,13 +260,51 @@
     return numberFormatter ? numberFormatter.format(n) : raw;
   };
 
+  const reviewStats = (item) => ({
+    rating: Number(item?.rating || 0),
+    reviews: Number(item?.reviews_count || 0),
+  });
+
   const formatMoneyDisplay = (value) => {
     const raw = String(value ?? '').trim();
     if (!raw) return '';
-    const m = raw.match(/^\$\s*([\d,]+(?:\.\d+)?)$/);
+    const m = raw.match(/^(\$?\s*)?(from\s+)?([\d,]+(?:\.\d+)?)$/i);
     if (!m) return raw;
-    const formatted = formatNumber(m[1]);
-    return formatted ? `$${formatted}` : raw;
+    const currency = String(m[1] || '').replace(/\s+/g, '');
+    const fromPrefix = m[2] ? 'From ' : '';
+    const formatted = formatNumber(m[3]);
+    if (!formatted) return raw;
+    return `${currency || '$'}${fromPrefix}${formatted}`.trim();
+  };
+
+  const capitalizeFirstLetter = (value) => {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  };
+
+  const formatContractorAddress = (item) => {
+    const contractor = item?.details?.contractor || {};
+    const address = String(contractor.address || '').trim();
+    const city = String(item?.city?.name || '').trim();
+    const state = String(contractor.state || '').trim();
+    const zip = String(contractor.zip_code || '').trim();
+
+    if (!address) {
+      return [city, state, zip].filter(Boolean).join(', ');
+    }
+
+    const addressLower = address.toLowerCase();
+    const hasCity = city && addressLower.includes(city.toLowerCase());
+    const hasState = state && addressLower.includes(state.toLowerCase());
+    const hasZip = zip && address.includes(zip);
+
+    return [
+      address,
+      !hasCity ? city : '',
+      !hasState ? state : '',
+      !hasZip ? zip : '',
+    ].filter(Boolean).join(', ');
   };
 
   const formatHours = (hours) => {
@@ -263,7 +457,7 @@
 
     const values = [...base, ...carWizard]
       .map((f) => String(f ?? '').trim())
-      .filter((f) => !!f && !/^service:\s*/i.test(f));
+      .filter((f) => !!f && !/^service:\s*/i.test(f) && !/^promo-package:/i.test(f) && !/^promo-service:/i.test(f));
 
     const seen = new Set();
     return values.filter((f) => {
@@ -277,6 +471,67 @@
   const renderFeatures = (item) => {
     const features = normalizedFeatures(item);
     if (!features.length) return '';
+
+    if (item?.module === 'real-estate') {
+      const priceFeatureKeys = new Set([
+        'negotiable',
+        'negotiated',
+        'no credit',
+        'no-credit',
+        'agent friendly',
+        'agent-friendly',
+        'exchange',
+      ]);
+
+      const priceBadges = [];
+      const amenityBadges = [];
+
+      features.forEach((feature) => {
+        const label = humanizeFeature(feature);
+        if (!label) return;
+        const key = String(feature || '').trim().toLowerCase().replace(/[_\s]+/g, '-');
+        const badge = `<span class="badge bg-body-secondary text-body">${escapeHtml(label)}</span>`;
+        if (priceFeatureKeys.has(key)) {
+          priceBadges.push(badge);
+        } else {
+          amenityBadges.push(badge);
+        }
+      });
+
+      const sections = [];
+      if (item.price || priceBadges.length) {
+        sections.push(`
+          <div class="mb-4">
+            <h2 class="h4 mb-3">Price</h2>
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-sm-6 col-lg-3">
+                <div class="border rounded p-3 h-100">
+                  <div class="text-body-secondary small">Price</div>
+                  <div class="fw-semibold">${escapeHtml(item.price || 'Price on request')}</div>
+                </div>
+              </div>
+            </div>
+            ${priceBadges.length ? `<div class="d-flex flex-wrap gap-2">${priceBadges.join('')}</div>` : ''}
+          </div>
+        `);
+      }
+      if (amenityBadges.length) {
+        sections.push(`
+          <div>
+            <h2 class="h4 mb-3">Amenities</h2>
+            <div class="d-flex flex-wrap gap-2">${amenityBadges.join('')}</div>
+          </div>
+        `);
+      }
+
+      if (!sections.length) return '';
+
+      return `
+        <section data-mc-features="1" class="pb-sm-2 pb-lg-3 mb-5">
+          ${sections.join('')}
+        </section>
+      `;
+    }
 
     const badges = features
       .map(humanizeFeature)
@@ -405,23 +660,21 @@
     const add = (label, value, opts = {}) => {
       const v = String(value ?? '').trim();
       if (!v || v.toLowerCase() === 'n/a') return;
-      pairs.push({ label, value: v, preLine: !!opts.preLine });
+      pairs.push({ label, value: v, preLine: !!opts.preLine, section: opts.section || 'Details' });
     };
 
     add('Category', item.category?.name || '');
     add('City', item.city?.name || '');
-    add('Price', item.price || '');
-    add('Rating', item.rating ? `${Number(item.rating).toFixed(1)} (${Number(item.reviews_count || 0)})` : '');
+    if (item.module !== 'real-estate') add('Price', formatMoneyDisplay(item.price || ''));
+    if (item.module === 'cars') {
+      const stats = reviewStats(item);
+      add('Rating', `${stats.rating.toFixed(1)} (${stats.reviews})`);
+    }
 
     if (item.module === 'contractors' && item.details?.contractor) {
       const d = item.details.contractor;
-      const services = (Array.isArray(item.features) ? item.features : [])
-        .map((f) => String(f ?? '').trim())
-        .filter((f) => /^service:\s*/i.test(f))
-        .map((f) => f.replace(/^service:\s*/i, '').trim())
-        .filter(Boolean);
-
-      if (services.length) add('Services', services.join(', '));
+      add('Address', formatContractorAddress(item));
+      add('State', d.state || '');
       add('Service Area', d.service_area || '');
       add('License', d.license_number || '');
       add('Verified', d.is_verified ? 'Yes' : 'No');
@@ -431,21 +684,22 @@
 
     if (item.module === 'real-estate' && item.details?.property) {
       const d = item.details.property;
-      add('Contact Name', d.contact_name || '');
-      add('Contact', [d.contact_phone, d.contact_email].filter(Boolean).join('\n'), { preLine: true });
       add('Type', d.property_type || '');
-      add('Listing', d.listing_type || '');
+      add('Listing', d.listing_type ? d.listing_type.charAt(0).toUpperCase() + d.listing_type.slice(1) : '');
       add('Bedrooms', d.bedrooms ?? '');
       add('Bathrooms', d.bathrooms ?? '');
-      add('Area (sqft)', d.area_sqft !== null && typeof d.area_sqft !== 'undefined' ? formatNumber(d.area_sqft) : '');
       add('Total floors', d.floors_total ?? '');
       add('Floor', d.floor ?? '');
-      add('Total area', d.total_area !== null && typeof d.total_area !== 'undefined' ? formatNumber(d.total_area) : '');
-      add('Living area', d.living_area !== null && typeof d.living_area !== 'undefined' ? formatNumber(d.living_area) : '');
-      add('Kitchen area', d.kitchen_area !== null && typeof d.kitchen_area !== 'undefined' ? formatNumber(d.kitchen_area) : '');
+      add('Area (sq.ft)', d.area_sqft !== null && typeof d.area_sqft !== 'undefined' ? `${formatNumber(d.area_sqft)} ft` : '');
+      add('Total area', d.total_area !== null && typeof d.total_area !== 'undefined' ? `${formatNumber(d.total_area)} ft` : '');
+      add('Living area', d.living_area !== null && typeof d.living_area !== 'undefined' ? `${formatNumber(d.living_area)} ft` : '');
+      add('Kitchen area', d.kitchen_area !== null && typeof d.kitchen_area !== 'undefined' ? `${formatNumber(d.kitchen_area)} ft` : '');
       add('Parking', d.parking ?? '');
       add('Address', d.address ?? '');
-      add('ZIP', d.zip ?? '');
+      add('Contact Name', d.contact_name || '', { section: 'Contact details' });
+      add('Contact', [d.contact_phone, d.contact_email].filter(Boolean).join('\n'), { preLine: true, section: 'Contact details' });
+      add('Contact Address', d.address ?? '', { section: 'Contact details' });
+      add('City', item.city?.name || '', { section: 'Contact details' });
     }
 
     if (item.module === 'cars' && item.details?.car) {
@@ -481,13 +735,11 @@
 
     if (item.module === 'restaurants') {
       const d = item.details?.restaurant || {};
-      add('Contact Name', d.contact_name || '');
-      add('Contact', [d.phone, d.email].filter(Boolean).join('\n'), { preLine: true });
       add('Cuisine', item.category?.name || '');
-      add('Address', d.address || '');
-      add('ZIP', d.zip_code || '');
       add('Seats', d.seating_capacity ? formatNumber(d.seating_capacity) : '');
-      add('Services', Array.isArray(d.services) ? d.services.filter(Boolean).join(', ') : '');
+      add('Contact Name', d.contact_name || '', { section: 'Contact details' });
+      add('Contact', [d.phone, d.email].filter(Boolean).join('\n'), { preLine: true, section: 'Contact details' });
+      add('Address', d.address || '', { section: 'Contact details' });
       const restHours = formatHours(d.opening_hours);
       if (restHours) add('Hours', restHours, { preLine: true });
     }
@@ -501,7 +753,7 @@
       return '<div class="text-body-secondary fs-sm">Details not available.</div>';
     }
 
-    const wideLabels = new Set(['Address', 'Hours', 'Contact', 'Services', 'Service Area']);
+    const wideLabels = new Set(['Address', 'Hours', 'Contact', 'Services', 'Service Area', 'Contact Address']);
     const colClassFor = (label) => {
       const base = 'col-12 col-sm-6 col-lg-3';
       if (!label) return base;
@@ -514,27 +766,162 @@
       if (p.preLine) style.push('white-space:pre-line');
       return style.join(';');
     };
-    return `
-      <div class="row g-3">
-        ${pairs.map((p) => `
-          <div class="${colClassFor(p.label)}">
-            <div class="border rounded p-3 h-100">
-              <div class="text-body-secondary small">${escapeHtml(p.label)}</div>
-              <div class="fw-semibold" style="${valueStyleFor(p)}">${escapeHtml(p.value)}</div>
+    const grouped = pairs.reduce((acc, pair) => {
+      const section = pair.section || 'Details';
+      if (!acc[section]) acc[section] = [];
+      acc[section].push(pair);
+      return acc;
+    }, {});
+
+    return Object.entries(grouped).map(([section, sectionPairs]) => `
+      <section class="${section === 'Details' ? '' : 'mt-4'}">
+        ${section === 'Details' ? '' : `<h2 class="h4 mb-3">${escapeHtml(section)}</h2>`}
+        <div class="row g-3">
+          ${sectionPairs.map((p) => `
+            <div class="${colClassFor(p.label)}">
+              <div class="border rounded p-3 h-100">
+                <div class="text-body-secondary small">${escapeHtml(p.label)}</div>
+                <div class="fw-semibold" style="${valueStyleFor(p)}">${escapeHtml(p.value)}</div>
+              </div>
             </div>
+          `).join('')}
+        </div>
+      </section>
+    `).join('');
+  };
+
+  const renderReviewsSection = (item) => {
+    const moduleName = moduleLabel(item?.module || selectedModule).replace(/s$/, '').toLowerCase();
+    return `
+      <section class="pb-sm-2 pb-lg-3 mb-5" data-mc-reviews-section="${escapeHtml(item?.module || selectedModule)}">
+        <div class="border rounded-4 p-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="fi-edit fs-5 text-primary"></i>
+            <h2 class="h4 mb-0">Write a review</h2>
           </div>
-        `).join('')}
-      </div>
+          <p class="text-body-secondary fs-sm mb-4">Leave your review for this listing.</p>
+          <form data-mc-review-form="${escapeHtml(item?.module || selectedModule)}" novalidate>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Your name</label>
+                <input type="text" class="form-control" name="name" placeholder="Enter your name" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label d-block mb-2">Your rating</label>
+                <div class="d-flex flex-wrap gap-3">
+                  ${[5, 4, 3, 2, 1].map((score) => `
+                    <label class="form-check form-check-inline m-0">
+                      <input class="form-check-input" type="radio" name="rating" value="${score}" ${score === 5 ? 'checked' : ''}>
+                      <span class="form-check-label">${score} star${score === 1 ? '' : 's'}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Your review</label>
+                <textarea class="form-control" name="message" rows="5" placeholder="Write your review about this ${escapeHtml(moduleName)} listing..." required></textarea>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary">Submit review</button>
+              </div>
+            </div>
+            <div class="alert alert-success mt-3 mb-0 d-none" data-mc-review-success="${escapeHtml(item?.module || selectedModule)}">
+              Thanks! Your review has been received.
+            </div>
+          </form>
+        </div>
+      </section>
     `;
+  };
+
+  const renderContractorServicesSection = (item) => {
+    if (item?.module !== 'contractors') return '';
+    const services = Array.isArray(item?.details?.contractor?.services_provided)
+      ? item.details.contractor.services_provided
+      : [];
+
+    if (!services.length) return '';
+
+    const badges = services
+      .map((label) => `<span class="badge bg-body-secondary text-body">${escapeHtml(label)}</span>`)
+      .join('');
+
+    if (!badges) return '';
+
+    return `
+      <section class="pb-sm-2 pb-lg-3 mb-5">
+        <h2 class="h4 mb-3">Services I provide:</h2>
+        <div class="d-flex flex-wrap gap-2">${badges}</div>
+      </section>
+    `;
+  };
+
+  const renderRestaurantServicesSection = (item) => {
+    if (item?.module !== 'restaurants') return '';
+    const services = Array.isArray(item?.details?.restaurant?.services)
+      ? item.details.restaurant.services.filter(Boolean)
+      : [];
+
+    if (!services.length) return '';
+
+    const badges = services
+      .map((label) => `<span class="badge bg-body-secondary text-body">${escapeHtml(label)}</span>`)
+      .join('');
+
+    if (!badges) return '';
+
+    return `
+      <section class="pb-sm-2 pb-lg-3 mb-5">
+        <h2 class="h4 mb-3">Services</h2>
+        <div class="d-flex flex-wrap gap-2">${badges}</div>
+      </section>
+    `;
+  };
+
+  const updateEntryReviewSummary = (item) => {
+    const stats = reviewStats(item);
+    const ratingNode = container.querySelector('[data-mc-entry-rating-value]');
+    const countNode = container.querySelector('[data-mc-entry-rating-count]');
+    if (ratingNode) ratingNode.textContent = stats.rating.toFixed(1);
+    if (countNode) countNode.textContent = `(${stats.reviews})`;
+  };
+
+  const bindReviewForms = (item) => {
+    container.querySelectorAll('[data-mc-review-form]').forEach((form) => {
+      if (!(form instanceof HTMLFormElement)) return;
+      if (form.dataset.mcReviewBound === '1') return;
+      form.dataset.mcReviewBound = '1';
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const selectedRating = Number(form.querySelector('input[name="rating"]:checked')?.value || 0);
+        const currentCount = Number(item?.reviews_count || 0);
+        const currentRating = Number(item?.rating || 0);
+        const nextCount = currentCount + 1;
+        const nextRating = nextCount > 0
+          ? (((currentRating * currentCount) + selectedRating) / nextCount)
+          : selectedRating;
+
+        item.reviews_count = nextCount;
+        item.rating = Number(nextRating.toFixed(1));
+        updateEntryReviewSummary(item);
+
+        const success = form.querySelector('[data-mc-review-success]');
+        if (success) success.classList.remove('d-none');
+        form.reset();
+        const defaultRating = form.querySelector('input[name="rating"][value="5"]');
+        if (defaultRating instanceof HTMLInputElement) defaultRating.checked = true;
+      });
+    });
   };
 
   const renderEntry = (item, related = []) => {
     document.title = `Monaclick | ${moduleLabel(item.module)} - ${item.title}`;
+    const stats = reviewStats(item);
 
     const images = [item.image_url, ...(item.images || []).map((img) => img.image_url)].filter(Boolean).slice(0, 5);
     const primaryImage = images[0] || '/finder/assets/img/placeholders/preview-square.svg';
     const thumbs = images.slice(1, 5);
-
     const titleBadges = (() => {
       if (item.module !== 'cars') return '';
       const badges = [];
@@ -658,8 +1045,8 @@
           <ul class="list-inline gap-2 fs-sm ms-n2 mb-0">
             <li class="d-flex align-items-center gap-1 ms-2">
               <i class="fi-star-filled text-warning"></i>
-              <span class="fs-sm text-secondary-emphasis">${Number(item.rating || 0).toFixed(1)}</span>
-              <span class="fs-xs text-body-secondary align-self-end">(${Number(item.reviews_count || 0)})</span>
+              <span class="fs-sm text-secondary-emphasis" data-mc-entry-rating-value>${stats.rating.toFixed(1)}</span>
+              <span class="fs-xs text-body-secondary align-self-end" data-mc-entry-rating-count>(${stats.reviews})</span>
             </li>
             <li class="d-flex align-items-center gap-1 ms-2">
               <i class="fi-map-pin"></i>
@@ -703,37 +1090,21 @@
       <div class="row pb-2 pb-sm-3 pb-md-4 pb-lg-5">
         <div class="col-lg-8 col-xl-7">
           <section class="pb-sm-2 pb-lg-3 mb-5">
-            <h2 class="h4 mb-lg-4">About</h2>
-            <p class="fs-sm mb-0">${escapeHtml(normalizeRestaurantExcerpt(item) || 'No description available yet.')}</p>
+            <h2 class="h4 mb-lg-4">${item.module === 'contractors' ? 'My work' : 'About'}</h2>
+            <p class="fs-sm mb-0">${escapeHtml(capitalizeFirstLetter(normalizeRestaurantExcerpt(item) || 'No description available yet.'))}</p>
           </section>
           ${item.module === 'cars'
-            ? renderCarSections(item.details?.car || {})
+            ? `${renderCarSections(item.details?.car || {})}${renderReviewsSection(item)}`
             : `
               <section class="pb-sm-2 pb-lg-3 mb-5">
                 <h2 class="h4 mb-3">Details</h2>
                 ${renderDetailsGrid(item)}
               </section>
+              ${renderContractorServicesSection(item)}
+              ${renderRestaurantServicesSection(item)}
               ${renderFeatures(item)}
+              ${renderReviewsSection(item)}
             `}
-          <section class="pb-sm-2 pb-lg-3 mb-0">
-            <h2 class="h4 mb-4">Related listings</h2>
-            <div class="row row-cols-1 row-cols-sm-2 g-4">
-              ${related.map((r) => `
-                <div class="col">
-                  <article class="card h-100 border-0 shadow-sm hover-effect-opacity">
-                    <img src="${escapeHtml(r.image_url || '/finder/assets/img/placeholders/preview-square.svg')}" class="card-img-top" alt="${escapeHtml(r.title)}" style="height: 180px; object-fit: cover;" onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';">
-                    <div class="card-body">
-                      <h3 class="h6 mb-1">
-                        <a class="hover-effect-underline" href="/entry/${encodeURIComponent(r.module)}?slug=${encodeURIComponent(r.slug)}">${escapeHtml(r.title)}</a>
-                      </h3>
-                      <p class="small text-body-secondary mb-2">${escapeHtml(r.city?.name || '')}</p>
-                      <div class="small text-warning"><i class="fi-star-filled me-1"></i>${Number(r.rating || 0).toFixed(1)} (${Number(r.reviews_count || 0)})</div>
-                    </div>
-                  </article>
-                </div>
-              `).join('')}
-            </div>
-          </section>
         </div>
       </div>
     `;
@@ -742,11 +1113,49 @@
 
     if (window.GLightbox) {
       try {
-        window.GLightbox({ selector: '[data-glightbox]' });
+        ensureEntryLightboxStyles();
+
+        if (window.__MC_ENTRY_LIGHTBOX__ && typeof window.__MC_ENTRY_LIGHTBOX__.destroy === 'function') {
+          try {
+            window.__MC_ENTRY_LIGHTBOX__.destroy();
+          } catch (e) {
+            // ignore stale instance cleanup failures
+          }
+        }
+
+        const lightbox = window.GLightbox({
+          selector: '[data-glightbox]',
+          openEffect: 'fade',
+          closeEffect: 'fade',
+          slideEffect: 'slide',
+          loop: false,
+          touchNavigation: true,
+        });
+        window.__MC_ENTRY_LIGHTBOX__ = lightbox;
+
+        if (lightbox && typeof lightbox.on === 'function') {
+          const hidePageLoader = () => {
+            if (typeof window.__MC_HIDE_PAGE_LOADER__ === 'function') {
+              window.__MC_HIDE_PAGE_LOADER__();
+            }
+          };
+
+          lightbox.on('open', hidePageLoader);
+          lightbox.on('slide_before_load', hidePageLoader);
+          lightbox.on('slide_after_load', hidePageLoader);
+          lightbox.on('slide_changed', hidePageLoader);
+          lightbox.on('close', () => {
+            hidePageLoader();
+            window.setTimeout(hidePageLoader, 0);
+            window.setTimeout(hidePageLoader, 80);
+          });
+        }
       } catch (e) {
         // no-op
       }
     }
+
+    bindReviewForms(item);
 
     // Enhance car features into sub-headings (Exterior / Interior / Safety) once the car sections are present.
     if (item.module === 'cars') {
@@ -789,8 +1198,345 @@
       enhanceCarFeaturesSection(item);
     }
 
+    renderRelatedSection(item, related);
+
     try { container.style.opacity = '1'; } catch (e) {}
     setReady();
+  };
+
+  const relatedDetailUrl = (item) => {
+    const module = encodeURIComponent(item?.module || selectedModule);
+    const slug = String(item?.slug || '').trim();
+    if (slug) return `/entry/${module}?slug=${encodeURIComponent(slug)}`;
+    return `/listings/${module}`;
+  };
+
+  const relatedSectionTarget = () => {
+    const sections = Array.from(document.querySelectorAll('main.content-wrapper > section.container'));
+    return sections.find((section) => {
+      const heading = section.querySelector('h2');
+      return heading && /you may be interested in/i.test(heading.textContent || '');
+    }) || null;
+  };
+
+  const relatedStorage = {
+    favorites: 'mc_related_favorites_v1',
+    favoriteItems: 'mc_related_favorite_items_v1',
+    alerts: 'mc_related_alerts_v1',
+    compare: 'mc_related_compare_v1',
+    compareItems: 'mc_related_compare_items_v1',
+  };
+
+  const readStoredSlugs = (key) => {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(key) || '[]');
+      return Array.isArray(parsed) ? parsed.map((value) => String(value || '').trim()).filter(Boolean) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const writeStoredSlugs = (key, values) => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(Array.from(new Set(values.map((value) => String(value || '').trim()).filter(Boolean)))));
+    } catch (e) {
+      // no-op
+    }
+  };
+
+  const readStoredItems = () => {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(relatedStorage.favoriteItems) || '{}');
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  };
+
+  const writeStoredItems = (items) => {
+    try {
+      window.localStorage.setItem(relatedStorage.favoriteItems, JSON.stringify(items || {}));
+    } catch (e) {
+      // no-op
+    }
+  };
+
+  const showRelatedToast = (message) => {
+    const id = 'mc-related-actions-toast';
+    let toast = document.getElementById(id);
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = id;
+      toast.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:1085;max-width:320px;background:#1f2937;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);font-size:14px;line-height:1.45;opacity:0;transform:translateY(8px);transition:opacity .18s ease, transform .18s ease;';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0)';
+    clearTimeout(showRelatedToast._timer);
+    showRelatedToast._timer = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(8px)';
+    }, 1800);
+  };
+
+  const syncActionButtonState = (button, active) => {
+    if (!button) return;
+    button.dataset.active = active ? '1' : '0';
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    button.classList.toggle('btn-primary', active);
+    button.classList.toggle('btn-outline-secondary', !active);
+    button.classList.toggle('text-white', active);
+  };
+
+  const syncRelatedActionStates = (section) => {
+    if (!section) return;
+    const favorites = new Set(readStoredSlugs(relatedStorage.favorites));
+    const alerts = new Set(readStoredSlugs(relatedStorage.alerts));
+    const compare = new Set(readStoredSlugs(relatedStorage.compare));
+    section.querySelectorAll('[data-mc-action]').forEach((button) => {
+      const slug = String(button.getAttribute('data-mc-slug') || '').trim();
+      const action = String(button.getAttribute('data-mc-action') || '').trim();
+      const active = action === 'favorite'
+        ? favorites.has(slug)
+        : action === 'notify'
+          ? alerts.has(slug)
+          : compare.has(slug);
+      syncActionButtonState(button, active);
+    });
+  };
+
+  const handleRelatedAction = (button, section) => {
+    if (!button || !section) return;
+    const action = String(button.getAttribute('data-mc-action') || '').trim();
+    const slug = String(button.getAttribute('data-mc-slug') || '').trim();
+    const title = String(button.getAttribute('data-mc-title') || 'Listing').trim();
+    const payloadRaw = button.getAttribute('data-mc-item') || '';
+    if (!action || !slug) return;
+
+    const storageKey = action === 'favorite'
+      ? relatedStorage.favorites
+      : action === 'notify'
+        ? relatedStorage.alerts
+        : relatedStorage.compare;
+
+    const current = readStoredSlugs(storageKey);
+    const exists = current.includes(slug);
+    let next = current.slice();
+
+    if (exists) {
+      next = current.filter((value) => value !== slug);
+    } else if (action === 'compare') {
+      next = [...current.filter((value) => value !== slug), slug].slice(-4);
+    } else {
+      next = [...current, slug];
+    }
+
+    writeStoredSlugs(storageKey, next);
+
+    if (action === 'favorite') {
+      const items = readStoredItems();
+      if (exists) {
+        delete items[slug];
+      } else if (payloadRaw) {
+        try {
+          items[slug] = JSON.parse(payloadRaw);
+        } catch (e) {
+          // no-op
+        }
+      }
+      writeStoredItems(items);
+    }
+
+    if (action === 'compare') {
+      const key = relatedStorage.compareItems;
+      const items = (() => {
+        try {
+          const parsed = JSON.parse(window.localStorage.getItem(key) || '{}');
+          return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        } catch (e) {
+          return {};
+        }
+      })();
+      if (exists) {
+        delete items[slug];
+      } else if (payloadRaw) {
+        try {
+          items[slug] = JSON.parse(payloadRaw);
+        } catch (e) {
+          // no-op
+        }
+      }
+      try {
+        window.localStorage.setItem(key, JSON.stringify(items));
+      } catch (e) {
+        // no-op
+      }
+    }
+
+    syncRelatedActionStates(section);
+
+    if (action === 'favorite') {
+      showRelatedToast(exists ? `${title} removed from favorites.` : `${title} saved to favorites.`);
+      return;
+    }
+    if (action === 'notify') {
+      showRelatedToast(exists ? `Alerts turned off for ${title}.` : `Alerts turned on for ${title}.`);
+      return;
+    }
+    showRelatedToast(exists ? `${title} removed from compare.` : `${title} added to compare.`);
+  };
+
+  const bindRelatedActions = (section) => {
+    if (!section || section.dataset.mcActionsBound === '1') return;
+    section.dataset.mcActionsBound = '1';
+    section.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-mc-action]');
+      if (!button || !section.contains(button)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      handleRelatedAction(button, section);
+    });
+  };
+
+  const renderRelatedCard = (item) => {
+    const year = item?.details?.car?.year || '';
+    const conditionRaw = String(item?.details?.car?.condition || '').trim().toLowerCase();
+    const conditionLabel = conditionRaw
+      ? (conditionRaw.includes('new') ? 'New' : 'Used')
+      : '';
+    const features = Array.isArray(item?.features) ? item.features : [];
+    const verified = features.some((feature) => String(feature || '').trim().toLowerCase().includes('verified'));
+    const image = item?.image_url || '/finder/assets/img/placeholders/preview-square.svg';
+    const city = item?.city?.name || '';
+    const mileage = item?.details?.car?.mileage ? `${formatNumber(item.details.car.mileage)} mi` : '';
+    const fuelType = item?.details?.car?.fuel_type || '';
+    const transmission = item?.details?.car?.transmission || '';
+    const createdAt = (() => {
+      const raw = item?.created_at || item?.published_at || item?.updated_at || '';
+      if (!raw) return '';
+      const d = new Date(raw);
+      if (Number.isNaN(d.getTime())) return '';
+      return d.toLocaleDateString('en-GB');
+    })();
+    const itemPayload = escapeHtml(JSON.stringify({
+      slug: item?.slug || '',
+      module: item?.module || selectedModule,
+      title: item?.title || '',
+      price: item?.price || '',
+      image_url: image,
+      city: city,
+      year,
+      mileage,
+      fuel_type: fuelType,
+      transmission,
+      detail_url: relatedDetailUrl(item),
+    }));
+
+    return `
+      <div class="col">
+        <article class="card h-100 hover-effect-scale bg-body-tertiary border-0">
+          <div class="card-img-top position-relative overflow-hidden">
+            <div class="d-flex flex-column gap-2 align-items-start position-absolute top-0 start-0 z-1 pt-1 pt-sm-0 ps-1 ps-sm-0 mt-2 mt-sm-3 ms-2 ms-sm-3">
+              ${verified ? `
+                <span class="badge text-bg-info d-inline-flex align-items-center">
+                  Verified
+                  <i class="fi-shield ms-1"></i>
+                </span>
+              ` : ''}
+              ${conditionLabel ? `<span class="badge ${conditionLabel === 'New' ? 'text-bg-primary' : 'text-bg-warning'}">${escapeHtml(conditionLabel)}</span>` : ''}
+            </div>
+            <div class="ratio hover-effect-target bg-body rounded" style="--fn-aspect-ratio: calc(204 / 306 * 100%)">
+              <img src="${escapeHtml(image)}" alt="${escapeHtml(item?.title || 'Listing image')}" onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';" style="object-fit:cover;">
+            </div>
+          </div>
+          <div class="card-body pb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="fs-xs text-body-secondary me-3">${escapeHtml(createdAt || 'Recently added')}</div>
+              <div class="d-flex gap-2 position-relative z-2">
+                <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-pulse rounded-circle" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" title="Wishlist" aria-label="Add to wishlist" data-mc-action="favorite" data-mc-slug="${escapeHtml(item?.slug || '')}" data-mc-title="${escapeHtml(item?.title || 'Listing')}" data-mc-item="${itemPayload}">
+                  <i class="fi-heart animate-target fs-sm"></i>
+                </button>
+                <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-shake rounded-circle" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" title="Notify" aria-label="Notify" data-mc-action="notify" data-mc-slug="${escapeHtml(item?.slug || '')}" data-mc-title="${escapeHtml(item?.title || 'Listing')}">
+                  <i class="fi-bell animate-target fs-sm"></i>
+                </button>
+                <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-rotate rounded-circle" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" title="Compare" aria-label="Compare" data-mc-action="compare" data-mc-slug="${escapeHtml(item?.slug || '')}" data-mc-title="${escapeHtml(item?.title || 'Listing')}" data-mc-item="${itemPayload}">
+                  <i class="fi-repeat animate-target fs-sm"></i>
+                </button>
+              </div>
+            </div>
+            <h3 class="h6 mb-2">
+              <a class="hover-effect-underline stretched-link me-1" href="${escapeHtml(relatedDetailUrl(item))}">${escapeHtml(item?.title || 'Listing')}</a>
+              ${year ? `<span class="fs-xs fw-normal text-body-secondary">(${escapeHtml(year)})</span>` : ''}
+            </h3>
+            <div class="h6 mb-0">${escapeHtml(formatMoneyDisplay(item?.price || '') || 'Price on request')}</div>
+          </div>
+          <div class="card-footer bg-transparent border-0 pt-0 pb-4">
+            <div class="border-top pt-3">
+              <div class="row row-cols-2 g-2 fs-sm">
+                <div class="col d-flex align-items-center gap-2">
+                  <i class="fi-map-pin"></i>
+                  ${escapeHtml(city || 'Location')}
+                </div>
+                <div class="col d-flex align-items-center gap-2">
+                  <i class="fi-tachometer"></i>
+                  ${escapeHtml(mileage || 'N/A')}
+                </div>
+                <div class="col d-flex align-items-center gap-2">
+                  <i class="fi-gas-pump"></i>
+                  ${escapeHtml(fuelType || 'N/A')}
+                </div>
+                <div class="col d-flex align-items-center gap-2">
+                  <i class="fi-gearbox"></i>
+                  ${escapeHtml(transmission || 'N/A')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    `;
+  };
+
+  const renderRelatedSection = (item, related = []) => {
+    const section = relatedSectionTarget();
+    if (!section) return;
+
+    const cards = Array.isArray(related) ? related.filter((entry) => entry && entry.slug && entry.slug !== item?.slug) : [];
+
+    section.innerHTML = `
+      <div class="d-flex align-items-start justify-content-between gap-4 pb-3 mb-2 mb-sm-3">
+        <h2 class="mb-0">You may be interested in</h2>
+        <div class="nav">
+          <a class="nav-link position-relative text-nowrap py-1 px-0" href="/listings/${encodeURIComponent(item?.module || selectedModule)}">
+            <span class="hover-effect-underline stretched-link me-1">View all</span>
+            <i class="fi-chevron-right fs-lg"></i>
+          </a>
+        </div>
+      </div>
+      ${cards.length ? `
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
+          ${cards.slice(0, 4).map((entry) => renderRelatedCard(entry)).join('')}
+        </div>
+      ` : `
+        <div class="alert alert-secondary mb-0">No related listings available right now.</div>
+      `}
+    `;
+
+    if (window.bootstrap?.Tooltip) {
+      try {
+        section.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((node) => {
+          window.bootstrap.Tooltip.getOrCreateInstance(node, {
+            trigger: 'hover',
+          });
+        });
+      } catch (e) {
+        // no-op
+      }
+    }
+
+    bindRelatedActions(section);
+    syncRelatedActionStates(section);
   };
 
   const showNoPreview = () => {
@@ -801,6 +1547,16 @@
     `;
     try { container.style.opacity = '1'; } catch (e) {}
     setReady();
+  };
+
+  const redirectToModuleListings = () => {
+    const target = `/listings/${encodeURIComponent(selectedModule)}`;
+    try {
+      window.location.replace(target);
+      return;
+    } catch (e) {
+      window.location.href = target;
+    }
   };
 
   if (selectedModule === 'cars' && params.get('preview') === '1') {
@@ -904,7 +1660,7 @@
   }
 
   if (!params.get('slug') && selectedModule !== 'restaurants') {
-    showNoPreview();
+    redirectToModuleListings();
     return;
   }
 
@@ -913,12 +1669,7 @@
     return;
   }
 
-  container.innerHTML = `
-    <div class="py-5 text-center text-body-secondary">
-      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
-      Loading listing details...
-    </div>
-  `;
+  renderEntryLoader();
 
   const apiQuery = new URLSearchParams({ module: selectedModule });
   if (params.get('slug')) apiQuery.set('slug', params.get('slug'));

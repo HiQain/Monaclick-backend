@@ -315,7 +315,7 @@
                     <a class="fs-sm fw-medium stretched-link" href="#!">How to photograph a car</a>
                   </div>
                 </div>
-                <p class="fs-sm">The maximum photo size is 8 MB. Formats: jpeg, jpg, png. Put the main picture first.</p>
+                <p class="fs-sm">The maximum photo size is 8 MB. Formats: jpeg, jpg, png. Put the main picture first. Recommended size: 1200×675 (16:9). Max allowed height: 1000px.</p>
                 <div style="max-width: 852px">
                   <div class="row row-cols-2 row-cols-sm-3 g-2 g-md-4 g-lg-3 g-xl-4">
 
@@ -1033,16 +1033,20 @@
 
 
             <!-- Action buttons -->
-            <section class="d-flex flex-column flex-sm-row justify-content-between gap-3 mt-4">
-              <button type="submit" class="btn btn-lg btn-outline-secondary bg-body" formaction="/entry/cars" formmethod="get" formtarget="_blank" formnovalidate name="preview" value="1">
+            <section class="d-flex flex-wrap align-items-stretch gap-3 mt-4 car-action-buttons">
+              <button type="submit" class="btn btn-lg btn-outline-secondary bg-body text-nowrap" formaction="/entry/cars" formmethod="get" formtarget="_blank" formnovalidate name="preview" value="1">
                 <i class="fi-eye fs-lg ms-n1 me-2"></i>
                 Detailed preview
               </button>
-              <button type="submit" class="btn btn-lg btn-outline-secondary" formaction="/submit/car" name="draft" value="1" formnovalidate>
+              <button type="submit" class="btn btn-lg btn-outline-secondary text-nowrap" formaction="/submit/car" name="draft" value="1" formnovalidate>
                 <i class="fi-save fs-lg ms-n1 me-2"></i>
                 Save draft
               </button>
-              <button type="submit" class="btn btn-lg btn-primary" formaction="/submit/car" name="publish" value="1">
+              <button type="submit" class="btn btn-lg btn-outline-primary text-nowrap" formaction="/submit/car" name="draft" value="1" formnovalidate data-next="/add-car-promotion">
+                <i class="fi-plus-circle fs-lg ms-n1 me-2"></i>
+                Save car and become a pro
+              </button>
+              <button type="submit" class="btn btn-lg btn-primary text-nowrap" formaction="/submit/car" name="publish" value="1">
                 <i class="fi-upload fs-lg ms-n1 me-2"></i>
                 Save and publish
               </button>
@@ -1053,6 +1057,14 @@
                 const featuresInput = document.getElementById('features-json');
                 const featuresWrap = document.getElementById('features');
                 if (!form || !featuresInput || !featuresWrap) return;
+
+                let nextInput = form.querySelector('input[name="next"]');
+                if (!nextInput) {
+                  nextInput = document.createElement('input');
+                  nextInput.type = 'hidden';
+                  nextInput.name = 'next';
+                  form.appendChild(nextInput);
+                }
 
                 // Ensure checkboxes submit something even if JS serialization fails.
                 // We set name/value from the visible label, then server can read `car_features[]` too.
@@ -1077,6 +1089,11 @@
                 };
 
                 form.addEventListener('submit', collectSelected);
+                form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach((btn) => {
+                  btn.addEventListener('click', () => {
+                    nextInput.value = String(btn.getAttribute('data-next') || '').trim();
+                  });
+                });
               })();
             </script>
             </form>
@@ -1093,62 +1110,62 @@
               <div class="offcanvas-body d-block pt-2 pb-lg-0">
 
                 <!-- Preview card -->
-                <article class="card hover-effect-scale border-0 mb-3">
-                  <div class="card-img-top position-relative z-1 overflow-hidden">
-                    <div class="d-flex flex-column gap-2 align-items-start position-absolute top-0 start-0 z-1 pt-1 pt-sm-0 ps-1 ps-sm-0 mt-2 mt-sm-3 ms-2 ms-sm-3">
-                      <span class="badge text-bg-warning">Used</span>
-                    </div>
+                <article class="card h-100 hover-effect-scale bg-body-tertiary border-0">
+                <div class="card-img-top position-relative overflow-hidden">
+                  <div class="d-flex flex-column gap-2 align-items-start position-absolute top-0 start-0 z-1 pt-1 pt-sm-0 ps-1 ps-sm-0 mt-2 mt-sm-3 ms-2 ms-sm-3">
+                    <span class="badge text-bg-primary">New</span>
+                  </div>
+
+                  <a href="assets/img/listings/cars/grid/07.jpg" data-fslightbox="image-gallery">
                     <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(204 / 306 * 100%)">
-                      <img src="/finder/assets/img/listings/cars/grid/04.jpg" alt="Image">
+                      <img src="assets/img/listings/cars/grid/07.jpg" alt="Image">
+                    </div>
+                  </a>
+                </div>
+                <div class="card-body pb-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="fs-xs text-body-secondary me-3">30/09/2024</div>
+                    <div class="d-flex gap-2 position-relative z-2">
+                      <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-pulse rounded-circle" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" title="Wishlist" aria-label="Add to wishlist">
+                        <i class="fi-heart animate-target fs-sm"></i>
+                      </button>
+                      <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-shake rounded-circle" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" title="Notify" aria-label="Notify">
+                        <i class="fi-bell animate-target fs-sm"></i>
+                      </button>
+                      <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-rotate rounded-circle" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" title="Compare" aria-label="Compare">
+                        <i class="fi-repeat animate-target fs-sm"></i>
+                      </button>
                     </div>
                   </div>
-                  <div class="card-body position-relative z-1 px-0 px-lg-4 pb-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                      <div class="fs-xs text-body-secondary me-3">28/06/2024</div>
-                      <div class="d-flex gap-2 position-relative z-2">
-                        <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-pulse rounded-circle" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" title="Wishlist" aria-label="Add to wishlist">
-                          <i class="fi-heart animate-target fs-sm"></i>
-                        </button>
-                        <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-shake rounded-circle" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" title="Notify" aria-label="Notify">
-                          <i class="fi-bell animate-target fs-sm"></i>
-                        </button>
-                        <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-rotate rounded-circle" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" title="Compare" aria-label="Compare">
-                          <i class="fi-repeat animate-target fs-sm"></i>
-                        </button>
+                  <h3 class="h6 mb-2">
+                    <a class="hover-effect-underline stretched-link me-1" href="single-entry-cars.html">Ford Truck Lifted</a>
+                    <span class="fs-xs fw-normal text-body-secondary">(2024)</span>
+                  </h3>
+                  <div class="h6 mb-0">$79,000</div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-4">
+                  <div class="border-top pt-3">
+                    <div class="row row-cols-2 g-2 fs-sm">
+                      <div class="col d-flex align-items-center gap-2">
+                        <i class="fi-map-pin"></i>
+                        Boston
+                      </div>
+                      <div class="col d-flex align-items-center gap-2">
+                        <i class="fi-tachometer"></i>
+                        0K mi
+                      </div>
+                      <div class="col d-flex align-items-center gap-2">
+                        <i class="fi-gas-pump"></i>
+                        Diesel
+                      </div>
+                      <div class="col d-flex align-items-center gap-2">
+                        <i class="fi-gearbox"></i>
+                        Automatic
                       </div>
                     </div>
-                    <h3 class="h6 mb-2">
-                      <a class="hover-effect-underline stretched-link me-1" href="#!">Mercedes-Benz A205</a>
-                      <span class="fs-xs fw-normal text-body-secondary">(2021)</span>
-                    </h3>
-                    <div class="h6 mb-0">$41,900</div>
                   </div>
-                  <div class="card-footer position-relative z-1 bg-transparent border-0 pt-0 px-0 px-lg-4 pb-0 pb-lg-4">
-                    <div class="border-top pt-3">
-                      <div class="row row-cols-2 g-2 fs-sm">
-                        <div class="col d-flex align-items-center gap-2">
-                          <i class="fi-map-pin"></i>
-                          Chicago
-                        </div>
-                        <div class="col d-flex align-items-center gap-2">
-                          <i class="fi-tachometer"></i>
-                          ---
-                        </div>
-                        <div class="col d-flex align-items-center gap-2">
-                          <i class="fi-gas-pump"></i>
-                          Gasoline
-                        </div>
-                        <div class="col d-flex align-items-center gap-2">
-                          <i class="fi-gearbox"></i>
-                          Automatic
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="d-none d-lg-block">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark rounded d-none d-block-dark"></div>
-                  </div>
-                </article>
+                </div>
+              </article>
 
                 <hr class="d-lg-none">
 
@@ -1328,140 +1345,149 @@
     <!-- Vendor scripts -->
     <script src="/finder/assets/vendor/cleave.js/dist/cleave.min.js"></script>
     <script src="/finder/assets/js/monaclick-global-footer.js?v=20260306-3"></script>
+
+
     <script>
-      (() => {
-        const form = document.getElementById('addCarForm');
-        if (!form) return;
+    (() => {
+      const form = document.getElementById('addCarForm');
+      if (!form) return;
 
-        const photosSection = Array.from(form.querySelectorAll('section'))
-          .find((section) => (section.querySelector('h2')?.textContent || '').toLowerCase().includes('photos / videos'));
-        const galleryGrid = photosSection?.querySelector('.row.row-cols-2.row-cols-sm-3.g-2.g-md-4.g-lg-3.g-xl-4');
-        const uploadTile = galleryGrid?.querySelector('.cursor-pointer.bg-body-tertiary.border-dotted')?.closest('.col');
+      let editData = null;
+      const editorFromUrl = new URLSearchParams(window.location.search).get('edit');
 
-        const ensureCoverBadge = () => {
-          if (!galleryGrid) return;
-          galleryGrid.querySelectorAll('.badge.text-bg-light').forEach((badge) => badge.remove());
-          const cards = Array.from(galleryGrid.children)
-            .filter((col) => col !== uploadTile && col.querySelector('img'));
-          const firstCard = cards[0];
-          if (!firstCard) return;
-          const wrapper = firstCard.querySelector('.hover-effect-opacity.position-relative');
-          if (!wrapper) return;
-          const badge = document.createElement('span');
-          badge.className = 'badge text-bg-light position-absolute top-0 start-0 z-3 mt-2 ms-2';
-          badge.textContent = 'Cover';
-          wrapper.prepend(badge);
-        };
+      const photosSection = Array.from(form.querySelectorAll('section'))
+        .find((section) => (section.querySelector('h2')?.textContent || '').toLowerCase().includes('photos / videos'));
+      const galleryGrid = photosSection?.querySelector('.row.row-cols-2.row-cols-sm-3.g-2.g-md-4.g-lg-3.g-xl-4');
+      const uploadTile = galleryGrid?.querySelector('.cursor-pointer.bg-body-tertiary.border-dotted')?.closest('.col');
 
-        const createPhotoCard = (src) => {
-          const col = document.createElement('div');
-          col.className = 'col';
-          col.innerHTML = `
-            <div class="hover-effect-opacity position-relative overflow-hidden rounded">
-              <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
-                <img src="${src}" alt="Uploaded image">
-              </div>
-              <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
-                <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove">
-                  <i class="fi-trash fs-base"></i>
-                </button>
-                <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
-              </div>
+      const ensureCoverBadge = () => {
+        if (!galleryGrid) return;
+        galleryGrid.querySelectorAll('.badge.text-bg-light').forEach((badge) => badge.remove());
+        const cards = Array.from(galleryGrid.children).filter((col) => col !== uploadTile && col.querySelector('img'));
+        const firstCard = cards[0];
+        if (!firstCard) return;
+        const wrapper = firstCard.querySelector('.hover-effect-opacity.position-relative');
+        if (!wrapper) return;
+        const badge = document.createElement('span');
+        badge.className = 'badge text-bg-light position-absolute top-0 start-0 z-3 mt-2 ms-2';
+        badge.textContent = 'Cover';
+        wrapper.prepend(badge);
+      };
+
+      const createPhotoCard = (src) => {
+        const col = document.createElement('div');
+        col.className = 'col';
+        col.innerHTML = `
+          <div class="hover-effect-opacity position-relative overflow-hidden rounded">
+            <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
+              <img src="${src}" alt="Uploaded image">
             </div>
-          `;
-          return col;
-        };
+            <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
+              <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove">
+                <i class="fi-trash fs-base"></i>
+              </button>
+              <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
+            </div>
+          </div>
+        `;
+        return col;
+      };
 
-        if (galleryGrid && uploadTile) {
-          const fileInput = document.createElement('input');
-          fileInput.type = 'file';
-          fileInput.accept = 'image/*';
-          fileInput.multiple = true;
-          fileInput.name = 'cover_image';
-          fileInput.className = 'd-none';
-          form.appendChild(fileInput);
+      if (galleryGrid && uploadTile) {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.multiple = true;
+        fileInput.name = 'cover_image[]';
+        fileInput.className = 'd-none';
+        form.appendChild(fileInput);
 
-          uploadTile.addEventListener('click', () => fileInput.click());
-          uploadTile.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              fileInput.click();
-            }
-          });
-          uploadTile.setAttribute('tabindex', '0');
+        uploadTile.addEventListener('click', () => fileInput.click());
+        uploadTile.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            fileInput.click();
+          }
+        });
+        uploadTile.setAttribute('tabindex', '0');
 
-          fileInput.addEventListener('change', () => {
-            const files = Array.from(fileInput.files || []);
-            files.forEach((file) => {
-              const objectUrl = URL.createObjectURL(file);
+        fileInput.addEventListener('change', () => {
+          const files = Array.from(fileInput.files || []);
+          const MAX_HEIGHT = 1000;
+
+          files.forEach((file) => {
+            const objectUrl = URL.createObjectURL(file);
+
+            const img = new Image();
+            img.onload = () => {
+              if (img.naturalHeight > MAX_HEIGHT) {
+                alert(`Image height too large (${img.naturalHeight}px). Max allowed is ${MAX_HEIGHT}px. Recommended: 1200x675 (16:9).`);
+                URL.revokeObjectURL(objectUrl);
+                return;
+              }
               const card = createPhotoCard(objectUrl);
               galleryGrid.insertBefore(card, uploadTile);
-            });
-            ensureCoverBadge();
+              ensureCoverBadge();
+            };
+            img.onerror = () => URL.revokeObjectURL(objectUrl);
+            img.src = objectUrl;
           });
-
-          galleryGrid.addEventListener('click', (event) => {
-            const removeBtn = event.target.closest('button[aria-label="Remove"]');
-            if (!removeBtn) return;
-            const col = removeBtn.closest('.col');
-            if (!col || col === uploadTile) return;
-            const img = col.querySelector('img');
-            if (img && img.src.startsWith('blob:')) {
-              URL.revokeObjectURL(img.src);
-            }
-            col.remove();
-            ensureCoverBadge();
-          });
-
-          ensureCoverBadge();
-        }
-
-        const upsertHidden = (name, value) => {
-          let input = form.querySelector(`input[type="hidden"][name="${name}"]`);
-          if (!input) {
-            input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = name;
-            form.appendChild(input);
-          }
-          input.value = String(value ?? '').trim();
-        };
-
-        const selectedOptionText = (selector) => {
-          const select = form.querySelector(selector);
-          if (!select) return '';
-          const opt = select.options?.[select.selectedIndex];
-          return String(opt?.textContent || '').trim();
-        };
-
-        const selectedRadioLabel = (name) => {
-          const checked = form.querySelector(`input[name="${name}"]:checked`);
-          if (!checked) return '';
-          const label = form.querySelector(`label[for="${checked.id}"]`);
-          return String(label?.textContent || checked.value || '').trim();
-        };
-
-        form.addEventListener('submit', (event) => {
-          const submitter = event.submitter;
-          const submitAction = (submitter?.getAttribute('name') || '').toLowerCase();
-
-          const brand = selectedOptionText('select[aria-label="Car brand select"]');
-          const model = selectedOptionText('select[aria-label="Car model select"]');
-          const year = selectedOptionText('select[aria-label="Manufacturing year select"]');
-          const title = [brand, model, year].filter(Boolean).join(' ').trim() || 'Car Listing';
-          upsertHidden('title', title);
-          upsertHidden('status', submitAction === 'draft' ? 'draft' : 'published');
         });
-      })();
-    </script>
+
+        galleryGrid.addEventListener('click', (event) => {
+          const removeBtn = event.target.closest('button[aria-label="Remove"]');
+          if (!removeBtn) return;
+          const col = removeBtn.closest('.col');
+          if (!col || col === uploadTile) return;
+          const img = col.querySelector('img');
+          if (img && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+          col.remove();
+          ensureCoverBadge();
+        });
+
+        ensureCoverBadge();
+      }
+
+      const upsertHidden = (name, value) => {
+        let input = form.querySelector(`input[type="hidden"][name="${name}"]`);
+        if (!input) {
+          input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = name;
+          form.appendChild(input);
+        }
+        input.value = String(value ?? '').trim();
+      };
+
+      const selectedOptionText = (selector) => {
+        const select = form.querySelector(selector);
+        if (!select) return '';
+        const opt = select.options?.[select.selectedIndex];
+        return String(opt?.textContent || '').trim();
+      };
+
+      const selectedRadioLabel = (name) => {
+        const checked = form.querySelector(`input[name="${name}"]:checked`);
+        if (!checked) return '';
+        const label = form.querySelector(`label[for="${checked.id}"]`);
+        return String(label?.textContent || checked.value || '').trim();
+      };
+
+      form.addEventListener('submit', (event) => {
+        const submitter = event.submitter;
+        const submitAction = (submitter?.getAttribute('name') || '').toLowerCase();
+
+        const brand = selectedOptionText('select[aria-label="Car brand select"]');
+        const model = selectedOptionText('select[aria-label="Car model select"]');
+        const year = selectedOptionText('select[aria-label="Manufacturing year select"]');
+        const title = [brand, model, year].filter(Boolean).join(' ').trim() || 'Car Listing';
+        upsertHidden('title', title);
+        upsertHidden('status', submitAction === 'draft' ? 'draft' : 'published');
+      });
+    })();
+</script>
+
 
     <script src="/finder/assets/js/theme.min.js"></script>
   </body>
 </html>
-
-
-
-
-
-
-

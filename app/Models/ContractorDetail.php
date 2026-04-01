@@ -13,6 +13,9 @@ class ContractorDetail extends Model
     protected $fillable = [
         'listing_id',
         'service_area',
+        'address_line',
+        'zip_code',
+        'state_code',
         'license_number',
         'is_verified',
         'business_hours',

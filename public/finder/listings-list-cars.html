@@ -40,6 +40,23 @@
 
     <!-- Customizer -->
     <script src="assets/js/customizer.min.js"></script>
+    <style>
+      @media (min-width: 992px) {
+        #filterSidebar {
+          position: sticky;
+          top: 6.5rem;
+          max-height: calc(100vh - 7.5rem);
+          overflow: hidden;
+        }
+
+        #filterSidebar .offcanvas-body {
+          max-height: calc(100vh - 7.5rem);
+          overflow-y: auto;
+          overflow-x: hidden;
+          padding-right: .375rem;
+        }
+      }
+    </style>
   </head>
 
 
@@ -368,24 +385,25 @@
                   <h4 class="h6">Location and radius</h4>
                   <div class="vstack gap-3">
                     <div class="position-relative">
+                      <i class="fi-map position-absolute top-50 start-0 translate-middle-y z-1 ms-3"></i>
+                      <select class="form-select form-icon-start" data-select='{
+                        "classNames": {
+                          "containerInner": ["form-select", "form-icon-start"]
+                        },
+                        "searchEnabled": true
+                      }' aria-label="Car state select" data-location-state>
+                        <option value="">Any state</option>
+                      </select>
+                    </div>
+                    <div class="position-relative">
                       <i class="fi-map-pin position-absolute top-50 start-0 translate-middle-y z-1 ms-3"></i>
                       <select class="form-select form-icon-start" data-select='{
                         "classNames": {
                           "containerInner": ["form-select", "form-icon-start"]
                         },
                         "searchEnabled": true
-                      }' aria-label="Car location select">
+                      }' aria-label="Car location select" data-location-city>
                         <option value="">Any location</option>
-                        <option value="New York">New York</option>
-                        <option value="Los Angeles">Los Angeles</option>
-                        <option value="Chicago">Chicago</option>
-                        <option value="Houston">Houston</option>
-                        <option value="Phoenix">Phoenix</option>
-                        <option value="Philadelphia">Philadelphia</option>
-                        <option value="San Antonio">San Antonio</option>
-                        <option value="San Diego">San Diego</option>
-                        <option value="Dallas">Dallas</option>
-                        <option value="San Jose">San Jose</option>
                       </select>
                     </div>
                     <div class="position-relative">
@@ -396,12 +414,10 @@
                         }
                       }' aria-label="Location radius select">
                         <option value="">Any radius</option>
-                        <option value="10 mi">10 mi</option>
-                        <option value="20 mi">20 mi</option>
-                        <option value="30 mi">30 mi</option>
-                        <option value="40 mi">40 mi</option>
                         <option value="50 mi">50 mi</option>
-                        <option value="60 mi">60 mi</option>
+                        <option value="100 mi">100 mi</option>
+                        <option value="150 mi">150 mi</option>
+                        <option value="200 mi">200 mi</option>
                       </select>
                     </div>
                   </div>
@@ -461,7 +477,7 @@
                   <h4 class="h6">Year</h4>
                   <div class="d-flex align-items-center">
                     <div class="w-50">
-                      <select class="form-select" data-select aria-label="Car year from select">
+                      <select class="form-select" aria-label="Car year from select">
                         <option value="">From</option>
                         <option value="2025">2025</option>
                         <option value="2024">2024</option>
@@ -478,7 +494,7 @@
                     </div>
                     <i class="fi-minus mx-3 mx-lg-1 mx-xl-2 mx-xxl-3"></i>
                     <div class="w-50">
-                      <select class="form-select" data-select aria-label="Car year from select">
+                      <select class="form-select" aria-label="Car year to select">
                         <option value="">To</option>
                         <option value="2025">2025</option>
                         <option value="2024">2024</option>
@@ -1408,6 +1424,7 @@
     <script src="assets/vendor/choices.js/public/assets/scripts/choices.min.js"></script>
     <script src="assets/vendor/simplebar/dist/simplebar.min.js"></script>
     <script src="assets/vendor/nouislider/dist/nouislider.min.js"></script>
+    <script src="/finder/assets/js/monaclick-listings-dynamic.js?v=20260305-r2"></script>
     <script src="/finder/assets/js/monaclick-global-footer.js?v=20260306-3"></script>
 
     <script src="assets/js/theme.min.js"></script>

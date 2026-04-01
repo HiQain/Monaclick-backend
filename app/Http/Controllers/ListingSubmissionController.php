@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 
 class ListingSubmissionController extends Controller
 {
@@ -112,6 +113,42 @@ class ListingSubmissionController extends Controller
 
             return $file->storeAs($dir, $filename, 'public');
         }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function sanitizeContractorServiceAreas(string $raw, string $address = '', string $zip = ''): array
+    {
+        $parts = collect(preg_split('/\s*,\s*/', trim($raw), -1, PREG_SPLIT_NO_EMPTY) ?: [])
+            ->map(fn ($value) => trim((string) $value))
+            ->filter()
+            ->values();
+
+        $normalizedAddress = strtolower(trim($address));
+        $normalizedZip = preg_replace('/\D+/', '', $zip) ?: '';
+
+        return $parts
+            ->reject(function (string $value) use ($normalizedAddress, $normalizedZip): bool {
+                $normalizedValue = strtolower(trim($value));
+                if ($normalizedValue === '') {
+                    return true;
+                }
+
+                if ($normalizedAddress !== '' && $normalizedValue === $normalizedAddress) {
+                    return true;
+                }
+
+                $digitsOnly = preg_replace('/\D+/', '', $value) ?: '';
+                if ($normalizedZip !== '' && $digitsOnly !== '' && $digitsOnly === $normalizedZip) {
+                    return true;
+                }
+
+                return false;
+            })
+            ->unique(fn (string $value) => strtolower($value))
+            ->values()
+            ->all();
     }
 
     public function property(Request $request): RedirectResponse
@@ -480,6 +517,9 @@ class ListingSubmissionController extends Controller
             'radio:project-type',
             'category',
         ]);
+        if ($selectedCategory === '' && $editListing?->category) {
+            $selectedCategory = (string) ($editListing->category->name ?: $editListing->category->slug);
+        }
         $category = $this->resolveCategory('contractors', $selectedCategory !== '' ? $selectedCategory : 'Remodeling');
         $stateCode = $this->normalizeUsStateCode((string) ($payload['state'] ?? ''));
         $hasValidState = $stateCode !== '' && $this->resolveUsState($stateCode);
@@ -509,18 +549,52 @@ class ListingSubmissionController extends Controller
         }
 
         $projectName = trim((string) ($payload['project-name'] ?? ''));
+        if ($projectName === '' && $editListing) {
+            $projectName = trim((string) $editListing->title);
+        }
         $title = $projectName !== '' ? $projectName : ucfirst(str_replace('-', ' ', $category->slug)) . ' Service';
-        $priceRaw = (string) ($payload['price'] ?? '');
+        $priceRaw = trim((string) ($payload['price'] ?? ''));
+        if ($priceRaw === '' && $editListing) {
+            $priceRaw = preg_replace('/[^\d]/', '', (string) ($editListing->price ?? '')) ?: '';
+        }
         $priceAmount = $this->normalizeInteger($priceRaw);
-        $features = ['verified-hires'];
-        if (($payload['home-renovations'] ?? false) || ($payload['custom-home-building'] ?? false)) {
-            $features[] = 'free-estimate';
+        $existingFeatures = is_array($editListing?->features) ? $editListing->features : [];
+        $existingPromotionTokens = collect($existingFeatures)
+            ->map(fn ($value) => trim((string) $value))
+            ->filter(fn ($value) => str_starts_with($value, 'promo-package:') || str_starts_with($value, 'promo-service:'))
+            ->values()
+            ->all();
+        $baseFeatures = collect($existingFeatures)
+            ->map(fn ($value) => trim((string) $value))
+            ->filter()
+            ->reject(fn ($value) => str_starts_with($value, 'promo-package:') || str_starts_with($value, 'promo-service:'))
+            ->values()
+            ->all();
+
+        $features = in_array('verified-hires', $baseFeatures, true) ? $baseFeatures : array_merge($baseFeatures, ['verified-hires']);
+
+        $hasHomeEstimateInputs = array_key_exists('home-renovations', $payload) || array_key_exists('custom-home-building', $payload);
+        if ($hasHomeEstimateInputs) {
+            $features = array_values(array_filter($features, fn ($value) => $value !== 'free-estimate'));
+            if (($payload['home-renovations'] ?? false) || ($payload['custom-home-building'] ?? false)) {
+                $features[] = 'free-estimate';
+            }
         }
-        if (($payload['architectural-design'] ?? false) || ($payload['bathroom-design'] ?? false)) {
-            $features[] = 'free-consultation';
+
+        $hasConsultationInputs = array_key_exists('architectural-design', $payload) || array_key_exists('bathroom-design', $payload);
+        if ($hasConsultationInputs) {
+            $features = array_values(array_filter($features, fn ($value) => $value !== 'free-consultation'));
+            if (($payload['architectural-design'] ?? false) || ($payload['bathroom-design'] ?? false)) {
+                $features[] = 'free-consultation';
+            }
         }
-        if (($payload['monday'] ?? false) && ($payload['saturday'] ?? false || $payload['sunday'] ?? false)) {
-            $features[] = 'weekend-consultations';
+
+        $hasWeekendInputs = array_key_exists('monday', $payload) || array_key_exists('saturday', $payload) || array_key_exists('sunday', $payload);
+        if ($hasWeekendInputs) {
+            $features = array_values(array_filter($features, fn ($value) => $value !== 'weekend-consultations'));
+            if (($payload['monday'] ?? false) && ($payload['saturday'] ?? false || $payload['sunday'] ?? false)) {
+                $features[] = 'weekend-consultations';
+            }
         }
 
         $servicesRaw = $payload['services'] ?? [];
@@ -533,9 +607,39 @@ class ListingSubmissionController extends Controller
                 ->filter()
                 ->map(fn ($v) => 'service:' . $v)
                 ->values()
-                ->all()
+            ->all()
             : [];
-        $features = array_values(array_unique(array_merge($features, $serviceTokens)));
+        if ($serviceTokens !== []) {
+            $features = array_values(array_filter($features, fn ($value) => ! str_starts_with($value, 'service:')));
+            $features = array_values(array_unique(array_merge($features, $serviceTokens)));
+        }
+
+        $promotionPackage = strtolower(trim((string) ($payload['promotion_package'] ?? $payload['package'] ?? '')));
+        $promotionServices = [
+            'certify' => ! empty($payload['service_certify']),
+            'lifts' => ! empty($payload['service_lifts']),
+            'analytics' => ! empty($payload['service_analytics']),
+        ];
+        $hasPromotionPayload = $promotionPackage !== ''
+            || array_key_exists('service_certify', $payload)
+            || array_key_exists('service_lifts', $payload)
+            || array_key_exists('service_analytics', $payload);
+
+        if ($hasPromotionPayload) {
+            if ($promotionPackage !== '') {
+                $features[] = 'promo-package:' . $promotionPackage;
+            }
+
+            foreach ($promotionServices as $serviceKey => $enabled) {
+                if ($enabled) {
+                    $features[] = 'promo-service:' . $serviceKey;
+                }
+            }
+        } else {
+            $features = array_merge($features, $existingPromotionTokens);
+        }
+
+        $features = array_values(array_unique($features));
 
         $listingData = [
             'category_id' => $category->id,
@@ -546,7 +650,7 @@ class ListingSubmissionController extends Controller
                 'project-description',
                 'user-info',
                 'description',
-            ]),
+            ]) ?: (string) ($editListing?->excerpt ?? ''),
             'price' => Listing::normalizePrice($priceRaw !== '' ? "From {$priceRaw}" : null),
             'budget_tier' => $this->resolveBudgetTier($priceRaw),
             'availability_now' => true,
@@ -571,26 +675,117 @@ class ListingSubmissionController extends Controller
             $listing = Listing::query()->create($listingData)->fresh(['city', 'images']);
         }
 
-        $serviceArea = trim(implode(', ', array_filter([
-            (string) ($payload['address'] ?? ''),
-            (string) ($payload['zip'] ?? ''),
-            (string) ($payload['area-search'] ?? ''),
-        ])));
+        $existingContractorAddress = Schema::hasColumn('contractor_details', 'address_line')
+            ? trim((string) ($editListing?->contractorDetail?->address_line ?? ''))
+            : '';
+        $existingContractorZip = Schema::hasColumn('contractor_details', 'zip_code')
+            ? trim((string) ($editListing?->contractorDetail?->zip_code ?? ''))
+            : '';
+        $existingContractorState = Schema::hasColumn('contractor_details', 'state_code')
+            ? trim((string) ($editListing?->contractorDetail?->state_code ?? ''))
+            : '';
 
-        $businessHours = [
-            'monday' => (bool) ($payload['monday'] ?? false),
-            'tuesday' => (bool) ($payload['tuesday'] ?? false),
-            'wednesday' => (bool) ($payload['wednesday'] ?? false),
-            'thursday' => (bool) ($payload['thursday'] ?? false),
-            'friday' => (bool) ($payload['friday'] ?? false),
-            'saturday' => (bool) ($payload['saturday'] ?? false),
-            'sunday' => (bool) ($payload['sunday'] ?? false),
-        ];
+        $addressLine = trim((string) ($payload['address'] ?? ''));
+        if ($addressLine === '') {
+            $addressLine = $existingContractorAddress;
+        }
+
+        $zipCode = trim((string) ($payload['zip'] ?? ''));
+        if ($zipCode === '') {
+            $zipCode = $existingContractorZip;
+        }
+
+        $effectiveStateCode = $stateCode !== '' ? $stateCode : $existingContractorState;
+        if ($effectiveStateCode === '' && $city && Schema::hasColumn('cities', 'state_code')) {
+            $effectiveStateCode = trim((string) ($city->state_code ?? ''));
+        }
+
+        $features = array_values(array_filter($features, function ($value) {
+            $token = strtolower(trim((string) $value));
+            return ! str_starts_with($token, 'contractor-address:')
+                && ! str_starts_with($token, 'contractor-zip:')
+                && ! str_starts_with($token, 'contractor-state:');
+        }));
+        if ($addressLine !== '') {
+            $features[] = 'contractor-address:' . $addressLine;
+        }
+        if ($zipCode !== '') {
+            $features[] = 'contractor-zip:' . $zipCode;
+        }
+        if ($effectiveStateCode !== '') {
+            $features[] = 'contractor-state:' . $effectiveStateCode;
+        }
+        $features = array_values(array_unique($features));
+
+        if ($listing->features !== $features) {
+            $listing->update([
+                'features' => $features,
+            ]);
+            $listing->refresh();
+        }
+
+        $serviceAreaValues = $this->sanitizeContractorServiceAreas(
+            (string) ($payload['area-search'] ?? ''),
+            $addressLine,
+            $zipCode
+        );
+        if (count($serviceAreaValues) === 0 && $editListing?->contractorDetail?->service_area) {
+            $serviceAreaValues = $this->sanitizeContractorServiceAreas(
+                (string) $editListing->contractorDetail->service_area,
+                $addressLine,
+                $zipCode
+            );
+        }
+        $serviceArea = trim(implode(', ', $serviceAreaValues));
+
+        $existingHours = is_array($editListing?->contractorDetail?->business_hours)
+            ? $editListing->contractorDetail->business_hours
+            : [];
+        $businessHours = [];
+        foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+            $existingDay = $existingHours[$day] ?? null;
+            $existingEnabled = is_array($existingDay)
+                ? (bool) ($existingDay['enabled'] ?? false)
+                : (bool) $existingDay;
+            $existingFrom = is_array($existingDay)
+                ? trim((string) ($existingDay['from'] ?? ''))
+                : '';
+            $existingTo = is_array($existingDay)
+                ? trim((string) ($existingDay['to'] ?? ''))
+                : '';
+
+            $enabled = array_key_exists($day, $payload)
+                ? (bool) $payload[$day]
+                : $existingEnabled;
+            $from = trim((string) ($payload[$day . 'From'] ?? $existingFrom));
+            $to = trim((string) ($payload[$day . 'To'] ?? $existingTo));
+
+            $businessHours[$day] = [
+                'enabled' => $enabled,
+                'from' => $enabled ? $from : '',
+                'to' => $enabled ? $to : '',
+            ];
+        }
 
         ContractorDetail::query()->updateOrCreate(
             ['listing_id' => $listing->id],
             [
                 'service_area' => $serviceArea !== '' ? $serviceArea : ($city->name . ' Metro'),
+                ...(
+                    Schema::hasColumn('contractor_details', 'address_line')
+                        ? ['address_line' => $addressLine !== '' ? $addressLine : null]
+                        : []
+                ),
+                ...(
+                    Schema::hasColumn('contractor_details', 'zip_code')
+                        ? ['zip_code' => $zipCode !== '' ? $zipCode : null]
+                        : []
+                ),
+                ...(
+                    Schema::hasColumn('contractor_details', 'state_code')
+                        ? ['state_code' => $effectiveStateCode !== '' ? $effectiveStateCode : null]
+                        : []
+                ),
                 'license_number' => $this->firstNonEmpty($payload, ['license-number', 'license_number', 'license']) ?: null,
                 'is_verified' => (bool) ($payload['is-verified'] ?? false),
                 'business_hours' => $businessHours,
@@ -665,6 +860,12 @@ class ListingSubmissionController extends Controller
             $listing->save();
         }
 
+        $nextPath = trim((string) $request->input('next', ''));
+        if ($status === 'draft' && $nextPath !== '' && (str_starts_with($nextPath, '/add-contractor') || str_starts_with($nextPath, '/account/payment'))) {
+            $separator = str_contains($nextPath, '?') ? '&' : '?';
+            return redirect($nextPath . $separator . 'edit=' . $listing->id);
+        }
+
         if ($status === 'draft') {
             return redirect('/account/listings?saved=draft&edit=' . $listing->id);
         }
@@ -680,18 +881,145 @@ class ListingSubmissionController extends Controller
     {
         $status = $this->resolveStatus($request);
         $editListing = $this->resolveEditableListing($request, 'restaurants');
+        $nextPath = trim((string) $request->input('next', ''));
+        $requiresComplete = $status !== 'draft'
+            || ($nextPath !== '' && str_starts_with($nextPath, '/add-restaurant-promotion'));
+        $existingRestaurantMeta = [];
+        $existingExcerptRaw = (string) ($editListing?->excerpt ?? '');
+        if ($existingExcerptRaw !== '') {
+            $decodedExistingMeta = json_decode($existingExcerptRaw, true);
+            if (is_array($decodedExistingMeta) && ($decodedExistingMeta['_mc_restaurant_v1'] ?? false)) {
+                $existingRestaurantMeta = $decodedExistingMeta;
+            }
+        }
+
+        $servicesInput = $request->input('services', []);
+        if (is_string($servicesInput)) {
+            $servicesInput = [$servicesInput];
+        }
+        if ((!is_array($servicesInput) || !count(array_filter($servicesInput))) && !empty($existingRestaurantMeta['services']) && is_array($existingRestaurantMeta['services'])) {
+            $servicesInput = $existingRestaurantMeta['services'];
+        }
+
+        $openingHoursInput = [];
+        $openingHoursRaw = (string) $request->input('opening_hours', '');
+        if ($openingHoursRaw !== '') {
+            $decodedOpeningHours = json_decode($openingHoursRaw, true);
+            if (is_array($decodedOpeningHours)) {
+                $openingHoursInput = $decodedOpeningHours;
+            }
+        }
+        if (!$openingHoursInput && !empty($existingRestaurantMeta['opening_hours']) && is_array($existingRestaurantMeta['opening_hours'])) {
+            $openingHoursInput = $existingRestaurantMeta['opening_hours'];
+        }
+
+        if ($requiresComplete) {
+            $hasExistingImages = false;
+            if ($editListing) {
+                $hasExistingImages = !empty($editListing->image)
+                    || $editListing->images()->exists();
+            }
+
+            $hasUploadedImages = $request->hasFile('cover_photo')
+                || $request->hasFile('gallery_photos');
+
+            $enabledOpeningDays = collect($openingHoursInput)
+                ->filter(fn ($row) => !empty($row['enabled']))
+                ->keys()
+                ->values()
+                ->all();
+
+            $hasInvalidEnabledHours = collect($openingHoursInput)
+                ->filter(fn ($row) => !empty($row['enabled']))
+                ->contains(function ($row) {
+                    $from = trim((string) ($row['from'] ?? ''));
+                    $to = trim((string) ($row['to'] ?? ''));
+                    return $from === '' || $to === '';
+                });
+
+            $restaurantNameForValidation = trim((string) $request->input('restaurant_name', ''))
+                ?: trim((string) ($editListing?->title ?? ''));
+            $addressForValidation = trim((string) $request->input('address', ''))
+                ?: trim((string) ($existingRestaurantMeta['address'] ?? ''));
+            $stateForValidation = trim((string) $request->input('state', ''))
+                ?: trim((string) ($existingRestaurantMeta['state'] ?? ''))
+                ?: trim((string) ($editListing?->city?->state_code ?? ''));
+            $cityForValidation = trim((string) $request->input('city', ''))
+                ?: trim((string) ($editListing?->city?->name ?? ''));
+
+            $validator = Validator::make(
+                array_merge($request->all(), [
+                    'restaurant_name' => $restaurantNameForValidation,
+                    'address' => $addressForValidation,
+                    'state' => $stateForValidation,
+                    'city' => $cityForValidation,
+                    '_services_count' => is_array($servicesInput) ? count(array_filter($servicesInput)) : 0,
+                    '_enabled_hours_count' => count($enabledOpeningDays),
+                    '_has_hours_gaps' => $hasInvalidEnabledHours ? '1' : '0',
+                    '_has_image' => ($hasUploadedImages || $hasExistingImages) ? '1' : '',
+                ]),
+                [
+                    'restaurant_name' => ['required', 'string', 'max:255'],
+                    'address' => ['required', 'string', 'max:255'],
+                    'state' => ['required', 'string'],
+                    'city' => ['required', 'string'],
+                    '_services_count' => ['required', 'integer', 'min:1'],
+                    '_enabled_hours_count' => ['required', 'integer', 'min:1'],
+                    '_has_hours_gaps' => ['in:0'],
+                    '_has_image' => ['required'],
+                ],
+                [
+                    'restaurant_name.required' => 'Restaurant name is required.',
+                    'address.required' => 'Location is required.',
+                    'state.required' => 'Location is required.',
+                    'city.required' => 'Location is required.',
+                    '_services_count.min' => 'At least one service is required.',
+                    '_enabled_hours_count.min' => 'Working hours are required.',
+                    '_has_hours_gaps.in' => 'Complete from and to time for each selected day.',
+                    '_has_image.required' => 'At least one restaurant image is required.',
+                ]
+            );
+
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+        }
 
         $title = trim((string) $request->input('restaurant_name', ''));
+        if ($title === '' && $editListing) {
+            $title = trim((string) $editListing->title);
+        }
         if ($title === '') {
             $title = 'Restaurant Listing';
         }
 
-        $category = $this->resolveCategory('restaurants', (string) $request->input('cuisine_type', ''));
+        $cuisineType = trim((string) $request->input('cuisine_type', ''));
+        if ($cuisineType === '' && $editListing?->category?->name) {
+            $cuisineType = (string) $editListing->category->name;
+        }
+        $category = $this->resolveCategory('restaurants', $cuisineType);
+        if (! $category && $editListing?->category_id) {
+            $category = $editListing->category;
+        }
+
         $stateCode = $this->normalizeUsStateCode((string) $request->input('state', ''));
+        if ($stateCode === '' && !empty($existingRestaurantMeta['state'])) {
+            $stateCode = $this->normalizeUsStateCode((string) $existingRestaurantMeta['state']);
+        }
+        if ($stateCode === '' && $editListing?->city && Schema::hasColumn('cities', 'state_code')) {
+            $stateCode = (string) ($editListing->city->state_code ?? '');
+        }
         if ($stateCode === '' || ! $this->resolveUsState($stateCode)) {
             return redirect('/add-restaurant?error=missing-state');
         }
-        $city = $this->resolveCity((string) $request->input('city', ''), $stateCode);
+        $cityRaw = trim((string) $request->input('city', ''));
+        if ($cityRaw === '' && $editListing?->city?->name) {
+            $cityRaw = (string) $editListing->city->name;
+        }
+        $city = $this->resolveCity($cityRaw, $stateCode);
+        if (! $city && $editListing?->city) {
+            $city = $editListing->city;
+        }
 
         if (! $category || ! $city) {
             return redirect('/add-restaurant?error=missing-taxonomy');
@@ -701,11 +1029,7 @@ class ListingSubmissionController extends Controller
         $rangeAmount = $priceRange !== '' ? $this->normalizeInteger($priceRange) : 0;
         $price = $rangeAmount > 0 ? ('$' . number_format($rangeAmount)) : null;
         $priceAmount = $rangeAmount > 0 ? $rangeAmount : null;
-        $services = $request->input('services', []);
-
-        if (is_string($services)) {
-            $services = [$services];
-        }
+        $services = $servicesInput;
 
         $serviceAliases = [
             'dinein' => 'dine-in',
@@ -724,30 +1048,64 @@ class ListingSubmissionController extends Controller
             ->values()
             ->all();
 
-        $features = [];
+        $existingFeatures = is_array($editListing?->features) ? $editListing->features : [];
+        $existingPromotionTokens = collect($existingFeatures)
+            ->map(fn ($value) => trim((string) $value))
+            ->filter(fn ($value) => str_starts_with($value, 'promo-package:') || str_starts_with($value, 'promo-service:'))
+            ->values()
+            ->all();
+        $features = collect($existingFeatures)
+            ->map(fn ($value) => trim((string) $value))
+            ->filter()
+            ->reject(fn ($value) => str_starts_with($value, 'promo-package:') || str_starts_with($value, 'promo-service:'))
+            ->values()
+            ->all();
 
         $serviceValues = array_values(array_unique($serviceValues));
-        $openingHoursRaw = (string) $request->input('opening_hours', '');
-        $openingHours = [];
-        if ($openingHoursRaw !== '') {
-            $decoded = json_decode($openingHoursRaw, true);
-            if (is_array($decoded)) {
-                $openingHours = $decoded;
+        $openingHours = $openingHoursInput;
+
+        $promotionPackage = strtolower(trim((string) $request->input('promotion_package', $request->input('package', ''))));
+        $promotionServices = [
+            'certify' => $request->boolean('service_certify'),
+            'lifts' => $request->boolean('service_lifts'),
+            'analytics' => $request->boolean('service_analytics'),
+        ];
+        $hasPromotionPayload = $promotionPackage !== ''
+            || $request->exists('service_certify')
+            || $request->exists('service_lifts')
+            || $request->exists('service_analytics');
+
+        if ($hasPromotionPayload) {
+            if ($promotionPackage !== '') {
+                $features[] = 'promo-package:' . $promotionPackage;
             }
+
+            foreach ($promotionServices as $serviceKey => $enabled) {
+                if ($enabled) {
+                    $features[] = 'promo-service:' . $serviceKey;
+                }
+            }
+        } else {
+            $features = array_merge($features, $existingPromotionTokens);
         }
+
+        $features = array_values(array_unique(array_filter(array_map(
+            fn ($feature) => trim((string) $feature),
+            $features
+        ))));
 
         $restaurantMeta = [
             '_mc_restaurant_v1' => true,
-            'address' => trim((string) $request->input('address', '')),
-            'zip_code' => trim((string) $request->input('zip_code', '')),
+            'address' => trim((string) $request->input('address', '')) ?: trim((string) ($existingRestaurantMeta['address'] ?? '')),
+            'zip_code' => trim((string) $request->input('zip_code', '')) ?: trim((string) ($existingRestaurantMeta['zip_code'] ?? '')),
             'country' => 'United States',
             'state' => $stateCode,
-            'seating_capacity' => trim((string) $request->input('seating_capacity', '')),
+            'seating_capacity' => trim((string) $request->input('seating_capacity', '')) ?: trim((string) ($existingRestaurantMeta['seating_capacity'] ?? '')),
             'services' => $serviceValues,
             'opening_hours' => $openingHours,
-            'contact_name' => trim((string) $request->input('contact_name', '')),
-            'phone' => trim((string) $request->input('phone', '')),
-            'email' => trim((string) $request->input('email', '')),
+            'contact_name' => trim((string) $request->input('contact_name', '')) ?: trim((string) ($existingRestaurantMeta['contact_name'] ?? '')),
+            'phone' => trim((string) $request->input('phone', '')) ?: trim((string) ($existingRestaurantMeta['phone'] ?? '')),
+            'email' => trim((string) $request->input('email', '')) ?: trim((string) ($existingRestaurantMeta['email'] ?? '')),
         ];
         $restaurantMetaJson = json_encode($restaurantMeta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
@@ -781,13 +1139,13 @@ class ListingSubmissionController extends Controller
 
         if ($editListing) {
             $listingData['slug'] = $this->makeUniqueSlug($title, 'restaurant-listing', $editListing->id);
-            $listingData['image'] = $uploadedImagePath ?: ($editListing->image ?: '/finder/assets/img/monaclick/restaurants/user1.jpg');
+            $listingData['image'] = $uploadedImagePath ?: ($editListing->image ?: '/finder/assets/img/placeholders/preview-square.svg');
             $editListing->update($listingData);
             $listing = $editListing->fresh(['city', 'images']);
         } else {
             $listingData['slug'] = $this->makeUniqueSlug($title, 'restaurant-listing');
             $listingData['user_id'] = auth()->id();
-            $listingData['image'] = $uploadedImagePath ?: '/finder/assets/img/monaclick/restaurants/user1.jpg';
+            $listingData['image'] = $uploadedImagePath ?: '/finder/assets/img/placeholders/preview-square.svg';
             $listing = Listing::query()->create($listingData)->fresh(['city', 'images']);
         }
 
@@ -827,10 +1185,20 @@ class ListingSubmissionController extends Controller
             $listing->save();
         }
 
+        if ($status === 'draft') {
+            if ($nextPath !== '' && str_starts_with($nextPath, '/add-restaurant-promotion')) {
+                return redirect($nextPath . '?edit=' . $listing->id);
+            }
+        }
+
+        if ($status !== 'draft' && !empty($listing->slug)) {
+            return redirect('/entry/restaurants?created=1&slug=' . urlencode((string) $listing->slug));
+        }
+
         return $this->redirectAfterSubmission(
             $status,
             '/account/listings',
-            '/account/listings',
+            '/listings/restaurants',
             $listing->title,
             $listing->id
         );
@@ -982,6 +1350,14 @@ class ListingSubmissionController extends Controller
             if ($category) {
                 return $category;
             }
+
+            return Category::query()->create([
+                'module' => $module,
+                'name' => $name !== '' ? $name : ucfirst(str_replace('-', ' ', $slug)),
+                'slug' => $slug,
+                'sort_order' => (int) Category::query()->where('module', $module)->max('sort_order') + 1,
+                'is_active' => true,
+            ]);
         }
 
         $fallback = (clone $query)->orderBy('sort_order')->first();

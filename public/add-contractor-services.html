@@ -20,6 +20,7 @@
 
     <!-- Theme switcher (color modes) -->
     <script src="/finder/assets/js/theme-switcher.js"></script>
+    <style>#customizer{display:none!important;}</style>
 
     <!-- Preloaded local web font (Inter) -->
     <link rel="preload" href="/finder/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -37,7 +38,7 @@
     <link rel="stylesheet" href="/finder/assets/css/theme.min.css" id="theme-styles">
 
     <!-- Customizer -->
-    <script src="/finder/assets/js/customizer.min.js"></script>
+    
   </head>
 
 
@@ -358,6 +359,7 @@
               }
             }' aria-label="Select categories" name="project-type">
               <option value="">Select categories</option>
+              <option value="" selected>Select category</option>
               <option value="Roofing">Roofing</option>
               <option value="Interior designers">Interior design</option>
               <option value="Flooring">Flooring</option>
@@ -375,7 +377,7 @@
             <div class="row row-cols-2 row-cols-md-3 gy-3 gx-4">
               <div class="col">
                 <div class="form-check mb-0">
-                  <input type="checkbox" class="form-check-input" id="rendering" checked>
+                  <input type="checkbox" class="form-check-input" id="rendering">
                   <label for="rendering" class="form-check-label">3D rendering</label>
                 </div>
               </div>
@@ -387,13 +389,13 @@
               </div>
               <div class="col">
                 <div class="form-check mb-0">
-                  <input type="checkbox" class="form-check-input" id="architectural-design" checked>
+                  <input type="checkbox" class="form-check-input" id="architectural-design">
                   <label for="architectural-design" class="form-check-label">Architectural Design</label>
                 </div>
               </div>
               <div class="col">
                 <div class="form-check mb-0">
-                  <input type="checkbox" class="form-check-input" id="bathroom-design" checked>
+                  <input type="checkbox" class="form-check-input" id="bathroom-design">
                   <label for="bathroom-design" class="form-check-label">Bathroom Design</label>
                 </div>
               </div>
@@ -417,13 +419,13 @@
               </div>
               <div class="col">
                 <div class="form-check mb-0">
-                  <input type="checkbox" class="form-check-input" id="home-renovations" checked>
+                  <input type="checkbox" class="form-check-input" id="home-renovations">
                   <label for="home-renovations" class="form-check-label">Home Renovations</label>
                 </div>
               </div>
               <div class="col">
                 <div class="form-check mb-0">
-                  <input type="checkbox" class="form-check-input" id="floor-leveling" checked>
+                  <input type="checkbox" class="form-check-input" id="floor-leveling">
                   <label for="floor-leveling" class="form-check-label">Floor Leveling</label>
                 </div>
               </div>
@@ -435,7 +437,7 @@
               </div>
               <div class="col">
                 <div class="form-check mb-0">
-                  <input type="checkbox" class="form-check-input" id="custom-home-building" checked>
+                  <input type="checkbox" class="form-check-input" id="custom-home-building">
                   <label for="custom-home-building" class="form-check-label">Custom Home Building</label>
                 </div>
               </div>
@@ -447,7 +449,7 @@
               </div>
               <div class="col">
                 <div class="form-check mb-0">
-                  <input type="checkbox" class="form-check-input" id="kitchen-remodeling" checked>
+                  <input type="checkbox" class="form-check-input" id="kitchen-remodeling">
                   <label for="kitchen-remodeling" class="form-check-label">Kitchen Remodeling</label>
                 </div>
               </div>

@@ -527,6 +527,56 @@
     if (selectedModule === 'cars') syncCarBadges(card, item);
   };
 
+  const renderCarCardMarkup = (item) => `
+    <article class="card h-100 hover-effect-scale bg-body-tertiary border-0">
+      <div class="card-img-top position-relative overflow-hidden">
+        ${(() => {
+          const badges = [];
+          const conditionRaw = String(item?.details?.car?.condition || '').toLowerCase();
+          const stock = conditionRaw.includes('used') ? 'Used' : (conditionRaw.includes('new') ? 'New' : '');
+          const features = Array.isArray(item?.features) ? item.features : [];
+          const isVerified = features.some((f) => String(f || '').toLowerCase().includes('verified'));
+          if (isVerified) badges.push('<span class="badge text-bg-info d-inline-flex align-items-center">Verified<i class="fi-shield ms-1"></i></span>');
+          if (stock) badges.push(`<span class="badge ${stock === 'New' ? 'text-bg-primary' : 'text-bg-warning'}">${escapeHtml(stock)}</span>`);
+          if (!badges.length) return '';
+          return `<div class="d-flex flex-column gap-2 align-items-start position-absolute top-0 start-0 z-1 pt-1 pt-sm-0 ps-1 ps-sm-0 mt-2 mt-sm-3 ms-2 ms-sm-3" style="pointer-events:none">${badges.join('')}</div>`;
+        })()}
+        <img class="card-img-top module-card-img" src="${escapeHtml(item.image_url || '/finder/assets/img/placeholders/preview-square.svg')}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/finder/assets/img/placeholders/preview-square.svg';">
+      </div>
+      <div class="card-body pb-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="fs-xs text-body-secondary me-3">Recently added</div>
+          <div class="d-flex gap-2 position-relative z-2">
+            <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-pulse rounded-circle" aria-label="Add to wishlist">
+              <i class="fi-heart animate-target fs-sm"></i>
+            </button>
+            <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-shake rounded-circle" aria-label="Notify">
+              <i class="fi-bell animate-target fs-sm"></i>
+            </button>
+            <button type="button" class="btn btn-icon btn-sm btn-outline-secondary animate-rotate rounded-circle" aria-label="Compare">
+              <i class="fi-repeat animate-target fs-sm"></i>
+            </button>
+          </div>
+        </div>
+        <h3 class="h6 mb-2">
+          <a class="hover-effect-underline stretched-link me-1 text-decoration-none" href="${entryUrl(item)}">${escapeHtml(item.title)}</a>
+          ${item?.details?.car?.year ? `<span class="fs-xs fw-normal text-body-secondary">(${escapeHtml(item.details.car.year)})</span>` : ''}
+        </h3>
+        <div class="h6 mb-0">${escapeHtml(item.price || '')}</div>
+      </div>
+      <div class="card-footer bg-transparent border-0 pt-0 pb-4">
+        <div class="border-top pt-3">
+          <div class="row row-cols-2 g-2 fs-sm">
+            <div class="col d-flex align-items-center gap-2"><i class="fi-map-pin"></i>${escapeHtml(item.city?.name || 'Location')}</div>
+            <div class="col d-flex align-items-center gap-2"><i class="fi-tachometer"></i>${escapeHtml(item?.details?.car?.mileage ? `${item.details.car.mileage} mi` : 'N/A')}</div>
+            <div class="col d-flex align-items-center gap-2"><i class="fi-gas-pump"></i>${escapeHtml(item?.details?.car?.fuel_type || 'N/A')}</div>
+            <div class="col d-flex align-items-center gap-2"><i class="fi-gearbox"></i>${escapeHtml(item?.details?.car?.transmission || 'N/A')}</div>
+          </div>
+        </div>
+      </div>
+    </article>
+  `;
+
   const sectionConfig = (heading) => {
     if (!heading) return { strategy: 'blend', slots: 6 };
 
@@ -784,6 +834,10 @@
         if (!item) return;
 
         const entryHref = detailUrl(item);
+        if (selectedModule === 'cars') {
+          card.outerHTML = renderCarCardMarkup(item);
+          return;
+        }
         card
           .querySelectorAll(
             `a[href="/entry/${selectedModule}"], a[href^="/entry/${selectedModule}?"], a[href="/listings/${selectedModule}"], a[href^="/listings/${selectedModule}?"], a[href="#!"], a[href="#"]`

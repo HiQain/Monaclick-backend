@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Schema;
 
 $serve = static function (string $file) {
     $path = public_path($file);
+    $currentRequestPath = '/' . ltrim(request()->path(), '/');
     abort_unless(file_exists($path), 404);
     $html = file_get_contents($path);
     $html = str_replace('data-pwa="true"', 'data-pwa="false"', $html);
@@ -39,8 +40,8 @@ $serve = static function (string $file) {
         $html
     );
 
-    // Cache-bust frequently updated dynamic scripts without touching every template file.
-    $scriptVersions = [
+    // Cache-bust frequently updated assets without touching every template file.
+    $assetVersions = [
         '/finder/assets/js/monaclick-global-footer.js' => [
             public_path('finder/assets/js/monaclick-global-footer.js'),
             base_path('../finder/assets/js/monaclick-global-footer.js'),
@@ -61,8 +62,28 @@ $serve = static function (string $file) {
             public_path('finder/assets/js/monaclick-home-dynamic.js'),
             base_path('../finder/assets/js/monaclick-home-dynamic.js'),
         ],
+        '/finder/assets/js/monaclick-contractor-wizard.js' => [
+            public_path('finder/assets/js/monaclick-contractor-wizard.js'),
+            base_path('../finder/assets/js/monaclick-contractor-wizard.js'),
+        ],
+        '/finder/assets/js/monaclick-home-combined.js' => [
+            public_path('finder/assets/js/monaclick-home-combined.js'),
+            base_path('../finder/assets/js/monaclick-home-combined.js'),
+        ],
+        '/finder/assets/css/theme.min.css' => [
+            public_path('finder/assets/css/theme.min.css'),
+        ],
+        '/finder/assets/css/theme.rtl.min.css' => [
+            public_path('finder/assets/css/theme.rtl.min.css'),
+        ],
+        '/finder/assets/icons/finder-icons.min.css' => [
+            public_path('finder/assets/icons/finder-icons.min.css'),
+        ],
+        '/finder/assets/vendor/choices.js/public/assets/styles/choices.min.css' => [
+            public_path('finder/assets/vendor/choices.js/public/assets/styles/choices.min.css'),
+        ],
     ];
-    foreach ($scriptVersions as $webPath => $diskPath) {
+    foreach ($assetVersions as $webPath => $diskPath) {
         $candidates = is_array($diskPath) ? $diskPath : [$diskPath];
         $resolved = null;
         foreach ($candidates as $candidate) {
@@ -244,6 +265,7 @@ HTML;
     const text = (link.textContent || '').trim().toLowerCase();
     if (text === 'sign out' || text.includes('sign out of all sessions')) {
       link.setAttribute('href', '/signout');
+      link.setAttribute('data-mc-no-loader', '1');
     }
   });
 })();
@@ -308,7 +330,7 @@ HTML;
         <p style="margin:0 0 18px 0;color:#5b6475;">Are you sure you want to log out?</p>
         <div style="display:flex;justify-content:flex-end;gap:10px;">
           <button type="button" class="btn btn-outline-secondary" data-logout-close>Cancel</button>
-          <a href="/signout" class="btn btn-primary" id="logoutConfirmAction">Yes, log out</a>
+          <a href="/signout" class="btn btn-primary" id="logoutConfirmAction" data-mc-no-loader="1">Yes, log out</a>
         </div>
       </div>
     `;
@@ -332,6 +354,18 @@ HTML;
       const targetHref = trigger.getAttribute('href') || '/signout';
       if (confirmAction) confirmAction.setAttribute('href', targetHref);
       open();
+      return;
+    }
+
+    const confirmLink = event.target.closest('#logoutConfirmAction');
+    if (confirmLink) {
+      event.preventDefault();
+      const href = confirmLink.getAttribute('href') || '/signout';
+      close();
+      if (typeof window.__MC_HIDE_PAGE_LOADER__ === 'function') {
+        window.__MC_HIDE_PAGE_LOADER__();
+      }
+      window.location.assign(href);
       return;
     }
 
@@ -396,7 +430,7 @@ HTML;
         $userEmail = strtolower(trim((string) ($user?->email ?? '')));
         $userListings = $user?->id
             ? Listing::query()
-                ->with('city')
+                ->with(['city', 'propertyDetail', 'contractorDetail'])
                 ->where('user_id', $user->id)
                 ->latest('id')
                 ->take(50)
@@ -442,7 +476,7 @@ HTML;
 
         if ($recoveredListingIds->isNotEmpty()) {
             $recoveredListings = Listing::query()
-                ->with('city')
+                ->with(['city', 'propertyDetail', 'contractorDetail'])
                 ->whereIn('id', $recoveredListingIds)
                 ->latest('id')
                 ->get();
@@ -461,7 +495,7 @@ HTML;
         $favoriteCount = $hasFavoritesTable ? DB::table('favorites')->where('user_id', $user?->id)->count() : 0;
         $isNewUser = $listingCount === 0 && $reviewCount === 0 && $favoriteCount === 0;
 
-        if (in_array($file, ['account-profile.html', 'account-listings.html'], true)) {
+        if (in_array($file, ['account-profile.html', 'account-listings.html', 'account-payment.html'], true)) {
             $profileName = trim((string) (($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')));
             if ($profileName === '') {
                 $profileName = (string) ($user?->name ?? 'User');
@@ -479,6 +513,158 @@ HTML;
                 'avatar' => (string) ($user?->avatar_url ?? ''),
             ];
             $listingsPayload = $userListings->map(function (Listing $listing) {
+                $promotionPackage = '';
+                $promotionPackageLabel = '';
+                $promotionPackagePrice = '';
+                $selectedServicesDetails = [];
+                if ($listing->module === 'real-estate') {
+                    $wizardData = is_array($listing->propertyDetail?->wizard_data) ? $listing->propertyDetail->wizard_data : [];
+                    $promotionPackage = strtolower(trim((string) ($wizardData['promotion_package'] ?? $wizardData['package'] ?? '')));
+                    $promotionPackageLabel = match ($promotionPackage) {
+                        'easy-start' => 'Easy Start',
+                        'fast-sale' => 'Fast Sale',
+                        'turbo-boost' => 'Turbo Boost',
+                        default => '',
+                    };
+                    $promotionPackagePrice = match ($promotionPackage) {
+                        'easy-start' => '$25 / month',
+                        'fast-sale' => '$49 / month',
+                        'turbo-boost' => '$70 / month',
+                        default => '',
+                    };
+                    if (!empty($wizardData['service_certify'])) {
+                        $selectedServicesDetails[] = [
+                            'label' => 'Check and certify my ad by Monaclick experts',
+                            'price' => '$35',
+                        ];
+                    }
+                    if (!empty($wizardData['service_lifts'])) {
+                        $selectedServicesDetails[] = [
+                            'label' => '10 lifts to the top of the list (daily, 7 days)',
+                            'price' => '$29 / month',
+                        ];
+                    }
+                    if (!empty($wizardData['service_analytics'])) {
+                        $selectedServicesDetails[] = [
+                            'label' => 'Detailed user engagement analytics',
+                            'price' => '$15 / month',
+                        ];
+                    }
+                } elseif ($listing->module === 'contractors') {
+                    $featureTokens = collect(is_array($listing->features) ? $listing->features : [])
+                        ->map(fn ($value) => trim((string) $value))
+                        ->filter();
+                    $promotionPackage = strtolower((string) ($featureTokens->first(fn ($token) => str_starts_with($token, 'promo-package:')) ?? ''));
+                    if ($promotionPackage !== '') {
+                        $promotionPackage = substr($promotionPackage, strlen('promo-package:'));
+                    }
+                    $promotionPackageLabel = match ($promotionPackage) {
+                        'easy-start' => 'Easy Start',
+                        'fast-sale' => 'Fast Sale',
+                        'turbo-boost' => 'Turbo Boost',
+                        default => '',
+                    };
+                    $promotionPackagePrice = match ($promotionPackage) {
+                        'easy-start' => '$25 / month',
+                        'fast-sale' => '$49 / month',
+                        'turbo-boost' => '$70 / month',
+                        default => '',
+                    };
+                    if ($featureTokens->contains('promo-service:certify')) {
+                        $selectedServicesDetails[] = [
+                            'label' => 'Check and certify my business by Monaclick experts',
+                            'price' => '$35',
+                        ];
+                    }
+                    if ($featureTokens->contains('promo-service:lifts')) {
+                        $selectedServicesDetails[] = [
+                            'label' => '10 lifts to the top of the list (daily, 7 days)',
+                            'price' => '$29 / month',
+                        ];
+                    }
+                    if ($featureTokens->contains('promo-service:analytics')) {
+                        $selectedServicesDetails[] = [
+                            'label' => 'Detailed user engagement analytics',
+                            'price' => '$15 / month',
+                        ];
+                    }
+                } elseif ($listing->module === 'cars') {
+                    $featureTokens = collect(is_array($listing->features) ? $listing->features : [])
+                        ->map(fn ($value) => trim((string) $value))
+                        ->filter();
+                    $promotionPackage = strtolower((string) ($featureTokens->first(fn ($token) => str_starts_with($token, 'promo-package:')) ?? ''));
+                    if ($promotionPackage !== '') {
+                        $promotionPackage = substr($promotionPackage, strlen('promo-package:'));
+                    }
+                    $promotionPackageLabel = match ($promotionPackage) {
+                        'easy-start' => 'Easy Start',
+                        'fast-sale' => 'Fast Sale',
+                        'turbo-boost' => 'Turbo Boost',
+                        default => '',
+                    };
+                    $promotionPackagePrice = match ($promotionPackage) {
+                        'easy-start' => '$25 / month',
+                        'fast-sale' => '$49 / month',
+                        'turbo-boost' => '$70 / month',
+                        default => '',
+                    };
+                    if ($featureTokens->contains('promo-service:certify')) {
+                        $selectedServicesDetails[] = [
+                            'label' => 'Check and certify my ad by Monaclick experts',
+                            'price' => '$35',
+                        ];
+                    }
+                    if ($featureTokens->contains('promo-service:lifts')) {
+                        $selectedServicesDetails[] = [
+                            'label' => '10 lifts to the top of the list (daily, 7 days)',
+                            'price' => '$29 / month',
+                        ];
+                    }
+                    if ($featureTokens->contains('promo-service:analytics')) {
+                        $selectedServicesDetails[] = [
+                            'label' => 'Detailed user engagement analytics',
+                            'price' => '$15 / month',
+                        ];
+                    }
+                } elseif ($listing->module === 'restaurants') {
+                    $featureTokens = collect(is_array($listing->features) ? $listing->features : [])
+                        ->map(fn ($value) => trim((string) $value))
+                        ->filter();
+                    $promotionPackage = strtolower((string) ($featureTokens->first(fn ($token) => str_starts_with($token, 'promo-package:')) ?? ''));
+                    if ($promotionPackage !== '') {
+                        $promotionPackage = substr($promotionPackage, strlen('promo-package:'));
+                    }
+                    $promotionPackageLabel = match ($promotionPackage) {
+                        'easy-start' => 'Easy Start',
+                        'fast-sale' => 'Fast Sale',
+                        'turbo-boost' => 'Turbo Boost',
+                        default => '',
+                    };
+                    $promotionPackagePrice = match ($promotionPackage) {
+                        'easy-start' => '$25 / month',
+                        'fast-sale' => '$49 / month',
+                        'turbo-boost' => '$70 / month',
+                        default => '',
+                    };
+                    if ($featureTokens->contains('promo-service:certify')) {
+                        $selectedServicesDetails[] = [
+                            'label' => 'Check and certify my restaurant by Monaclick experts',
+                            'price' => '$35',
+                        ];
+                    }
+                    if ($featureTokens->contains('promo-service:lifts')) {
+                        $selectedServicesDetails[] = [
+                            'label' => '10 lifts to the top of the list (daily, 7 days)',
+                            'price' => '$29 / month',
+                        ];
+                    }
+                    if ($featureTokens->contains('promo-service:analytics')) {
+                        $selectedServicesDetails[] = [
+                            'label' => 'Detailed user engagement analytics',
+                            'price' => '$15 / month',
+                        ];
+                    }
+                }
                 return [
                     'id' => $listing->id,
                     'title' => (string) $listing->title,
@@ -492,6 +678,10 @@ HTML;
                     'admin_status' => (string) ($listing->admin_status ?? ''),
                     'published_at' => optional($listing->published_at)->toIso8601String() ?? '',
                     'created_at' => optional($listing->created_at)->format('d/m/Y') ?? '',
+                    'promotion_package' => $promotionPackage,
+                    'promotion_package_label' => $promotionPackageLabel,
+                    'promotion_package_price' => $promotionPackagePrice,
+                    'selected_services_details' => $selectedServicesDetails,
                 ];
             })->values()->all();
             $profileJson = json_encode($profilePayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
@@ -532,6 +722,39 @@ HTML;
     </form>
   `;
 
+  const promotionSummary = (item) => {
+    if (item.module !== 'real-estate') return '';
+    const packageLabel = String(item?.promotion_package_label || '').trim();
+    const packagePrice = String(item?.promotion_package_price || '').trim();
+    const serviceDetails = Array.isArray(item?.selected_services_details)
+      ? item.selected_services_details
+        .map((service) => ({
+          label: String(service?.label || '').trim(),
+          price: String(service?.price || '').trim(),
+        }))
+        .filter((service) => service.label)
+      : [];
+    if (!packageLabel && !serviceDetails.length) return '';
+
+    return `
+      <div class="border rounded p-3 mt-3 bg-body-tertiary">
+        <div class="small text-body-secondary mb-1">Ad Promotion</div>
+        ${packageLabel ? `<div class="fw-semibold">${esc(packageLabel)}${packagePrice ? ` <span class="text-body-secondary fw-normal">(${esc(packagePrice)})</span>` : ''}</div>` : ''}
+        ${serviceDetails.length ? `
+          <div class="small text-body-secondary mt-2 mb-1">Other services</div>
+          <div class="d-flex flex-column gap-1">
+            ${serviceDetails.map((service) => `
+              <div class="small d-flex justify-content-between gap-2">
+                <span>${esc(service.label)}</span>
+                <span class="text-body-secondary">${esc(service.price)}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  };
+
   const card = (item, compact = false) => `
     <article class="card border-0 shadow-sm mb-3">
       <div class="row g-0">
@@ -547,6 +770,7 @@ HTML;
             <h3 class="h6 mb-1">${esc(item.title)}</h3>
             <div class="text-body-secondary small mb-2">${esc(item.module_label)}${item.city ? ' • ' + esc(item.city) : ''}</div>
             <div class="fw-semibold mb-3">${esc(item.price || 'Price on request')}</div>
+            ${promotionSummary(item)}
             <div class="mt-auto d-flex gap-2 flex-wrap">
               <a class="btn btn-sm btn-outline-secondary" href="${viewHref(item)}">View</a>
               ${editHref(item) ? `<a class="btn btn-sm btn-primary" href="${editHref(item)}">Edit</a>` : ''}
@@ -613,9 +837,11 @@ HTML;
               <div class="card-body d-flex justify-content-between p-3 py-sm-4 ps-sm-2 ps-md-3 pe-md-4 mt-n1 mt-sm-0">
                 <div class="position-relative pe-3">
                   <span class="badge text-body-emphasis bg-body-secondary mb-2">${esc(item.module_label || (isDraft ? 'Draft' : 'Published'))}</span>
+                  ${String(item?.promotion_package_label || '').trim() ? `<span class="badge text-bg-info ms-2 mb-2">${esc(String(item.promotion_package_label).trim())} Package</span>` : ''}
                   <div class="h5 mb-2">${esc(item.price || 'Price on request')}</div>
                   <a class="stretched-link d-block fs-sm text-body text-decoration-none mb-2" href="${viewHref(item)}">${esc(item.title)}</a>
                   <div class="h6 fs-sm mb-0">${esc(metaLine || 'No additional details')}</div>
+                  ${String(item?.promotion_package_label || '').trim() ? `<div class="fs-xs text-body-secondary mt-2">Promotion package: ${esc(String(item.promotion_package_label).trim())}</div>` : ''}
                 </div>
                 <div class="text-end">
                   <div class="fs-xs text-body-secondary mb-3">Created: ${esc(item.created_at)}</div>
@@ -674,24 +900,48 @@ HTML;
     if (!root) return;
     const avatarSrc = profile.avatar ? profile.avatar : avatar;
     root.innerHTML = `
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-2 pb-lg-3">
-        <h1 class="h2 mb-0">My profile</h1>
+      <div class="d-flex flex-wrap justify-content-end gap-2 pb-2 pb-lg-3">
         <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#mcEditProfileModal">Edit profile</button>
       </div>
       <section class="pb-5 mb-md-3">
         <div class="d-flex align-items-start gap-3 mb-4">
           <img src="${esc(avatarSrc)}" alt="Avatar" width="96" height="96" class="rounded-circle border" data-mc-avatar>
           <div>
-            <h2 class="h4 mb-2">${esc(profile.name)}</h2>
+            <h2 class="h4 text-dark fw-bold mb-2">${esc(profile.name)}</h2>
             <div class="text-body-secondary">${esc(profile.email)}</div>
           </div>
         </div>
-        <div class="vstack gap-2 fs-5">
-          ${profile.phone ? `<div><strong>Phone:</strong> ${esc(profile.phone)}</div>` : ''}
-          ${profile.birth_date ? `<div><strong>Date of birth:</strong> ${esc(profile.birth_date)}</div>` : ''}
-          ${profile.language ? `<div><strong>Language:</strong> ${esc(profile.language)}</div>` : ''}
-          ${profile.address ? `<div><strong>Address:</strong> ${esc(profile.address)}</div>` : ''}
-          ${profile.bio ? `<div><strong>About:</strong> ${esc(profile.bio)}</div>` : ''}
+        <div class="vstack gap-3">
+          ${profile.phone ? `
+            <div>
+              <div class="fs-sm text-dark fw-bold mb-1">Phone</div>
+              <div>${esc(profile.phone)}</div>
+            </div>
+          ` : ''}
+          ${profile.birth_date ? `
+            <div>
+              <div class="fs-sm text-dark fw-bold mb-1">Date of birth</div>
+              <div>${esc(profile.birth_date)}</div>
+            </div>
+          ` : ''}
+          ${profile.language ? `
+            <div>
+              <div class="fs-sm text-dark fw-bold mb-1">Language</div>
+              <div>${esc(profile.language)}</div>
+            </div>
+          ` : ''}
+          ${profile.address ? `
+            <div>
+              <div class="fs-sm text-dark fw-bold mb-1">Address</div>
+              <div>${esc(profile.address)}</div>
+            </div>
+          ` : ''}
+          ${profile.bio ? `
+            <div>
+              <div class="fs-sm text-dark fw-bold mb-1">About</div>
+              <div>${esc(profile.bio)}</div>
+            </div>
+          ` : ''}
         </div>
       </section>
 
@@ -702,7 +952,7 @@ HTML;
               <h5 class="modal-title">Edit profile</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="/account/settings" enctype="multipart/form-data">
+            <form method="post" action="/account/settings" enctype="multipart/form-data" data-mc-no-loader="1">
               <div class="modal-body">
                 <input type="hidden" name="_token" value="${esc(csrfToken)}">
                 <div class="row g-3">
@@ -767,6 +1017,11 @@ HTML;
     const avatarInput = root.querySelector('#mcProfileAvatar');
     const avatarImg = root.querySelector('img[data-mc-avatar]');
     const langSelect = root.querySelector('#mcLanguage');
+    const profileForm = root.querySelector('#mcEditProfileModal form');
+    const profileModalEl = root.querySelector('#mcEditProfileModal');
+    const profileModal = window.bootstrap?.Modal && profileModalEl
+      ? window.bootstrap.Modal.getOrCreateInstance(profileModalEl)
+      : null;
     if (langSelect) langSelect.value = profile.language || '';
 
     root.querySelectorAll('[data-datepicker]').forEach((input) => {
@@ -808,6 +1063,74 @@ HTML;
         const file = avatarInput.files && avatarInput.files[0];
         if (!file) return;
         avatarImg.src = URL.createObjectURL(file);
+      });
+    }
+
+    if (profileForm) {
+      profileForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const submitBtn = profileForm.querySelector('button[type="submit"]');
+        const originalLabel = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Saving...';
+        }
+
+        try {
+          const formData = new FormData(profileForm);
+          const response = await fetch(profileForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload?.ok || !payload?.profile) {
+            throw new Error('Unable to save profile');
+          }
+
+          Object.assign(profile, payload.profile);
+
+          const nameNode = root.querySelector('h2.h4');
+          if (nameNode) nameNode.textContent = profile.name || 'User';
+
+          const emailNode = root.querySelector('.text-body-secondary');
+          if (emailNode) emailNode.textContent = profile.email || '';
+
+          const detailMap = {
+            Phone: profile.phone || '',
+            'Date of birth': profile.birth_date || '',
+            Language: profile.language || '',
+            Address: profile.address || '',
+            About: profile.bio || '',
+          };
+
+          root.querySelectorAll('.vstack.gap-3 > div').forEach((block) => {
+            const label = block.querySelector('.fs-sm.text-dark.fw-bold')?.textContent?.trim() || '';
+            if (!label || !(label in detailMap)) return;
+            const valueNode = block.lastElementChild;
+            if (valueNode) valueNode.textContent = detailMap[label];
+            block.classList.toggle('d-none', !detailMap[label]);
+          });
+
+          if (avatarImg && profile.avatar) {
+            avatarImg.src = profile.avatar;
+          }
+
+          profileModal?.hide();
+        } catch (error) {
+          window.alert('Profile save nahi ho saka. Please dobara try karein.');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalLabel || 'Save changes';
+          }
+        }
       });
     }
   }
@@ -2654,13 +2977,75 @@ HTML;
         $html = str_replace('</body>', $propertyPhotosScript . '</body>', $html);
     }
 
-    if ($file === 'add-property-promotion.html') {
+    if ($file === 'add-property-promotion.html' && $currentRequestPath === '/add-property-promotion') {
         $propertyPromotionScript = <<<'HTML'
 <script>
 (() => {
   const search = new URLSearchParams(window.location.search);
-  const editId = (search.get('edit') || '').trim();
+  const editData = window.__propertyEditData || null;
+  const editId = (search.get('edit') || (editData?.id ? String(editData.id) : '')).trim();
+  const wizardData = (editData && editData.wizard_data && typeof editData.wizard_data === 'object')
+    ? editData.wizard_data
+    : {};
+  const queryPackage = (search.get('package') || '').trim().toLowerCase();
   const wizardKey = 'propertyWizardSession';
+  const packageConfigs = [
+    {
+      slug: 'easy-start',
+      name: 'Easy Start',
+      price: 25,
+      period: '/ month',
+      description: "Ideal if you're testing the waters and want to start with basic exposure.",
+      buttonLabel: 'Select Easy Start',
+      includesLabel: '',
+      features: [
+        '7-Day Run for your ad active for one week',
+        'Keep your ad live and active for one week',
+        'Track views and basic engagement metrics',
+      ],
+    },
+    {
+      slug: 'fast-sale',
+      name: 'Fast Sale',
+      price: 49,
+      period: '/ month',
+      description: 'Perfect for serious sellers who want more exposure and detailed insights.',
+      buttonLabel: 'Select Fast Sale',
+      includesLabel: 'Includes everything in Easy Start +',
+      features: [
+        '14-Day Run for your ad active for two weeks',
+        'Detailed user engagement analytics',
+        'Dedicated assistance from our support team',
+      ],
+    },
+    {
+      slug: 'turbo-boost',
+      name: 'Turbo Boost',
+      price: 70,
+      period: '/ month',
+      description: 'Best for ambitious sellers who want maximum exposure and advanced insights.',
+      buttonLabel: 'Select Turbo Boost',
+      includesLabel: 'Includes everything in Fast Sale +',
+      features: [
+        '28-Day Run for your ad active for three weeks',
+        'Advanced comprehensive data analysis',
+        'Personalized assistance from our manager',
+      ],
+    },
+  ];
+  const packageSlugs = packageConfigs.map((pkg) => pkg.slug);
+  const serviceConfig = {
+    certify: 'Check and certify my ad by Monaclick experts',
+    lifts: '10 lifts to the top of the list (daily, 7 days)',
+    analytics: 'Detailed user engagement analytics',
+  };
+  let currentPackage = queryPackage;
+  if (!packageSlugs.includes(currentPackage)) {
+    currentPackage = String(wizardData.promotion_package || wizardData.package || '').trim().toLowerCase();
+  }
+  if (!packageSlugs.includes(currentPackage)) {
+    currentPackage = 'fast-sale';
+  }
   const ensureWizardSession = () => {
     try {
       let value = localStorage.getItem(wizardKey);
@@ -2682,9 +3067,111 @@ HTML;
     });
   };
 
+  const syncServiceSelectionsFromWizard = () => {
+    Object.keys(serviceConfig).forEach((key) => {
+      const input = document.getElementById(key);
+      if (!(input instanceof HTMLInputElement)) return;
+      input.checked = !!wizardData[`service_${key}`];
+    });
+  };
+
+  const selectedServicesPayload = () => {
+    const payload = {};
+    Object.keys(serviceConfig).forEach((key) => {
+      const input = document.getElementById(key);
+      payload[`service_${key}`] = !!(input instanceof HTMLInputElement && input.checked);
+    });
+    return payload;
+  };
+
+  const updateSelectedPackageUrl = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('package', currentPackage);
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  const updatePlans = () => {
+    const planCards = Array.from(document.querySelectorAll('.overflow-x-auto .card .card-body'))
+      .filter((card) => card.querySelector('h3.fs-lg.fw-normal'));
+
+    packageConfigs.forEach((pkg, index) => {
+      const card = planCards[index];
+      if (!card) return;
+      const cardShell = card.closest('.card');
+      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.bg-info.rounded-5.ms-n1');
+
+      const title = card.querySelector('h3.fs-lg.fw-normal');
+      const price = card.querySelector('.h1.mb-0');
+      const period = card.querySelector('.fs-sm.ms-2');
+      const description = card.querySelector('p.fs-sm');
+      const cta = card.querySelector('.btn.btn-lg.w-100');
+      const includeLabel = card.querySelector('.h6.fs-sm');
+      const featureList = card.querySelector('ul.list-unstyled');
+
+      if (title) title.textContent = pkg.name;
+      if (price) price.textContent = `$${pkg.price}`;
+      if (period) period.textContent = pkg.period;
+      if (description) description.textContent = pkg.description;
+
+      if (cta) {
+        cta.textContent = pkg.buttonLabel;
+        cta.dataset.packageSlug = pkg.slug;
+        cta.setAttribute('type', 'button');
+        const isSelected = currentPackage === pkg.slug;
+        cta.classList.toggle('btn-info', isSelected);
+        cta.classList.toggle('btn-outline-info', !isSelected);
+        cta.textContent = isSelected ? `${pkg.name} selected` : pkg.buttonLabel;
+        if (!cta.dataset.packageBound) {
+          cta.dataset.packageBound = '1';
+          cta.addEventListener('click', () => {
+            currentPackage = pkg.slug;
+            updateSelectedPackageUrl();
+            updatePlans();
+          });
+        }
+      }
+
+      if (cardShell) {
+        cardShell.classList.toggle('shadow', currentPackage === pkg.slug);
+        cardShell.style.boxShadow = currentPackage === pkg.slug
+          ? 'inset 0 0 0 3px rgba(var(--fn-info-rgb), .85)'
+          : '';
+      }
+
+      if (featuredWrap) {
+        featuredWrap.style.opacity = currentPackage === pkg.slug ? '1' : '.18';
+      }
+
+      if (includeLabel) {
+        if (pkg.includesLabel) {
+          includeLabel.textContent = pkg.includesLabel;
+          includeLabel.classList.remove('d-none');
+        } else {
+          includeLabel.textContent = '';
+          includeLabel.classList.add('d-none');
+        }
+      }
+
+      if (featureList) {
+        featureList.innerHTML = pkg.features.map((feature) => `
+          <li class="d-flex">
+            <i class="fi-check fs-base text-body-secondary me-2" style="margin-top: 3px"></i>
+            ${feature}
+          </li>
+        `).join('');
+      }
+    });
+  };
+
   const submitProperty = (publishNow) => {
     setSubmitting();
-    const payload = { wizard_session: ensureWizardSession() };
+    const payload = {
+      ...wizardData,
+      wizard_session: ensureWizardSession(),
+      promotion_package: currentPackage,
+      package: currentPackage,
+      ...selectedServicesPayload(),
+    };
     const form = document.createElement('form');
     form.method = 'post';
     form.action = '/submit/property';
@@ -2716,11 +3203,1268 @@ HTML;
       submitProperty(true);
     });
   }
+
+  updateSelectedPackageUrl();
+  syncServiceSelectionsFromWizard();
+  updatePlans();
 })();
 </script>
 HTML;
         $propertyPromotionScript = str_replace('__SCRIPT_CSRF__', csrf_token(), $propertyPromotionScript);
         $html = str_replace('</body>', $propertyPromotionScript . '</body>', $html);
+    }
+
+    if ($file === 'add-property-promotion.html' && $currentRequestPath === '/add-contractor-promotion') {
+        $contractorPromotionPayload = null;
+        $editId = (int) request()->query('edit', 0);
+        if ($editId > 0 && Auth::check()) {
+            $editListing = Listing::query()
+                ->where('id', $editId)
+                ->where('module', 'contractors')
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if ($editListing) {
+                $featureTokens = collect(is_array($editListing->features) ? $editListing->features : [])
+                    ->map(fn ($value) => trim((string) $value))
+                    ->filter();
+
+                $savedPackage = strtolower((string) ($featureTokens->first(fn ($token) => str_starts_with($token, 'promo-package:')) ?? ''));
+                if ($savedPackage !== '') {
+                    $savedPackage = substr($savedPackage, strlen('promo-package:'));
+                }
+
+                $contractorPromotionPayload = [
+                    'promotion_package' => $savedPackage,
+                    'service_certify' => $featureTokens->contains('promo-service:certify'),
+                    'service_lifts' => $featureTokens->contains('promo-service:lifts'),
+                    'service_analytics' => $featureTokens->contains('promo-service:analytics'),
+                ];
+            }
+        }
+        $contractorPromotionJson = json_encode($contractorPromotionPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+        $contractorPromotionScript = <<<'HTML'
+<script>
+(() => {
+  const search = new URLSearchParams(window.location.search);
+  const editId = (search.get('edit') || '').trim();
+  const savedSelection = __CONTRACTOR_PROMOTION_DATA__ || null;
+  const packageConfigs = [
+    {
+      slug: 'easy-start',
+      name: 'Easy Start',
+      price: 25,
+      period: '/ month',
+      description: "Ideal if you're testing the waters and want to start with basic exposure.",
+      buttonLabel: 'Select Easy Start',
+      includesLabel: '',
+      features: [
+        '7-Day Run for your contractor listing',
+        'Keep your project visible for one week',
+        'Track basic views and engagement',
+      ],
+    },
+    {
+      slug: 'fast-sale',
+      name: 'Fast Sale',
+      price: 49,
+      period: '/ month',
+      description: 'Perfect for contractors who want stronger exposure and better lead quality.',
+      buttonLabel: 'Select Fast Sale',
+      includesLabel: 'Includes everything in Easy Start +',
+      features: [
+        '14-Day Run for your contractor listing',
+        'Detailed user engagement analytics',
+        'Priority support for your campaign',
+      ],
+    },
+    {
+      slug: 'turbo-boost',
+      name: 'Turbo Boost',
+      price: 70,
+      period: '/ month',
+      description: 'Best for maximum exposure and premium visibility across the marketplace.',
+      buttonLabel: 'Select Turbo Boost',
+      includesLabel: 'Includes everything in Fast Sale +',
+      features: [
+        '28-Day Run for your contractor listing',
+        'Advanced analytics and reporting',
+        'Dedicated manager assistance',
+      ],
+    },
+  ];
+  const serviceConfig = {
+    certify: 'Check and certify my business by Monaclick experts',
+    lifts: '10 lifts to the top of the list (daily, 7 days)',
+    analytics: 'Detailed user engagement analytics',
+  };
+  let currentPackage = String(savedSelection?.promotion_package || '').trim().toLowerCase();
+  if (!packageConfigs.some((pkg) => pkg.slug === currentPackage)) {
+    currentPackage = (search.get('package') || '').trim().toLowerCase();
+  }
+  if (!packageConfigs.some((pkg) => pkg.slug === currentPackage)) {
+    currentPackage = 'fast-sale';
+  }
+
+  const applySavedSelection = (data) => {
+    const savedPackage = String(data?.promotion_package || '').trim().toLowerCase();
+    if (packageConfigs.some((pkg) => pkg.slug === savedPackage)) {
+      currentPackage = savedPackage;
+    }
+
+    Object.keys(serviceConfig).forEach((key) => {
+      const input = document.getElementById(key);
+      if (!(input instanceof HTMLInputElement)) return;
+      input.checked = !!data?.[`service_${key}`];
+    });
+  };
+
+  const setSubmitting = () => {
+    document.querySelectorAll('.pt-5.d-flex.flex-wrap.gap-3.align-items-center .btn').forEach((btn) => {
+      btn.classList.add('disabled');
+      btn.setAttribute('aria-disabled', 'true');
+      if (btn.tagName === 'BUTTON') btn.disabled = true;
+    });
+  };
+
+  const updateSelectedPackageUrl = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('package', currentPackage);
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  const selectedServicesPayload = () => {
+    const payload = {};
+    Object.keys(serviceConfig).forEach((key) => {
+      const input = document.getElementById(key);
+      payload[`service_${key}`] = !!(input instanceof HTMLInputElement && input.checked);
+    });
+    return payload;
+  };
+
+  const updatePlans = () => {
+    const planCards = Array.from(document.querySelectorAll('.overflow-x-auto .card .card-body'))
+      .filter((card) => card.querySelector('h3.fs-lg.fw-normal'));
+
+    packageConfigs.forEach((pkg, index) => {
+      const card = planCards[index];
+      if (!card) return;
+      const cardShell = card.closest('.card');
+      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.bg-info.rounded-5.ms-n1');
+      const title = card.querySelector('h3.fs-lg.fw-normal');
+      const price = card.querySelector('.h1.mb-0');
+      const period = card.querySelector('.fs-sm.ms-2');
+      const description = card.querySelector('p.fs-sm');
+      const cta = card.querySelector('.btn.btn-lg.w-100');
+      const includeLabel = card.querySelector('.h6.fs-sm');
+      const featureList = card.querySelector('ul.list-unstyled');
+
+      if (title) title.textContent = pkg.name;
+      if (price) price.textContent = `$${pkg.price}`;
+      if (period) period.textContent = pkg.period;
+      if (description) description.textContent = pkg.description;
+
+      if (cta) {
+        cta.textContent = pkg.buttonLabel;
+        cta.setAttribute('type', 'button');
+        const isSelected = currentPackage === pkg.slug;
+        cta.classList.toggle('btn-info', isSelected);
+        cta.classList.toggle('btn-outline-info', !isSelected);
+        cta.textContent = isSelected ? `${pkg.name} selected` : pkg.buttonLabel;
+        if (!cta.dataset.packageBound) {
+          cta.dataset.packageBound = '1';
+          cta.addEventListener('click', () => {
+            currentPackage = pkg.slug;
+            updateSelectedPackageUrl();
+            updatePlans();
+          });
+        }
+      }
+
+      if (cardShell) {
+        cardShell.classList.toggle('shadow', currentPackage === pkg.slug);
+        cardShell.style.boxShadow = currentPackage === pkg.slug
+          ? 'inset 0 0 0 3px rgba(var(--fn-info-rgb), .85)'
+          : '';
+      }
+
+      if (featuredWrap) {
+        featuredWrap.style.opacity = currentPackage === pkg.slug ? '1' : '.18';
+      }
+
+      if (includeLabel) {
+        if (pkg.includesLabel) {
+          includeLabel.textContent = pkg.includesLabel;
+          includeLabel.classList.remove('d-none');
+        } else {
+          includeLabel.textContent = '';
+          includeLabel.classList.add('d-none');
+        }
+      }
+
+      if (featureList) {
+        featureList.innerHTML = pkg.features.map((feature) => `
+          <li class="d-flex">
+            <i class="fi-check fs-base text-body-secondary me-2" style="margin-top: 3px"></i>
+            ${feature}
+          </li>
+        `).join('');
+      }
+    });
+  };
+
+  const submitContractor = (publishNow) => {
+    if (!editId) {
+      window.location.href = '/add-contractor-project';
+      return;
+    }
+    setSubmitting();
+    const payload = {
+      package: currentPackage,
+      promotion_package: currentPackage,
+      ...selectedServicesPayload(),
+    };
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = '/submit/contractor';
+    form.innerHTML = `
+      <input type="hidden" name="_token" value="__SCRIPT_CSRF__">
+      ${publishNow ? '' : '<input type="hidden" name="draft" value="1">'}
+      <input type="hidden" name="payload" value="${btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}">
+      <input type="hidden" name="listing_id" value="${editId}">
+    `;
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  const heading = document.querySelector('h1');
+  if (heading) heading.textContent = 'Choose your plan';
+
+  const lead = Array.from(document.querySelectorAll('p'))
+    .find((p) => (p.textContent || '').toLowerCase().includes('choose the package that best matches your promotion goals'));
+  if (lead) lead.textContent = 'Choose a package for your contractor listing, then publish when you are ready.';
+
+  const publishBtn = Array.from(document.querySelectorAll('a.btn.btn-lg.btn-primary[href]'))
+    .find((btn) => (btn.textContent || '').trim().toLowerCase().includes('publish property listing'));
+  if (publishBtn) {
+    publishBtn.textContent = 'Publish listing';
+    publishBtn.setAttribute('href', '#');
+    publishBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitContractor(true);
+    });
+  }
+
+  const draftBtn = Array.from(document.querySelectorAll('button.btn.btn-lg.btn-outline-secondary'))
+    .find((btn) => (btn.textContent || '').trim().toLowerCase() === 'save draft');
+  if (draftBtn) {
+    draftBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitContractor(false);
+    });
+  }
+
+  const initSelection = () => {
+    if (savedSelection) applySavedSelection(savedSelection);
+    updateSelectedPackageUrl();
+    updatePlans();
+  };
+
+  initSelection();
+})();
+</script>
+HTML;
+        $contractorPromotionScript = str_replace('__SCRIPT_CSRF__', csrf_token(), $contractorPromotionScript);
+        $contractorPromotionScript = str_replace('__CONTRACTOR_PROMOTION_DATA__', $contractorPromotionJson ?: 'null', $contractorPromotionScript);
+        $html = str_replace('</body>', $contractorPromotionScript . '</body>', $html);
+    }
+
+    if ($file === 'add-property-promotion.html' && $currentRequestPath === '/add-car-promotion') {
+        $carPromotionPayload = null;
+        $editId = (int) request()->query('edit', 0);
+        if ($editId > 0 && Auth::check()) {
+            $editListing = Listing::query()
+                ->where('id', $editId)
+                ->where('module', 'cars')
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if ($editListing) {
+                $featureTokens = collect(is_array($editListing->features) ? $editListing->features : [])
+                    ->map(fn ($value) => trim((string) $value))
+                    ->filter();
+
+                $savedPackage = strtolower((string) ($featureTokens->first(fn ($token) => str_starts_with($token, 'promo-package:')) ?? ''));
+                if ($savedPackage !== '') {
+                    $savedPackage = substr($savedPackage, strlen('promo-package:'));
+                }
+
+                $carPromotionPayload = [
+                    'promotion_package' => $savedPackage,
+                    'service_certify' => $featureTokens->contains('promo-service:certify'),
+                    'service_lifts' => $featureTokens->contains('promo-service:lifts'),
+                    'service_analytics' => $featureTokens->contains('promo-service:analytics'),
+                ];
+            }
+        }
+        $carPromotionJson = json_encode($carPromotionPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+        $carPromotionScript = <<<'HTML'
+<script>
+(() => {
+  const search = new URLSearchParams(window.location.search);
+  const editId = (search.get('edit') || '').trim();
+  const savedSelection = __CAR_PROMOTION_DATA__ || null;
+  const packageConfigs = [
+    {
+      slug: 'easy-start',
+      name: 'Easy Start',
+      price: 25,
+      period: '/ month',
+      description: "Ideal if you're testing the waters and want to start with basic exposure.",
+      buttonLabel: 'Select Easy Start',
+      includesLabel: '',
+      features: [
+        '7-Day Run for your car listing',
+        'Keep your car visible for one week',
+        'Track basic views and engagement',
+      ],
+    },
+    {
+      slug: 'fast-sale',
+      name: 'Fast Sale',
+      price: 49,
+      period: '/ month',
+      description: 'Perfect for sellers who want stronger exposure and better buyer interest.',
+      buttonLabel: 'Select Fast Sale',
+      includesLabel: 'Includes everything in Easy Start +',
+      features: [
+        '14-Day Run for your car listing',
+        'Detailed user engagement analytics',
+        'Priority visibility for your listing',
+      ],
+    },
+    {
+      slug: 'turbo-boost',
+      name: 'Turbo Boost',
+      price: 70,
+      period: '/ month',
+      description: 'Best for maximum visibility and premium promotion across the marketplace.',
+      buttonLabel: 'Select Turbo Boost',
+      includesLabel: 'Includes everything in Fast Sale +',
+      features: [
+        '28-Day Run for your car listing',
+        'Advanced analytics and reporting',
+        'Premium spotlight placement',
+      ],
+    },
+  ];
+  const serviceConfig = {
+    certify: 'Check and certify my ad by Monaclick experts',
+    lifts: '10 lifts to the top of the list (daily, 7 days)',
+    analytics: 'Detailed user engagement analytics',
+  };
+  let currentPackage = String(savedSelection?.promotion_package || '').trim().toLowerCase();
+  if (!packageConfigs.some((pkg) => pkg.slug === currentPackage)) {
+    currentPackage = (search.get('package') || '').trim().toLowerCase();
+  }
+  if (!packageConfigs.some((pkg) => pkg.slug === currentPackage)) {
+    currentPackage = 'fast-sale';
+  }
+
+  const applySavedSelection = (data) => {
+    const savedPackage = String(data?.promotion_package || '').trim().toLowerCase();
+    if (packageConfigs.some((pkg) => pkg.slug === savedPackage)) {
+      currentPackage = savedPackage;
+    }
+
+    Object.keys(serviceConfig).forEach((key) => {
+      const input = document.getElementById(key);
+      if (!(input instanceof HTMLInputElement)) return;
+      input.checked = !!data?.[`service_${key}`];
+    });
+  };
+
+  const setSubmitting = () => {
+    document.querySelectorAll('.pt-5.d-flex.flex-wrap.gap-3.align-items-center .btn').forEach((btn) => {
+      btn.classList.add('disabled');
+      btn.setAttribute('aria-disabled', 'true');
+      if (btn.tagName === 'BUTTON') btn.disabled = true;
+    });
+  };
+
+  const updateSelectedPackageUrl = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('package', currentPackage);
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  const selectedServicesPayload = () => {
+    const payload = {};
+    Object.keys(serviceConfig).forEach((key) => {
+      const input = document.getElementById(key);
+      payload[`service_${key}`] = !!(input instanceof HTMLInputElement && input.checked);
+    });
+    return payload;
+  };
+
+  const updatePlans = () => {
+    const planCards = Array.from(document.querySelectorAll('.overflow-x-auto .card .card-body'))
+      .filter((card) => card.querySelector('h3.fs-lg.fw-normal'));
+
+    packageConfigs.forEach((pkg, index) => {
+      const card = planCards[index];
+      if (!card) return;
+      const cardShell = card.closest('.card');
+      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.bg-info.rounded-5.ms-n1');
+      const title = card.querySelector('h3.fs-lg.fw-normal');
+      const price = card.querySelector('.h1.mb-0');
+      const period = card.querySelector('.fs-sm.ms-2');
+      const description = card.querySelector('p.fs-sm');
+      const cta = card.querySelector('.btn.btn-lg.w-100');
+      const includeLabel = card.querySelector('.h6.fs-sm');
+      const featureList = card.querySelector('ul.list-unstyled');
+
+      if (title) title.textContent = pkg.name;
+      if (price) price.textContent = `$${pkg.price}`;
+      if (period) period.textContent = pkg.period;
+      if (description) description.textContent = pkg.description;
+
+      if (cta) {
+        cta.textContent = pkg.buttonLabel;
+        cta.setAttribute('type', 'button');
+        const isSelected = currentPackage === pkg.slug;
+        cta.classList.toggle('btn-info', isSelected);
+        cta.classList.toggle('btn-outline-info', !isSelected);
+        cta.textContent = isSelected ? `${pkg.name} selected` : pkg.buttonLabel;
+        if (!cta.dataset.packageBound) {
+          cta.dataset.packageBound = '1';
+          cta.addEventListener('click', () => {
+            currentPackage = pkg.slug;
+            updateSelectedPackageUrl();
+            updatePlans();
+          });
+        }
+      }
+
+      if (cardShell) {
+        cardShell.classList.toggle('shadow', currentPackage === pkg.slug);
+        cardShell.style.boxShadow = currentPackage === pkg.slug
+          ? 'inset 0 0 0 3px rgba(var(--fn-info-rgb), .85)'
+          : '';
+      }
+
+      if (featuredWrap) {
+        featuredWrap.style.opacity = currentPackage === pkg.slug ? '1' : '.18';
+      }
+
+      if (includeLabel) {
+        if (pkg.includesLabel) {
+          includeLabel.textContent = pkg.includesLabel;
+          includeLabel.classList.remove('d-none');
+        } else {
+          includeLabel.textContent = '';
+          includeLabel.classList.add('d-none');
+        }
+      }
+
+      if (featureList) {
+        featureList.innerHTML = pkg.features.map((feature) => `
+          <li class="d-flex">
+            <i class="fi-check fs-base text-body-secondary me-2" style="margin-top: 3px"></i>
+            ${feature}
+          </li>
+        `).join('');
+      }
+    });
+  };
+
+  const submitCarPromotion = (publishNow) => {
+    if (!editId) {
+      window.location.href = '/sell-car';
+      return;
+    }
+    setSubmitting();
+    const selectedServices = selectedServicesPayload();
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = '/submit/car';
+    form.innerHTML = `
+      <input type="hidden" name="_token" value="__SCRIPT_CSRF__">
+      ${publishNow ? '' : '<input type="hidden" name="draft" value="1">'}
+      <input type="hidden" name="listing_id" value="${editId}">
+      <input type="hidden" name="package" value="${currentPackage}">
+      <input type="hidden" name="promotion_package" value="${currentPackage}">
+      <input type="hidden" name="service_certify" value="${selectedServices.service_certify ? '1' : '0'}">
+      <input type="hidden" name="service_lifts" value="${selectedServices.service_lifts ? '1' : '0'}">
+      <input type="hidden" name="service_analytics" value="${selectedServices.service_analytics ? '1' : '0'}">
+    `;
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  const heading = document.querySelector('h1');
+  if (heading) heading.textContent = 'Choose your plan';
+
+  const lead = Array.from(document.querySelectorAll('p'))
+    .find((p) => (p.textContent || '').toLowerCase().includes('choose the package that best matches your promotion goals'));
+  if (lead) lead.textContent = 'Choose a package for your car listing, then publish when you are ready.';
+
+  const publishBtn = Array.from(document.querySelectorAll('a.btn.btn-lg.btn-primary[href]'))
+    .find((btn) => (btn.textContent || '').trim().toLowerCase().includes('publish property listing'));
+  if (publishBtn) {
+    publishBtn.textContent = 'Publish listing';
+    publishBtn.setAttribute('href', '#');
+    publishBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitCarPromotion(true);
+    });
+  }
+
+  const draftBtn = Array.from(document.querySelectorAll('button.btn.btn-lg.btn-outline-secondary'))
+    .find((btn) => (btn.textContent || '').trim().toLowerCase() === 'save draft');
+  if (draftBtn) {
+    draftBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitCarPromotion(false);
+    });
+  }
+
+  if (savedSelection) applySavedSelection(savedSelection);
+  updateSelectedPackageUrl();
+  updatePlans();
+})();
+</script>
+HTML;
+        $carPromotionScript = str_replace('__SCRIPT_CSRF__', csrf_token(), $carPromotionScript);
+        $carPromotionScript = str_replace('__CAR_PROMOTION_DATA__', $carPromotionJson ?: 'null', $carPromotionScript);
+        $html = str_replace('</body>', $carPromotionScript . '</body>', $html);
+    }
+
+    if ($file === 'add-property-promotion.html' && $currentRequestPath === '/add-restaurant-promotion') {
+        $restaurantPromotionPayload = null;
+        $editId = (int) request()->query('edit', 0);
+        if ($editId > 0 && Auth::check()) {
+            $editListing = Listing::query()
+                ->where('id', $editId)
+                ->where('module', 'restaurants')
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if ($editListing) {
+                $featureTokens = collect(is_array($editListing->features) ? $editListing->features : [])
+                    ->map(fn ($value) => trim((string) $value))
+                    ->filter();
+
+                $savedPackage = strtolower((string) ($featureTokens->first(fn ($token) => str_starts_with($token, 'promo-package:')) ?? ''));
+                if ($savedPackage !== '') {
+                    $savedPackage = substr($savedPackage, strlen('promo-package:'));
+                }
+
+                $restaurantPromotionPayload = [
+                    'promotion_package' => $savedPackage,
+                    'service_certify' => $featureTokens->contains('promo-service:certify'),
+                    'service_lifts' => $featureTokens->contains('promo-service:lifts'),
+                    'service_analytics' => $featureTokens->contains('promo-service:analytics'),
+                ];
+            }
+        }
+        $restaurantPromotionJson = json_encode($restaurantPromotionPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+        $restaurantPromotionScript = <<<'HTML'
+<script>
+(() => {
+  const search = new URLSearchParams(window.location.search);
+  const editId = (search.get('edit') || '').trim();
+  const savedSelection = __RESTAURANT_PROMOTION_DATA__ || null;
+  const packageConfigs = [
+    {
+      slug: 'easy-start',
+      name: 'Easy Start',
+      price: 25,
+      period: '/ month',
+      description: "Ideal if you're testing the waters and want to start with basic exposure.",
+      buttonLabel: 'Select Easy Start',
+      includesLabel: '',
+      features: [
+        '7-Day Run for your restaurant listing',
+        'Keep your restaurant visible for one week',
+        'Track basic views and engagement',
+      ],
+    },
+    {
+      slug: 'fast-sale',
+      name: 'Fast Sale',
+      price: 49,
+      period: '/ month',
+      description: 'Perfect for restaurants that want stronger exposure and more customer interest.',
+      buttonLabel: 'Select Fast Sale',
+      includesLabel: 'Includes everything in Easy Start +',
+      features: [
+        '14-Day Run for your restaurant listing',
+        'Detailed user engagement analytics',
+        'Priority visibility for your restaurant',
+      ],
+    },
+    {
+      slug: 'turbo-boost',
+      name: 'Turbo Boost',
+      price: 70,
+      period: '/ month',
+      description: 'Best for maximum visibility and premium promotion across the marketplace.',
+      buttonLabel: 'Select Turbo Boost',
+      includesLabel: 'Includes everything in Fast Sale +',
+      features: [
+        '28-Day Run for your restaurant listing',
+        'Advanced analytics and reporting',
+        'Premium spotlight placement',
+      ],
+    },
+  ];
+  const serviceConfig = {
+    certify: 'Check and certify my restaurant by Monaclick experts',
+    lifts: '10 lifts to the top of the list (daily, 7 days)',
+    analytics: 'Detailed user engagement analytics',
+  };
+  let currentPackage = String(savedSelection?.promotion_package || '').trim().toLowerCase();
+  if (!packageConfigs.some((pkg) => pkg.slug === currentPackage)) {
+    currentPackage = (search.get('package') || '').trim().toLowerCase();
+  }
+  if (!packageConfigs.some((pkg) => pkg.slug === currentPackage)) {
+    currentPackage = 'fast-sale';
+  }
+
+  const applySavedSelection = (data) => {
+    const savedPackage = String(data?.promotion_package || '').trim().toLowerCase();
+    if (packageConfigs.some((pkg) => pkg.slug === savedPackage)) {
+      currentPackage = savedPackage;
+    }
+    Object.keys(serviceConfig).forEach((key) => {
+      const input = document.getElementById(key);
+      if (!(input instanceof HTMLInputElement)) return;
+      input.checked = !!data?.[`service_${key}`];
+    });
+  };
+
+  const setSubmitting = () => {
+    document.querySelectorAll('.pt-5.d-flex.flex-wrap.gap-3.align-items-center .btn').forEach((btn) => {
+      btn.classList.add('disabled');
+      btn.setAttribute('aria-disabled', 'true');
+      if (btn.tagName === 'BUTTON') btn.disabled = true;
+    });
+  };
+
+  const updateSelectedPackageUrl = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('package', currentPackage);
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  const selectedServicesPayload = () => {
+    const payload = {};
+    Object.keys(serviceConfig).forEach((key) => {
+      const input = document.getElementById(key);
+      payload[`service_${key}`] = !!(input instanceof HTMLInputElement && input.checked);
+    });
+    return payload;
+  };
+
+  const updatePlans = () => {
+    const planCards = Array.from(document.querySelectorAll('.overflow-x-auto .card .card-body'))
+      .filter((card) => card.querySelector('h3.fs-lg.fw-normal'));
+
+    packageConfigs.forEach((pkg, index) => {
+      const card = planCards[index];
+      if (!card) return;
+      const cardShell = card.closest('.card');
+      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.bg-info.rounded-5.ms-n1');
+      const title = card.querySelector('h3.fs-lg.fw-normal');
+      const price = card.querySelector('.h1.mb-0');
+      const period = card.querySelector('.fs-sm.ms-2');
+      const description = card.querySelector('p.fs-sm');
+      const cta = card.querySelector('.btn.btn-lg.w-100');
+      const includeLabel = card.querySelector('.h6.fs-sm');
+      const featureList = card.querySelector('ul.list-unstyled');
+
+      if (title) title.textContent = pkg.name;
+      if (price) price.textContent = `$${pkg.price}`;
+      if (period) period.textContent = pkg.period;
+      if (description) description.textContent = pkg.description;
+
+      if (cta) {
+        cta.textContent = pkg.buttonLabel;
+        cta.setAttribute('type', 'button');
+        const isSelected = currentPackage === pkg.slug;
+        cta.classList.toggle('btn-info', isSelected);
+        cta.classList.toggle('btn-outline-info', !isSelected);
+        cta.textContent = isSelected ? `${pkg.name} selected` : pkg.buttonLabel;
+        if (!cta.dataset.packageBound) {
+          cta.dataset.packageBound = '1';
+          cta.addEventListener('click', () => {
+            currentPackage = pkg.slug;
+            updateSelectedPackageUrl();
+            updatePlans();
+          });
+        }
+      }
+
+      if (cardShell) {
+        cardShell.classList.toggle('shadow', currentPackage === pkg.slug);
+        cardShell.style.boxShadow = currentPackage === pkg.slug
+          ? 'inset 0 0 0 3px rgba(var(--fn-info-rgb), .85)'
+          : '';
+      }
+
+      if (featuredWrap) {
+        featuredWrap.style.opacity = currentPackage === pkg.slug ? '1' : '.18';
+      }
+
+      if (includeLabel) {
+        if (pkg.includesLabel) {
+          includeLabel.textContent = pkg.includesLabel;
+          includeLabel.classList.remove('d-none');
+        } else {
+          includeLabel.textContent = '';
+          includeLabel.classList.add('d-none');
+        }
+      }
+
+      if (featureList) {
+        featureList.innerHTML = pkg.features.map((feature) => `
+          <li class="d-flex">
+            <i class="fi-check fs-base text-body-secondary me-2" style="margin-top: 3px"></i>
+            ${feature}
+          </li>
+        `).join('');
+      }
+    });
+  };
+
+  const submitRestaurantPromotion = (publishNow) => {
+    if (!editId) {
+      window.location.href = '/add-restaurant';
+      return;
+    }
+    setSubmitting();
+    const selectedServices = selectedServicesPayload();
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = '/submit/restaurant';
+    form.innerHTML = `
+      <input type="hidden" name="_token" value="__SCRIPT_CSRF__">
+      ${publishNow ? '' : '<input type="hidden" name="draft" value="1">'}
+      <input type="hidden" name="listing_id" value="${editId}">
+      <input type="hidden" name="package" value="${currentPackage}">
+      <input type="hidden" name="promotion_package" value="${currentPackage}">
+      <input type="hidden" name="service_certify" value="${selectedServices.service_certify ? '1' : '0'}">
+      <input type="hidden" name="service_lifts" value="${selectedServices.service_lifts ? '1' : '0'}">
+      <input type="hidden" name="service_analytics" value="${selectedServices.service_analytics ? '1' : '0'}">
+    `;
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  const heading = document.querySelector('h1');
+  if (heading) heading.textContent = 'Choose your plan';
+
+  const lead = Array.from(document.querySelectorAll('p'))
+    .find((p) => (p.textContent || '').toLowerCase().includes('choose the package that best matches your promotion goals'));
+  if (lead) lead.textContent = 'Choose a package for your restaurant listing, then publish when you are ready.';
+
+  const publishBtn = Array.from(document.querySelectorAll('a.btn.btn-lg.btn-primary[href]'))
+    .find((btn) => (btn.textContent || '').trim().toLowerCase().includes('publish property listing'));
+  if (publishBtn) {
+    publishBtn.textContent = 'Publish listing';
+    publishBtn.setAttribute('href', '#');
+    publishBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitRestaurantPromotion(true);
+    });
+  }
+
+  const draftBtn = Array.from(document.querySelectorAll('button.btn.btn-lg.btn-outline-secondary'))
+    .find((btn) => (btn.textContent || '').trim().toLowerCase() === 'save draft');
+  if (draftBtn) {
+    draftBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitRestaurantPromotion(false);
+    });
+  }
+
+  if (savedSelection) applySavedSelection(savedSelection);
+  updateSelectedPackageUrl();
+  updatePlans();
+})();
+</script>
+HTML;
+        $restaurantPromotionScript = str_replace('__SCRIPT_CSRF__', csrf_token(), $restaurantPromotionScript);
+        $restaurantPromotionScript = str_replace('__RESTAURANT_PROMOTION_DATA__', $restaurantPromotionJson ?: 'null', $restaurantPromotionScript);
+        $html = str_replace('</body>', $restaurantPromotionScript . '</body>', $html);
+    }
+
+    if ($file === 'account-payment.html') {
+        $accountPaymentScript = <<<'HTML'
+<script>
+(() => {
+  const search = new URLSearchParams(window.location.search);
+  const listings = __USER_LISTINGS__;
+  const editId = (search.get('edit') || '').trim();
+  const packageSlug = (search.get('package') || '').trim().toLowerCase();
+  const paymentStorageKey = 'monaclickPaymentMethods';
+  const packageConfigs = {
+    'easy-start': {
+      name: 'Easy Start',
+      price: '$25',
+      note: '7-day starter visibility for your property listing.',
+    },
+    'fast-sale': {
+      name: 'Fast Sale',
+      price: '$49',
+      note: 'Recommended package with stronger exposure and insights.',
+    },
+    'turbo-boost': {
+      name: 'Turbo Boost',
+      price: '$70',
+      note: 'Maximum promotion reach with advanced analytics support.',
+    },
+  };
+
+  const selected = packageConfigs[packageSlug];
+  const changePackageUrl = new URL('/add-property-promotion', window.location.origin);
+  changePackageUrl.searchParams.set('package', packageSlug);
+  if (editId) changePackageUrl.searchParams.set('edit', editId);
+
+  const contentCol = document.querySelector('.col-lg-9');
+  const intro = contentCol?.querySelector('p.pb-2.pb-lg-3');
+  const cardsWrap = contentCol?.querySelector('.d-flex.flex-column.flex-sm-row.gap-3.gap-md-4.pb-2.pb-lg-3.mb-3');
+  const addPaymentModal = document.getElementById('addPayment');
+  const cardForm = addPaymentModal?.querySelector('#add-card')?.querySelector('form');
+  const paypalForm = addPaymentModal?.querySelector('#add-paypal')?.querySelector('form');
+  const cardNumberInput = document.getElementById('card-number');
+  const cardNameInput = document.getElementById('card-name');
+  const cardExpiryInput = document.getElementById('card-expiration');
+  const cardCvcInput = document.getElementById('card-cvc');
+  const paypalEmailInput = document.getElementById('paypal-email');
+  const addPaymentBtn = document.querySelector('[data-bs-target="#addPayment"]');
+  const bootstrapModal = window.bootstrap?.Modal && addPaymentModal
+    ? window.bootstrap.Modal.getOrCreateInstance(addPaymentModal)
+    : null;
+  const addCardTabBtn = document.getElementById('add-card-tab');
+  const addPaypalTabBtn = document.getElementById('add-paypal-tab');
+  const addCardPane = document.getElementById('add-card');
+  const addPaypalPane = document.getElementById('add-paypal');
+  let editingMethodId = null;
+
+  [cardForm, paypalForm].forEach((form) => {
+    if (form) form.setAttribute('data-mc-no-loader', '1');
+  });
+
+  if (contentCol && intro && selected) {
+    intro.textContent = `Complete payment details for the ${selected.name} promotion package.`;
+
+    const summary = document.createElement('div');
+    summary.className = 'alert alert-info d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-4';
+    summary.innerHTML = `
+      <div>
+        <div class="h5 mb-1">Selected package: ${selected.name}</div>
+        <p class="mb-0">${selected.note}</p>
+      </div>
+      <div class="text-sm-end">
+        <div class="h4 mb-1">${selected.price}<span class="fs-sm fw-normal"> / month</span></div>
+        <a class="btn btn-sm btn-outline-info" href="${changePackageUrl.toString()}">Change package</a>
+      </div>
+    `;
+    intro.insertAdjacentElement('afterend', summary);
+  }
+
+  const promotionListings = Array.isArray(listings)
+    ? listings
+      .filter((item) => item?.module === 'real-estate' || item?.module === 'contractors' || item?.module === 'cars' || item?.module === 'restaurants')
+      .map((item) => ({
+        id: String(item?.id || '').trim(),
+        title: String(item?.title || '').trim(),
+        module: String(item?.module || '').trim(),
+        moduleLabel: String(item?.module_label || '').trim(),
+        status: String(item?.status || '').trim(),
+        packageLabel: String(item?.promotion_package_label || '').trim(),
+        packagePrice: String(item?.promotion_package_price || '').trim(),
+        services: Array.isArray(item?.selected_services_details)
+          ? item.selected_services_details
+            .map((service) => ({
+              label: String(service?.label || '').trim(),
+              price: String(service?.price || '').trim(),
+            }))
+            .filter((service) => service.label)
+          : [],
+      }))
+      .filter((item) => item.packageLabel || item.services.length)
+    : [];
+
+  if (contentCol && promotionListings.length) {
+    const paymentActions = contentCol.querySelector('.d-flex.flex-column.align-items-sm-start');
+    const promotionsSection = document.createElement('section');
+    promotionsSection.className = 'pt-4 mt-2';
+    promotionsSection.innerHTML = `
+      <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+        <div>
+          <h2 class="h4 mb-1">Promotion packages</h2>
+          <p class="text-body-secondary mb-0">Review the promotion package and extra services linked to your paid listings.</p>
+        </div>
+      </div>
+      <div class="vstack gap-3">
+        ${promotionListings.map((item) => `
+          <div class="card border-0 bg-body-tertiary">
+            <div class="card-body p-4">
+              <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-between gap-3">
+                <div>
+                  <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    <h3 class="h5 mb-0">${item.title ? item.title.replace(/[&<>"']/g, (char) => ({
+                      '&': '&amp;',
+                      '<': '&lt;',
+                      '>': '&gt;',
+                      '"': '&quot;',
+                      "'": '&#39;',
+                    }[char])) : 'Property listing'}</h3>
+                    ${item.moduleLabel ? `<span class="badge text-bg-secondary">${item.moduleLabel.replace(/[&<>"']/g, (char) => ({
+                      '&': '&amp;',
+                      '<': '&lt;',
+                      '>': '&gt;',
+                      '"': '&quot;',
+                      "'": '&#39;',
+                    }[char]))}</span>` : ''}
+                    ${item.status ? `<span class="badge text-bg-light text-capitalize">${item.status.replace(/[&<>"']/g, (char) => ({
+                      '&': '&amp;',
+                      '<': '&lt;',
+                      '>': '&gt;',
+                      '"': '&quot;',
+                      "'": '&#39;',
+                    }[char]))}</span>` : ''}
+                  </div>
+                  ${item.packageLabel ? `
+                    <div class="small text-body-secondary mb-1">Selected package</div>
+                    <div class="fw-semibold">${item.packageLabel.replace(/[&<>"']/g, (char) => ({
+                      '&': '&amp;',
+                      '<': '&lt;',
+                      '>': '&gt;',
+                      '"': '&quot;',
+                      "'": '&#39;',
+                    }[char]))}${item.packagePrice ? ` <span class="text-body-secondary fw-normal">(${item.packagePrice.replace(/[&<>"']/g, (char) => ({
+                      '&': '&amp;',
+                      '<': '&lt;',
+                      '>': '&gt;',
+                      '"': '&quot;',
+                      "'": '&#39;',
+                    }[char]))})</span>` : ''}</div>
+                  ` : ''}
+                </div>
+                ${item.id ? `<a class="btn btn-sm btn-outline-primary" href="${item.module === 'contractors' ? `/add-contractor-promotion?edit=${encodeURIComponent(item.id)}` : item.module === 'cars' ? `/add-car-promotion?edit=${encodeURIComponent(item.id)}` : item.module === 'restaurants' ? `/add-restaurant-promotion?edit=${encodeURIComponent(item.id)}` : `/add-property-promotion?edit=${encodeURIComponent(item.id)}`}">Manage package</a>` : ''}
+              </div>
+              ${item.services.length ? `
+                <div class="border-top mt-3 pt-3">
+                  <div class="small text-body-secondary mb-2">Other services</div>
+                  <div class="vstack gap-2">
+                    ${item.services.map((service) => `
+                      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 small">
+                        <span>${service.label.replace(/[&<>"']/g, (char) => ({
+                          '&': '&amp;',
+                          '<': '&lt;',
+                          '>': '&gt;',
+                          '"': '&quot;',
+                          "'": '&#39;',
+                        }[char]))}</span>
+                        <span class="text-body-secondary">${service.price.replace(/[&<>"']/g, (char) => ({
+                          '&': '&amp;',
+                          '<': '&lt;',
+                          '>': '&gt;',
+                          '"': '&quot;',
+                          "'": '&#39;',
+                        }[char]))}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    if (paymentActions) {
+      paymentActions.insertAdjacentElement('afterend', promotionsSection);
+    } else {
+      contentCol.appendChild(promotionsSection);
+    }
+  }
+
+  const readStoredMethods = () => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(paymentStorageKey) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      return [];
+    }
+  };
+
+  const writeStoredMethods = (methods) => {
+    try {
+      localStorage.setItem(paymentStorageKey, JSON.stringify(methods));
+    } catch (_) {}
+  };
+
+  const findMethodIndex = (methods, id) => methods.findIndex((method) => String(method?.id || '') === String(id || ''));
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[char]));
+
+  const maskCardNumber = (digits) => {
+    const clean = String(digits || '').replace(/\D/g, '');
+    const last4 = clean.slice(-4).padStart(4, '*');
+    return `${clean.slice(0, 4).padEnd(4, '*')} **** **** ${last4}`;
+  };
+
+  const detectBrand = (digits) => {
+    const clean = String(digits || '').replace(/\D/g, '');
+    if (/^4/.test(clean)) return 'visa';
+    if (/^(5[1-5]|2[2-7])/.test(clean)) return 'mastercard';
+    return 'card';
+  };
+
+  const cardGradient = (brand) => {
+    if (brand === 'mastercard') return 'background: linear-gradient(90deg, #fcb69f 0%, #ffe8c9 100%)';
+    return 'background: linear-gradient(90deg, #accbee 0%, #dbeafe 100%)';
+  };
+
+  const cardLogo = (brand) => {
+    if (brand === 'mastercard') {
+      return '<svg class="flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="52" height="32" fill="none"><path d="M31.411 25.616H20.594V5.707h10.817v19.909z" fill="#ff5f00"/><path d="M21.28 15.662c0-4.038 1.846-7.636 4.722-9.954C23.825 3.95 21.133 2.996 18.362 3 11.534 3 6 8.669 6 15.662s5.534 12.662 12.362 12.662c2.772.004 5.464-.95 7.64-2.707-2.875-2.318-4.722-5.916-4.722-9.955z" fill="#eb001b"/><path d="M46.003 15.662c0 6.993-5.534 12.662-12.362 12.662A12.13 12.13 0 0 1 26 25.616c2.876-2.318 4.722-5.916 4.722-9.955S28.876 8.026 26 5.707A12.13 12.13 0 0 1 33.641 3c6.827 0 12.362 5.669 12.362 12.662" fill="#f79e1b"/></svg>';
+    }
+    return '<svg class="flex-shrink-0 text-dark-emphasis" xmlns="http://www.w3.org/2000/svg" width="52" height="32" fill="currentColor"><path d="M20.224 8.524L13.94 23.516h-4.1L6.748 11.55c-.188-.736-.35-1.006-.922-1.316-.932-.506-2.472-.98-3.826-1.276l.092-.434h6.6a1.81 1.81 0 0 1 1.788 1.528l1.634 8.676L16.15 8.524h4.074zM36.29 18.622c.016-3.958-5.472-4.176-5.434-5.944.012-.538.524-1.11 1.644-1.256a7.32 7.32 0 0 1 3.826.672l.68-3.18c-1.16-.436-2.389-.662-3.628-.666-3.834 0-6.532 2.04-6.556 4.958-.024 2.158 1.926 3.36 3.396 4.08 1.512.734 2.02 1.206 2.012 1.862-.01 1.008-1.204 1.45-2.32 1.468-1.95.03-3.08-.526-3.984-.946l-.702 3.284c.906.416 2.578.78 4.312.796 4.074 0 6.74-2.012 6.754-5.128zm10.122 4.894H50L46.87 8.524h-3.312c-.354-.003-.701.1-.995.296s-.523.476-.657.804l-5.818 13.892h4.072l.81-2.24h4.976l.466 2.24zm-4.326-5.312l2.04-5.63 1.176 5.63h-3.216zm-16.32-9.68L22.56 23.516h-3.88l3.21-14.992h3.876z"/></svg>';
+  };
+
+  const renderStoredMethod = (method) => {
+    if (!cardsWrap || !method || method.type !== 'card') return;
+
+    const card = document.createElement('div');
+    card.className = 'card w-100 border-0';
+    card.setAttribute('data-user-payment-card', '1');
+    card.setAttribute('data-method-id', String(method.id || ''));
+    card.innerHTML = `
+      <div class="card-body position-relative z-2">
+        <div class="d-flex align-items-center pb-4 mb-2 mb-md-3">
+          ${cardLogo(method.brand)}
+          <span class="badge text-bg-light ms-3">Added now</span>
+          <div class="dropdown ms-auto">
+            <button type="button" class="btn btn-icon btn-sm fs-xl text-dark-emphasis border-0" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions">
+              <i class="fi-more-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" style="--fn-dropdown-min-width: 8rem">
+              <li>
+                <button type="button" class="dropdown-item" data-payment-action="edit" data-method-id="${escapeHtml(String(method.id || ''))}">
+                  <i class="fi-edit opacity-75 me-2"></i>
+                  Edit
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item text-danger" data-payment-action="delete" data-method-id="${escapeHtml(String(method.id || ''))}">
+                  <i class="fi-trash opacity-75 me-2"></i>
+                  Delete
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="h5 pt-md-1 pb-2 pb-md-3" style="letter-spacing: 1.25px">${escapeHtml(maskCardNumber(method.number))}</div>
+        <div class="d-flex justify-content-between">
+          <div class="me-3">
+            <div class="fs-xs text-body mb-1">Name</div>
+            <div class="h6 fs-sm mb-0">${escapeHtml(method.name)}</div>
+          </div>
+          <div>
+            <div class="fs-xs text-body mb-1">Expiry date</div>
+            <div class="h6 fs-sm mb-0">${escapeHtml(method.expiry)}</div>
+          </div>
+        </div>
+      </div>
+      <span class="position-absolute top-0 start-0 w-100 h-100 rounded-4 d-none-dark" style="${cardGradient(method.brand)}"></span>
+      <span class="position-absolute top-0 start-0 w-100 h-100 rounded-4 d-none d-block-dark" style="background: linear-gradient(90deg, #1b273a 0%, #1f2632 100%)"></span>
+    `;
+    cardsWrap.appendChild(card);
+  };
+
+  const rerenderStoredMethods = () => {
+    if (!cardsWrap) return;
+    cardsWrap.querySelectorAll('[data-user-payment-card="1"]').forEach((node) => node.remove());
+    readStoredMethods().forEach(renderStoredMethod);
+  };
+
+  const resetCardFormState = () => {
+    editingMethodId = null;
+    cardForm?.reset();
+    [cardNumberInput, cardNameInput, cardExpiryInput, cardCvcInput].forEach((input) => input?.classList.remove('is-invalid'));
+    const submitBtn = cardForm?.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Add card';
+    if (addCardTabBtn) addCardTabBtn.textContent = 'Add card';
+  };
+
+  const openCardEditor = (methodId) => {
+    const methods = readStoredMethods();
+    const method = methods.find((entry) => String(entry?.id || '') === String(methodId || ''));
+    if (!method || method.type !== 'card') return;
+
+    editingMethodId = String(method.id || '');
+    if (cardNumberInput) cardNumberInput.value = String(method.number || '');
+    if (cardNameInput) cardNameInput.value = String(method.name || '');
+    if (cardExpiryInput) cardExpiryInput.value = normalizeExpiry(method.expiry || '');
+    if (cardCvcInput) cardCvcInput.value = '';
+    [cardNumberInput, cardNameInput, cardExpiryInput, cardCvcInput].forEach((input) => input?.classList.remove('is-invalid'));
+
+    if (addPaypalTabBtn && addPaypalPane) {
+      addPaypalTabBtn.classList.remove('active');
+      addPaypalTabBtn.setAttribute('aria-selected', 'false');
+      addPaypalPane.classList.remove('show', 'active');
+    }
+    if (addCardTabBtn && addCardPane) {
+      addCardTabBtn.classList.add('active');
+      addCardTabBtn.setAttribute('aria-selected', 'true');
+      addCardPane.classList.add('show', 'active');
+      addCardTabBtn.textContent = 'Edit card';
+    }
+
+    const submitBtn = cardForm?.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Save changes';
+    bootstrapModal?.show();
+  };
+
+  const deleteStoredMethod = (methodId) => {
+    const methods = readStoredMethods().filter((entry) => String(entry?.id || '') !== String(methodId || ''));
+    writeStoredMethods(methods);
+    rerenderStoredMethods();
+  };
+
+  const normalizeExpiry = (value) => {
+    const clean = String(value || '').replace(/\D/g, '').slice(0, 4);
+    if (clean.length < 4) return '';
+    return `${clean.slice(0, 2)}/${clean.slice(2, 4)}`;
+  };
+
+  const isValidExpiry = (value) => /^(0[1-9]|1[0-2])\/\d{2}$/.test(value);
+
+  const showFieldError = (input, isInvalid) => {
+    if (!input) return;
+    input.classList.toggle('is-invalid', isInvalid);
+  };
+
+  if (addPaymentBtn) {
+    addPaymentBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+    });
+  }
+
+  if (cardExpiryInput) {
+    cardExpiryInput.addEventListener('blur', () => {
+      cardExpiryInput.value = normalizeExpiry(cardExpiryInput.value);
+    });
+  }
+
+  if (cardForm) {
+    cardForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const digits = String(cardNumberInput?.value || '').replace(/\D/g, '');
+      const name = String(cardNameInput?.value || '').trim();
+      const expiry = normalizeExpiry(cardExpiryInput?.value || '');
+      const cvc = String(cardCvcInput?.value || '').replace(/\D/g, '');
+
+      if (cardExpiryInput) cardExpiryInput.value = expiry;
+
+      const invalidNumber = digits.length < 13;
+      const invalidName = name.length < 2;
+      const invalidExpiry = !isValidExpiry(expiry);
+      const invalidCvc = cvc.length < 3;
+
+      showFieldError(cardNumberInput, invalidNumber);
+      showFieldError(cardNameInput, invalidName);
+      showFieldError(cardExpiryInput, invalidExpiry);
+      showFieldError(cardCvcInput, invalidCvc);
+
+      if (invalidNumber || invalidName || invalidExpiry || invalidCvc) return;
+
+      const methods = readStoredMethods();
+      const payload = {
+        id: editingMethodId || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        type: 'card',
+        brand: detectBrand(digits),
+        number: digits,
+        name,
+        expiry,
+        createdAt: Date.now(),
+      };
+      const existingIndex = findMethodIndex(methods, editingMethodId);
+      if (existingIndex >= 0) {
+        methods[existingIndex] = {
+          ...methods[existingIndex],
+          ...payload,
+        };
+      } else {
+        methods.push(payload);
+      }
+      writeStoredMethods(methods);
+      rerenderStoredMethods();
+      resetCardFormState();
+      bootstrapModal?.hide();
+    });
+  }
+
+  if (paypalForm) {
+    paypalForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const email = String(paypalEmailInput?.value || '').trim();
+      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      showFieldError(paypalEmailInput, !valid);
+      if (!valid) return;
+      paypalForm.reset();
+      paypalEmailInput?.classList.remove('is-invalid');
+      bootstrapModal?.hide();
+    });
+  }
+
+  addPaymentModal?.addEventListener('hidden.bs.modal', () => {
+    resetCardFormState();
+    paypalForm?.reset();
+    paypalEmailInput?.classList.remove('is-invalid');
+  });
+
+  cardsWrap?.addEventListener('click', (event) => {
+    const actionBtn = event.target instanceof Element
+      ? event.target.closest('[data-payment-action]')
+      : null;
+    if (!actionBtn) return;
+
+    const methodId = actionBtn.getAttribute('data-method-id') || '';
+    const action = actionBtn.getAttribute('data-payment-action') || '';
+    event.preventDefault();
+
+    if (action === 'edit') {
+      openCardEditor(methodId);
+      return;
+    }
+
+    if (action === 'delete') {
+      deleteStoredMethod(methodId);
+    }
+  });
+
+  rerenderStoredMethods();
+})();
+</script>
+HTML;
+        $accountPaymentScript = str_replace('__USER_LISTINGS__', $listingsJson ?: '[]', $accountPaymentScript);
+        $html = str_replace('</body>', $accountPaymentScript . '</body>', $html);
     }
 
     if ($file === 'add-contractor-location.html') {
@@ -2741,6 +4485,21 @@ HTML;
                     'title' => (string) $editListing->title,
                     'city' => (string) ($editListing->city?->name ?? ''),
                     'service_area' => (string) ($editListing->contractorDetail?->service_area ?? ''),
+                    'address' => (string) (
+                        Schema::hasColumn('contractor_details', 'address_line')
+                            ? ($editListing->contractorDetail?->address_line ?? '')
+                            : ''
+                    ),
+                    'zip' => (string) (
+                        Schema::hasColumn('contractor_details', 'zip_code')
+                            ? ($editListing->contractorDetail?->zip_code ?? '')
+                            : ''
+                    ),
+                    'state' => (string) (
+                        Schema::hasColumn('contractor_details', 'state_code')
+                            ? ($editListing->contractorDetail?->state_code ?? '')
+                            : ((string) ($editListing->city?->state_code ?? ''))
+                    ),
                 ];
             }
         }
@@ -2860,7 +4619,16 @@ HTML;
   bindAreaChips();
 
   if (isEdit) {
+    setSelectByText('select[aria-label="State select"]', editData.state);
     setSelectByText('select[aria-label="City select"]', editData.city);
+    if (editData.address) {
+      const addressInput = document.getElementById('address');
+      if (addressInput) addressInput.value = editData.address;
+    }
+    if (editData.zip) {
+      const zipInput = document.getElementById('zip');
+      if (zipInput) zipInput.value = editData.zip;
+    }
     if (editData.service_area) {
       const input = document.getElementById('area-search');
       if (input) {
@@ -2945,6 +4713,8 @@ HTML;
   if (!form) return;
   const editData = __RESTAURANT_EDIT_DATA__;
   const isEdit = !!(editData && editData.id);
+  let activeSubmitter = null;
+  form.setAttribute('data-mc-no-loader', '1');
 
   form.method = 'post';
   form.action = '/submit/restaurant';
@@ -2962,16 +4732,36 @@ HTML;
     idInput.name = 'listing_id';
     idInput.value = String(editData.id);
     form.prepend(idInput);
-    const h1 = document.querySelector('h1.display-6');
+    const h1 = document.querySelector('h1.mc-page-title, h1.display-6');
     if (h1) h1.textContent = 'Edit Restaurant';
+  }
+
+  let nextInput = form.querySelector('input[name="next"]');
+  if (!nextInput) {
+    nextInput = document.createElement('input');
+    nextInput.type = 'hidden';
+    nextInput.name = 'next';
+    form.prepend(nextInput);
+  }
+  let draftInput = form.querySelector('input[name="draft"]');
+  if (!draftInput) {
+    draftInput = document.createElement('input');
+    draftInput.type = 'hidden';
+    draftInput.name = 'draft';
+    form.prepend(draftInput);
   }
 
   const saveDraftBtn = Array.from(form.querySelectorAll('button')).find((btn) => (btn.textContent || '').toLowerCase().includes('save draft'));
   if (saveDraftBtn) {
     saveDraftBtn.type = 'submit';
-    saveDraftBtn.name = 'draft';
-    saveDraftBtn.value = '1';
   }
+
+  form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      activeSubmitter = btn;
+      nextInput.value = String(btn.getAttribute('data-next') || '').trim();
+    });
+  });
 
   form.querySelectorAll('input[name="services"]').forEach((el) => {
     el.setAttribute('name', 'services[]');
@@ -2994,7 +4784,9 @@ HTML;
   dayKeys.forEach((day) => {
     document.getElementById(day)?.addEventListener('change', syncOpeningHours);
     document.getElementById(`${day}From`)?.addEventListener('input', syncOpeningHours);
+    document.getElementById(`${day}From`)?.addEventListener('change', syncOpeningHours);
     document.getElementById(`${day}To`)?.addEventListener('input', syncOpeningHours);
+    document.getElementById(`${day}To`)?.addEventListener('change', syncOpeningHours);
   });
 
   const galleryGrid = form.querySelector('[data-restaurant-upload-grid]');
@@ -3084,6 +4876,60 @@ HTML;
     }, true);
   }
 
+  const servicesInputs = () => Array.from(form.querySelectorAll('input[type="checkbox"][name="services[]"], input[type="checkbox"][name="services"]'));
+  const hasSelectedServices = () => servicesInputs().some((input) => input.checked);
+  const enabledHours = () => dayKeys.filter((day) => !!document.getElementById(day)?.checked);
+  const hasCompleteHours = () => {
+    const enabled = enabledHours();
+    if (!enabled.length) return false;
+    return enabled.every((day) => {
+      const fromVal = String(document.getElementById(`${day}From`)?.value || '').trim();
+      const toVal = String(document.getElementById(`${day}To`)?.value || '').trim();
+      return fromVal !== '' && toVal !== '';
+    });
+  };
+  const hasRestaurantImage = () => {
+    const coverFiles = coverInput?.files?.length || 0;
+    const galleryFiles = selectedGalleryFiles.length;
+    const existingGallery = Array.isArray(editData?.gallery_images) ? editData.gallery_images.length : 0;
+    const existingPrimary = String(editData?.image || '').trim();
+    return !!(coverFiles || galleryFiles || existingGallery || existingPrimary);
+  };
+  const validateCompleteSubmission = () => {
+    syncOpeningHours();
+    if (!hasSelectedServices()) {
+      if (typeof window.__MC_HIDE_PAGE_LOADER__ === 'function') window.__MC_HIDE_PAGE_LOADER__();
+      window.alert('At least one service is required.');
+      return false;
+    }
+    if (!hasCompleteHours()) {
+      if (typeof window.__MC_HIDE_PAGE_LOADER__ === 'function') window.__MC_HIDE_PAGE_LOADER__();
+      window.alert('Working hours are required for at least one day, with both from and to times.');
+      return false;
+    }
+    if (!hasRestaurantImage()) {
+      if (typeof window.__MC_HIDE_PAGE_LOADER__ === 'function') window.__MC_HIDE_PAGE_LOADER__();
+      window.alert('At least one restaurant image is required.');
+      return false;
+    }
+    return true;
+  };
+
+  form.addEventListener('submit', (event) => {
+    const submitter = event.submitter || activeSubmitter;
+    const wantsPromotion = String(submitter?.getAttribute('data-next') || '').trim() === '/add-restaurant-promotion';
+    const isSaveDraft = submitter === saveDraftBtn && !wantsPromotion;
+    draftInput.value = (isSaveDraft || wantsPromotion) ? '1' : '';
+    nextInput.value = wantsPromotion ? '/add-restaurant-promotion' : '';
+    syncOpeningHours();
+
+    if (!isSaveDraft && !validateCompleteSubmission()) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+  });
+
   if (isEdit) {
     const byId = (id) => document.getElementById(id);
     if (byId('restaurantName')) byId('restaurantName').value = editData.title || '';
@@ -3131,6 +4977,9 @@ HTML;
       if (dayFrom && fromVal) dayFrom.value = fromVal;
       if (dayTo && toVal) dayTo.value = toVal;
     });
+    if (typeof window.__MC_RESTAURANT_HOURS_REFRESH__ === 'function') {
+      window.__MC_RESTAURANT_HOURS_REFRESH__();
+    }
 
     if (galleryGrid && uploadTile) {
       Array.from(galleryGrid.children).forEach((col) => {
@@ -3673,16 +5522,16 @@ HTML;
   if (editData && editData.id) {
     forceApplyEditData();
 
-    const actions = form.querySelector('section.d-flex.flex-column.flex-sm-row.justify-content-between.gap-3.mt-4');
+    const actions = form.querySelector('section.car-action-buttons');
     if (actions && !actions.querySelector('.js-delete-listing-btn')) {
       const deleteForm = document.createElement('form');
       deleteForm.method = 'post';
       deleteForm.action = '/account/listings/delete';
-      deleteForm.className = 'ms-sm-auto';
+      deleteForm.className = 'd-flex';
       deleteForm.innerHTML = `
         <input type="hidden" name="_token" value="__SCRIPT_CSRF__">
         <input type="hidden" name="listing_id" value="${String(editData.id)}">
-        <button type="submit" class="btn btn-lg btn-outline-danger js-delete-listing-btn">Delete listing</button>
+        <button type="submit" class="btn btn-lg btn-outline-danger js-delete-listing-btn text-nowrap">Delete listing</button>
       `;
       deleteForm.addEventListener('submit', (event) => {
         if (!window.confirm('Delete this listing?')) event.preventDefault();
@@ -3964,7 +5813,10 @@ Route::get('/restaurants', fn () => $serve('home-restaurants.html'));
 Route::get('/listings', fn () => $serve('listings-contractors.html'))->name('listings.index');
 Route::get('/listings/contractors', fn () => $serve('listings-contractors.html'))->name('listings.module');
 Route::get('/listings/real-estate', fn () => $serve('listings-real-estate.html'));
-Route::get('/listings/cars', fn () => $serve('listings-grid-cars.html'));
+Route::get('/listings/cars', function (Request $request) use ($serve) {
+    $view = strtolower(trim((string) $request->query('view', '')));
+    return $serve($view === 'list' ? 'listings-list-cars.html' : 'listings-grid-cars.html');
+});
 Route::get('/listings/restaurants', fn () => $serve('listings-restaurants.html'));
 
 Route::get('/entry/contractors', fn () => $serve('single-entry-contractors.html'))->name('finder.entry');
@@ -4046,6 +5898,57 @@ Route::get('/add-contractor-project', function (Request $request) use ($serve) {
         }
     }
     return $serve('add-contractor-project.html');
+});
+Route::get('/add-contractor-promotion', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'contractors')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-property-promotion.html');
+});
+Route::get('/add-car-promotion', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'cars')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-property-promotion.html');
+});
+Route::get('/add-restaurant-promotion', function (Request $request) use ($serve) {
+    $editId = (int) $request->query('edit', 0);
+    if ($editId > 0) {
+        if (! Auth::check()) {
+            return redirect('/signin');
+        }
+        $exists = Listing::query()
+            ->where('id', $editId)
+            ->where('module', 'restaurants')
+            ->where('user_id', Auth::id())
+            ->exists();
+        if (! $exists) {
+            return redirect('/account/listings?error=invalid-edit');
+        }
+    }
+    return $serve('add-property-promotion.html');
 });
 Route::get('/add-contractor-profile', function (Request $request) use ($serve) {
     $editId = (int) $request->query('edit', 0);
@@ -4268,6 +6171,15 @@ Route::middleware('auth')->group(function () use ($serve) {
                 'image' => (string) $editListing->image_url,
                 'features' => array_values($editListing->features ?? []),
                 'wizard_data' => $editListing->carDetail?->wizard_data ?? [],
+                'promotion_package' => collect(is_array($editListing->features) ? $editListing->features : [])
+                    ->map(fn ($value) => trim((string) $value))
+                    ->filter(fn ($value) => str_starts_with($value, 'promo-package:'))
+                    ->map(fn ($value) => trim(substr($value, strlen('promo-package:'))))
+                    ->filter()
+                    ->first() ?: '',
+                'service_certify' => collect(is_array($editListing->features) ? $editListing->features : [])->contains('promo-service:certify'),
+                'service_lifts' => collect(is_array($editListing->features) ? $editListing->features : [])->contains('promo-service:lifts'),
+                'service_analytics' => collect(is_array($editListing->features) ? $editListing->features : [])->contains('promo-service:analytics'),
             ],
         ]);
     });
@@ -4297,6 +6209,24 @@ Route::middleware('auth')->group(function () use ($serve) {
                 $address = (string) $parts[0];
             }
         }
+        $serviceAreaParts = array_values(array_filter(array_map('trim', explode(',', $serviceArea))));
+        $normalizedAddress = strtolower(trim($address));
+        $normalizedZip = preg_replace('/\D+/', '', $zip) ?: '';
+        $serviceArea = implode(', ', array_values(array_filter($serviceAreaParts, function ($value) use ($normalizedAddress, $normalizedZip) {
+            $value = trim((string) $value);
+            if ($value === '') {
+                return false;
+            }
+            if ($normalizedAddress !== '' && strtolower($value) === $normalizedAddress) {
+                return false;
+            }
+            $digitsOnly = preg_replace('/\D+/', '', $value) ?: '';
+            if ($normalizedZip !== '' && $digitsOnly !== '' && $digitsOnly === $normalizedZip) {
+                return false;
+            }
+
+            return true;
+        })));
 
         $priceRaw = (string) ($editListing->price ?? '');
         $priceValue = preg_replace('/[^\d]/', '', $priceRaw) ?: '';
@@ -4306,24 +6236,60 @@ Route::middleware('auth')->group(function () use ($serve) {
             $stateCode = (string) ($editListing->city->state_code ?? '');
         }
 
+        $featureTokens = collect(is_array($editListing->features) ? $editListing->features : [])
+            ->map(fn ($value) => trim((string) $value))
+            ->filter();
+        $addressFallback = $featureTokens->first(fn ($token) => str_starts_with(strtolower($token), 'contractor-address:'));
+        $zipFallback = $featureTokens->first(fn ($token) => str_starts_with(strtolower($token), 'contractor-zip:'));
+        $stateFallback = $featureTokens->first(fn ($token) => str_starts_with(strtolower($token), 'contractor-state:'));
+        $addressFallback = $addressFallback ? trim(substr($addressFallback, strlen('contractor-address:'))) : '';
+        $zipFallback = $zipFallback ? trim(substr($zipFallback, strlen('contractor-zip:'))) : '';
+        $stateFallback = $stateFallback ? trim(substr($stateFallback, strlen('contractor-state:'))) : '';
+        $savedPackage = strtolower((string) ($featureTokens->first(fn ($token) => str_starts_with($token, 'promo-package:')) ?? ''));
+        if ($savedPackage !== '') {
+            $savedPackage = substr($savedPackage, strlen('promo-package:'));
+        }
+
         return response()->json([
             'data' => [
                 'id' => $editListing->id,
                 'title' => (string) $editListing->title,
                 'project_name' => (string) $editListing->title,
                 'project_description' => (string) ($editListing->excerpt ?? ''),
+                'category' => (string) ($editListing->category?->name ?? ''),
                 'price_value' => (string) $priceValue,
                 'city' => (string) ($editListing->city?->name ?? ''),
                 'state' => (string) $stateCode,
                 'service_area' => $serviceArea,
-                'address' => $address,
-                'zip' => $zip,
+                'address' => (string) (
+                    Schema::hasColumn('contractor_details', 'address_line') && !empty($editListing->contractorDetail?->address_line)
+                        ? $editListing->contractorDetail->address_line
+                        : ($addressFallback !== '' ? $addressFallback : $address)
+                ),
+                'zip' => (string) (
+                    Schema::hasColumn('contractor_details', 'zip_code') && !empty($editListing->contractorDetail?->zip_code)
+                        ? $editListing->contractorDetail->zip_code
+                        : ($zipFallback !== '' ? $zipFallback : $zip)
+                ),
+                'services' => $featureTokens
+                    ->filter(fn ($token) => str_starts_with($token, 'service:'))
+                    ->map(fn ($token) => trim(substr($token, strlen('service:'))))
+                    ->filter()
+                    ->values()
+                    ->all(),
+                'business_hours' => is_array($editListing->contractorDetail?->business_hours)
+                    ? $editListing->contractorDetail->business_hours
+                    : [],
                 'profile_image' => (string) (
                     Schema::hasColumn('contractor_details', 'profile_image_path') && !empty($editListing->contractorDetail?->profile_image_path)
                         ? asset('storage/' . ltrim((string) $editListing->contractorDetail->profile_image_path, '/'))
                         : ''
                 ),
                 'image' => (string) $editListing->image_url,
+                'promotion_package' => $savedPackage,
+                'service_certify' => $featureTokens->contains('promo-service:certify'),
+                'service_lifts' => $featureTokens->contains('promo-service:lifts'),
+                'service_analytics' => $featureTokens->contains('promo-service:analytics'),
                 'gallery_images' => $editListing->images
                     ->sortBy('sort_order')
                     ->values()
@@ -4455,6 +6421,24 @@ Route::middleware('auth')->group(function () use ($serve) {
         }
 
         $user->save();
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'ok' => true,
+                'profile' => [
+                    'first_name' => (string) ($user->first_name ?? ''),
+                    'last_name' => (string) ($user->last_name ?? ''),
+                    'name' => trim((string) ($user->name ?? '')) ?: 'User',
+                    'email' => (string) ($user->email ?? ''),
+                    'phone' => (string) ($user->phone ?? ''),
+                    'birth_date' => (string) ($user->birth_date ?? ''),
+                    'language' => $hasLanguage ? (string) ($user->language ?? '') : '',
+                    'address' => (string) ($user->address ?? ''),
+                    'bio' => (string) ($user->bio ?? ''),
+                    'avatar' => (string) ($user->avatar_url ?? ''),
+                ],
+            ]);
+        }
 
         return redirect('/account/settings?settings=updated');
     });

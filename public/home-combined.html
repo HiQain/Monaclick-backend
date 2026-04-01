@@ -55,6 +55,31 @@
         contain-intrinsic-size: 1px 900px;
       }
 
+      .combined-search-surface {
+        position: relative;
+        z-index: 2;
+      }
+
+      .combined-search-results-card {
+        background: color-mix(in srgb, var(--fn-body-bg) 96%, white 4%);
+        border: 1px solid var(--fn-border-color);
+        border-radius: 1.5rem;
+        box-shadow: 0 1.25rem 2.5rem rgba(15, 23, 42, 0.08);
+        padding: 1.25rem;
+      }
+
+      .combined-search-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .45rem .75rem;
+        border-radius: 999px;
+        background: var(--fn-secondary-bg);
+        color: var(--fn-body-color);
+        font-size: .85rem;
+        line-height: 1;
+      }
+
     </style>
   </head>
   <body id="top">
@@ -200,12 +225,18 @@
             </div>
           </div>
 
-          <div id="combinedSearchResults" class="mt-4 d-none">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-              <h2 class="h3 mb-0">Search Results</h2>
-              <a class="btn btn-sm btn-outline-dark" href="/listings/contractors" id="combinedSearchViewAll">View all</a>
+          <div id="combinedSearchResults" class="mt-4 d-none combined-search-surface">
+            <div class="combined-search-results-card">
+              <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between gap-3 mb-3">
+                <div>
+                  <div class="d-flex flex-wrap gap-2 mb-2" id="combinedSearchMeta"></div>
+                  <h2 class="h3 mb-1">Search Results</h2>
+                  <p class="text-body-secondary mb-0" id="combinedSearchSummary">Showing the best matches for your search.</p>
+                </div>
+                <a class="btn btn-sm btn-outline-dark align-self-start" href="/listings/contractors" id="combinedSearchViewAll">View all</a>
+              </div>
+              <div class="row g-3" id="combinedSearchResultsGrid"></div>
             </div>
-            <div class="row g-3" id="combinedSearchResultsGrid"></div>
           </div>
           <div class="d-none d-md-block d-lg-none" style="height: 60px"></div>
           <div class="d-none d-lg-block d-xxl-none" style="height: 90px"></div>

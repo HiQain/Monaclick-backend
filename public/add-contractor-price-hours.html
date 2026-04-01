@@ -20,6 +20,7 @@
 
     <!-- Theme switcher (color modes) -->
     <script src="/finder/assets/js/theme-switcher.js"></script>
+    <style>#customizer{display:none!important;}</style>
 
     <!-- Preloaded local web font (Inter) -->
     <link rel="preload" href="/finder/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -37,7 +38,7 @@
     <link rel="stylesheet" href="/finder/assets/css/theme.min.css" id="theme-styles">
 
     <!-- Customizer -->
-    <script src="/finder/assets/js/customizer.min.js"></script>
+    
   </head>
 
 
@@ -184,79 +185,6 @@
         </button>
       </div>
     </div>
-
-
-    <!-- Add payment method modal -->
-    <div class="modal fade" id="addPayment" data-bs-backdrop="static" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <ul class="nav nav-pills gap-3" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button type="button" class="nav-link active" id="add-card-tab" data-bs-toggle="pill" data-bs-target="#add-card" role="tab" aria-controls="add-card" aria-selected="true">
-                  Add card
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button type="button" class="nav-link" id="add-paypal-tab" data-bs-toggle="pill" data-bs-target="#add-paypal" role="tab" aria-controls="add-paypal" aria-selected="false">
-                  Add PayPal
-                </button>
-              </li>
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body tab-content">
-            <div class="tab-pane fade show active" id="add-card" role="tabpanel" aria-labelledby="add-card-tab">
-              <form class="needs-validation" novalidate>
-                <div class="mb-4">
-                  <label for="card-number" class="form-label">Card number</label>
-                  <div class="position-relative" data-input-format='{"creditCard": true}'>
-                    <input type="text" class="form-control form-control-lg form-icon-end bg-image-none" id="card-number" placeholder="XXXX XXXX XXXX XXXX" required>
-                    <span class="position-absolute d-flex top-50 end-0 translate-middle-y fs-5 text-body-tertiary me-3" data-card-icon></span>
-                    <div class="invalid-tooltip bg-transparent p-0">Please provide a valid card number!</div>
-                  </div>
-                </div>
-                <div class="position-relative mb-4">
-                  <label for="card-name" class="form-label">Name on card</label>
-                  <input type="text" class="form-control form-control-lg" id="card-name" required>
-                  <div class="invalid-tooltip bg-transparent p-0">Please enters cardholder's name!</div>
-                </div>
-                <div class="row row-cols-2 g-4 mb-4">
-                  <div class="col position-relative">
-                    <label for="card-expiration" class="form-label">Expiration date</label>
-                    <input type="text" class="form-control form-control-lg" id="card-expiration" data-input-format='{"date": true, "datePattern": ["m", "y"]}' placeholder="MM/YY" required>
-                    <div class="invalid-tooltip bg-transparent p-0">Field is required!</div>
-                  </div>
-                  <div class="col position-relative">
-                    <label for="card-cvc" class="form-label">CVC</label>
-                    <input type="text" class="form-control form-control-lg" id="card-cvc" data-input-format='{"numericOnly": true, "blocks": [3]}' placeholder="XXX" required>
-                    <div class="invalid-tooltip bg-transparent p-0">Field is required!</div>
-                  </div>
-                </div>
-                <div class="d-flex gap-3">
-                  <button type="reset" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cancel</button>
-                  <button type="submit" class="btn btn-primary w-100">Add card</button>
-                </div>
-              </form>
-            </div>
-            <div class="tab-pane fade" id="add-paypal" role="tabpanel" aria-labelledby="add-paypal-tab">
-              <form class="needs-validation" novalidate>
-                <div class="position-relative mb-4">
-                  <label for="paypal-email" class="form-label">Email associated with PayPal</label>
-                  <input type="email" class="form-control form-control-lg" id="paypal-email" required>
-                  <div class="invalid-tooltip bg-transparent p-0">Please provide a valid email address!</div>
-                </div>
-                <div class="d-flex gap-3">
-                  <button type="reset" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cancel</button>
-                  <button type="submit" class="btn btn-primary w-100">Continue</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
 
     <!-- Navigation bar (Page header) -->
     <header class="navbar navbar-expand-lg bg-body navbar-sticky sticky-top z-fixed px-0" data-sticky-element>
@@ -423,8 +351,8 @@
           <!-- Inputs -->
           <div class="col-lg-7">
 
-            <!-- Price and payment method -->
-            <h1 class="h3 pb-sm-1 pb-md-2">Add price and payment method</h1>
+            <!-- Price -->
+            <h1 class="h3 pb-sm-1 pb-md-2">Add price</h1>
             <label for="price" class="form-label">Price *</label>
             <div class="d-flex gap-2" style="max-width: 430px">
               <div class="position-relative">
@@ -438,25 +366,13 @@
                   }
                 }' aria-label="Select per period">
                   <option value="">Per period</option>
-                  <option value="hour" selected>per hour</option>
+                  <option value="hour">per hour</option>
                   <option value="day">per day</option>
                   <option value="week">per week</option>
                   <option value="month">per month</option>
                 </select>
               </div>
             </div>
-            <h2 class="h6 pt-3 mt-3">Get paid quickly and securely online</h2>
-            <p class="fs-sm">Enable clients to pay instantly via credit card, so you'll never have to wait for another check to clear.</p>
-            <div class="position-relative" style="max-width: 335px">
-              <div class="position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100">
-                <button type="button" class="btn btn-sm btn-light stretched-link" data-bs-toggle="modal" data-bs-target="#addPayment">
-                  <i class="fi-plus fs-sm me-1 ms-n1"></i>
-                  Add card
-                </button>
-              </div>
-              <svg xmlns="http://www.w3.org/2000/svg" width="335" viewBox="0 0 335 185" fill="none"><g clip-path="url(#A)"><rect class="text-warning" width="335" height="185" rx="16" fill="currentColor"/><g fill="#fff"><circle cx="37.5" cy="124.5" r="162.5" fill-opacity=".1"/><circle cx="1.5" cy="130.5" r="162.5" fill-opacity=".1"/><path d="M281.224 28.524l-6.284 14.992h-4.1l-3.092-11.966c-.188-.736-.35-1.006-.922-1.316-.932-.506-2.472-.98-3.826-1.276l.092-.434h6.6c.431 0 .849.153 1.176.434a1.81 1.81 0 0 1 .612 1.094l1.634 8.676 4.036-10.204h4.074zm16.066 10.098c.016-3.958-5.472-4.176-5.434-5.944.012-.538.524-1.11 1.644-1.256a7.32 7.32 0 0 1 3.826.672l.68-3.18a10.41 10.41 0 0 0-3.628-.666c-3.834 0-6.532 2.04-6.556 4.958-.024 2.158 1.926 3.36 3.396 4.08 1.512.734 2.02 1.206 2.012 1.862-.01 1.008-1.204 1.45-2.32 1.468-1.95.03-3.08-.526-3.984-.946l-.702 3.284c.906.416 2.578.78 4.312.796 4.074 0 6.74-2.012 6.754-5.128zm10.122 4.894H311l-3.13-14.992h-3.312c-.354-.003-.701.1-.995.296a1.76 1.76 0 0 0-.657.804l-5.818 13.892h4.072l.81-2.24h4.976l.466 2.24zm-4.326-5.312l2.04-5.63 1.176 5.63h-3.216zm-16.32-9.68l-3.206 14.992h-3.88l3.21-14.992h3.876zM27.455 149.909l.091-2.5-2.114 1.341-.545-.955 2.227-1.159-2.227-1.159.545-.954 2.114 1.341-.091-2.5h1.091l-.091 2.5 2.114-1.341.545.954-2.227 1.159 2.227 1.159-.545.955-2.114-1.341.091 2.5h-1.091zm14.24 0l.091-2.5-2.114 1.341-.545-.955 2.227-1.159-2.227-1.159.545-.954 2.114 1.341-.091-2.5h1.091l-.091 2.5 2.114-1.341.545.954-2.227 1.159 2.227 1.159-.545.955-2.114-1.341.091 2.5h-1.091zm14.24 0l.091-2.5-2.114 1.341-.545-.955 2.227-1.159-2.227-1.159.545-.954 2.114 1.341-.091-2.5h1.091l-.091 2.5 2.114-1.341.545.954-2.227 1.159 2.227 1.159-.545.955-2.114-1.341.091 2.5h-1.091zm14.24 0l.091-2.5-2.114 1.341-.545-.955 2.227-1.159-2.227-1.159.545-.954 2.114 1.341-.091-2.5h1.091l-.091 2.5 2.114-1.341.545.954-2.227 1.159 2.227 1.159-.545.955-2.114-1.341.091 2.5h-1.091zm35.721 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm14.24 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm14.24 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm14.24 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm35.72 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm14.24 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm14.24 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm14.24 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm35.72 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm14.24 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm14.24 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09zm14.24 0l.09-2.5-2.113 1.341-.546-.955 2.228-1.159-2.228-1.159.546-.954 2.113 1.341-.09-2.5h1.09l-.09 2.5 2.113-1.341.546.954-2.228 1.159 2.228 1.159-.546.955-2.113-1.341.09 2.5h-1.09z"/></g></g><defs><clipPath id="A"><rect width="335" height="185" rx="16" fill="#fff"/></clipPath></defs></svg>
-            </div>
-
             <!-- Working hours -->
             <div class="pt-5">
               <h2 class="h3 pb-sm-2 pb-lg-3">Add working hours</h2>
@@ -465,16 +381,16 @@
                 <!-- Monday -->
                 <div class="d-flex align-items-center gap-3 gap-sm-5">
                   <div class="form-check form-switch w-100 m-0" data-bs-toggle="collapse" data-bs-target="#mondayHours" aria-controls="mondayHours" style="max-width: 132px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="monday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="monday">
                     <label for="monday" class="form-check-label w-100 fw-medium">Monday</label>
                   </div>
                   <div class="position-relative d-flex align-items-center w-100" style="max-width: 238px; height: 40px">
                     <div class="position-absolute top-0 start-0 w-100 h-100">
                       <div class="collapse bg-body transition-none show" id="mondayHours">
                         <div class="d-flex align-items-center gap-2 gap-sm-3">
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="09:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                           <div class="fs-sm">to</div>
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="17:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                         </div>
                       </div>
                     </div>
@@ -485,16 +401,16 @@
                 <!-- Tuesday -->
                 <div class="d-flex align-items-center gap-3 gap-sm-5">
                   <div class="form-check form-switch w-100 m-0" data-bs-toggle="collapse" data-bs-target="#tuesdayHours" aria-controls="tuesdayHours" style="max-width: 132px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="tuesday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="tuesday">
                     <label for="tuesday" class="form-check-label w-100 fw-medium">Tuesday</label>
                   </div>
                   <div class="position-relative d-flex align-items-center w-100" style="max-width: 238px; height: 40px">
                     <div class="position-absolute top-0 start-0 w-100 h-100">
                       <div class="collapse bg-body transition-none show" id="tuesdayHours">
                         <div class="d-flex align-items-center gap-2 gap-sm-3">
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="09:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                           <div class="fs-sm">to</div>
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="17:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                         </div>
                       </div>
                     </div>
@@ -505,16 +421,16 @@
                 <!-- Wednesday -->
                 <div class="d-flex align-items-center gap-3 gap-sm-5">
                   <div class="form-check form-switch w-100 m-0" data-bs-toggle="collapse" data-bs-target="#wednesdayHours" aria-controls="wednesdayHours" style="max-width: 132px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="wednesday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="wednesday">
                     <label for="wednesday" class="form-check-label w-100 fw-medium">Wednesday</label>
                   </div>
                   <div class="position-relative d-flex align-items-center w-100" style="max-width: 238px; height: 40px">
                     <div class="position-absolute top-0 start-0 w-100 h-100">
                       <div class="collapse bg-body transition-none show" id="wednesdayHours">
                         <div class="d-flex align-items-center gap-2 gap-sm-3">
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="09:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                           <div class="fs-sm">to</div>
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="17:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                         </div>
                       </div>
                     </div>

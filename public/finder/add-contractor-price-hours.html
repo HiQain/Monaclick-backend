@@ -20,6 +20,7 @@
 
     <!-- Theme switcher (color modes) -->
     <script src="assets/js/theme-switcher.js"></script>
+    <style>#customizer{display:none!important;}</style>
 
     <!-- Preloaded local web font (Inter) -->
     <link rel="preload" href="assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -37,7 +38,7 @@
     <link rel="stylesheet" href="assets/css/theme.min.css" id="theme-styles">
 
     <!-- Customizer -->
-    <script src="assets/js/customizer.min.js"></script>
+    
   </head>
 
 
@@ -438,7 +439,7 @@
                   }
                 }' aria-label="Select per period">
                   <option value="">Per period</option>
-                  <option value="hour" selected>per hour</option>
+                  <option value="hour">per hour</option>
                   <option value="day">per day</option>
                   <option value="week">per week</option>
                   <option value="month">per month</option>
@@ -465,16 +466,16 @@
                 <!-- Monday -->
                 <div class="d-flex align-items-center gap-3 gap-sm-5">
                   <div class="form-check form-switch w-100 m-0" data-bs-toggle="collapse" data-bs-target="#mondayHours" aria-controls="mondayHours" style="max-width: 132px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="monday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="monday">
                     <label for="monday" class="form-check-label w-100 fw-medium">Monday</label>
                   </div>
                   <div class="position-relative d-flex align-items-center w-100" style="max-width: 238px; height: 40px">
                     <div class="position-absolute top-0 start-0 w-100 h-100">
                       <div class="collapse bg-body transition-none show" id="mondayHours">
                         <div class="d-flex align-items-center gap-2 gap-sm-3">
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="09:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                           <div class="fs-sm">to</div>
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="17:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                         </div>
                       </div>
                     </div>
@@ -485,16 +486,16 @@
                 <!-- Tuesday -->
                 <div class="d-flex align-items-center gap-3 gap-sm-5">
                   <div class="form-check form-switch w-100 m-0" data-bs-toggle="collapse" data-bs-target="#tuesdayHours" aria-controls="tuesdayHours" style="max-width: 132px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="tuesday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="tuesday">
                     <label for="tuesday" class="form-check-label w-100 fw-medium">Tuesday</label>
                   </div>
                   <div class="position-relative d-flex align-items-center w-100" style="max-width: 238px; height: 40px">
                     <div class="position-absolute top-0 start-0 w-100 h-100">
                       <div class="collapse bg-body transition-none show" id="tuesdayHours">
                         <div class="d-flex align-items-center gap-2 gap-sm-3">
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="09:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                           <div class="fs-sm">to</div>
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="17:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                         </div>
                       </div>
                     </div>
@@ -505,16 +506,16 @@
                 <!-- Wednesday -->
                 <div class="d-flex align-items-center gap-3 gap-sm-5">
                   <div class="form-check form-switch w-100 m-0" data-bs-toggle="collapse" data-bs-target="#wednesdayHours" aria-controls="wednesdayHours" style="max-width: 132px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="wednesday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="wednesday">
                     <label for="wednesday" class="form-check-label w-100 fw-medium">Wednesday</label>
                   </div>
                   <div class="position-relative d-flex align-items-center w-100" style="max-width: 238px; height: 40px">
                     <div class="position-absolute top-0 start-0 w-100 h-100">
                       <div class="collapse bg-body transition-none show" id="wednesdayHours">
                         <div class="d-flex align-items-center gap-2 gap-sm-3">
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="09:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                           <div class="fs-sm">to</div>
-                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm" value="17:00">
+                          <input type="text" class="form-control" data-input-format='{"time": true, "timePattern": ["h", "m"]}' placeholder="hh:mm">
                         </div>
                       </div>
                     </div>

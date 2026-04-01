@@ -14,6 +14,21 @@ class Listing extends Model
 {
     use HasFactory;
 
+    protected static function formatPriceNumbers(string $value): string
+    {
+        return (string) preg_replace_callback('/\d[\d,]*(?:\.\d+)?/', function (array $matches): string {
+            $raw = str_replace(',', '', (string) ($matches[0] ?? ''));
+            if ($raw === '' || ! is_numeric($raw)) {
+                return (string) ($matches[0] ?? '');
+            }
+
+            $number = (float) $raw;
+            $decimals = str_contains($raw, '.') ? strlen(substr(strrchr($raw, '.'), 1)) : 0;
+
+            return number_format($number, $decimals, '.', ',');
+        }, $value);
+    }
+
     public const MODULE_OPTIONS = [
         'contractors' => 'Contractors',
         'real-estate' => 'Real Estate',
@@ -166,6 +181,8 @@ class Listing extends Model
         if (! $appendMonthlySuffix && $hasMonthlySuffix) {
             $value = rtrim(preg_replace('~/mo$~i', '', $value) ?? $value);
         }
+
+        $value = static::formatPriceNumbers($value);
 
         return $value;
     }

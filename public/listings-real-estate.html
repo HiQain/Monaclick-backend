@@ -37,6 +37,46 @@
     <link rel="preload" href="/finder/assets/css/theme.min.css" as="style">
     <link rel="preload" href="/finder/assets/css/theme.rtl.min.css" as="style">
     <link rel="stylesheet" href="/finder/assets/css/theme.min.css" id="theme-styles">
+    <style>
+      .listings-section .mc-real-estate-location-field{
+        min-width: 220px;
+      }
+      .listings-section .mc-real-estate-location-field .choices,
+      .listings-section .mc-real-estate-radius-field .choices{
+        width: 100%;
+      }
+      .listings-section .mc-real-estate-location-field .choices__inner,
+      .listings-section .mc-real-estate-radius-field .choices__inner{
+        min-height: 44px;
+        padding-top: .45rem;
+        padding-bottom: .45rem;
+      }
+      .listings-section .mc-real-estate-location-field .choices__list--single,
+      .listings-section .mc-real-estate-radius-field .choices__list--single{
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .listings-section .mc-real-estate-location-field .choices__list--dropdown .choices__item,
+      .listings-section .mc-real-estate-location-field .choices__list[aria-expanded] .choices__item,
+      .listings-section .mc-real-estate-radius-field .choices__list--dropdown .choices__item,
+      .listings-section .mc-real-estate-radius-field .choices__list[aria-expanded] .choices__item{
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: anywhere;
+      }
+      .listings-section .mc-real-estate-radius-field .choices__list--dropdown .choices__item,
+      .listings-section .mc-real-estate-radius-field .choices__list[aria-expanded] .choices__item,
+      .listings-section .mc-real-estate-radius-field .choices__list--single{
+        white-space: nowrap;
+        word-break: keep-all;
+        overflow-wrap: normal;
+      }
+      .listings-section .mc-real-estate-radius-field .choices__list--dropdown,
+      .listings-section .mc-real-estate-radius-field .choices__list[aria-expanded]{
+        overflow-x: hidden !important;
+      }
+    </style>
 
     <!-- Customizer -->
     
@@ -618,10 +658,25 @@
             <div class="d-md-none" style="height: 64px;  margin-top: -64px"></div>
             <div class="d-none d-md-block d-lg-none" style="height: 72px;  margin-top: -72px"></div>
             <div class="d-none d-lg-block" style="height: 76px; margin-top: -76px"></div>
-            <div class="d-flex gap-2 gap-sm-3 py-2 py-sm-3">
-              <div class="position-relative w-100">
-                <i class="fi-map-pin position-absolute top-50 start-0 translate-middle-y z-1 ms-3"></i>
-                <input type="search" class="form-control form-icon-start" value="New York, Brooklyn" placeholder="Search for location">
+            <div class="d-flex flex-wrap gap-2 gap-sm-3 py-2 py-sm-3">
+              <div class="flex-grow-1 mc-real-estate-location-field">
+                <select class="form-select" data-select='{"removeItemButton": false}' data-location-state aria-label="Property state select">
+                  <option value="">Any state</option>
+                </select>
+              </div>
+              <div class="flex-grow-1 mc-real-estate-location-field">
+                <select class="form-select" data-select='{"removeItemButton": false}' data-location-city aria-label="Property city select" disabled>
+                  <option value="">Select state first</option>
+                </select>
+              </div>
+              <div class="flex-shrink-0 mc-real-estate-radius-field" style="width: 150px">
+                <select class="form-select" data-select='{"removeItemButton": false}' aria-label="Location radius select">
+                  <option value="">Any radius</option>
+                  <option value="50 mi">50 mi</option>
+                  <option value="100 mi">100 mi</option>
+                  <option value="150 mi">150 mi</option>
+                  <option value="200 mi">200 mi</option>
+                </select>
               </div>
               <div class="flex-shrink-0 d-none d-md-block" style="width: 140px">
                 <select class="form-select" data-select='{"removeItemButton": false}' aria-label="Rent or sale select">
@@ -689,6 +744,7 @@
           <!-- Sort selector -->
           <div class="d-flex align-items-center gap-2 gap-sm-3 mb-3">
             <div class="fs-sm text-nowrap">Showing 156 results</div>
+            <a class="nav-link fs-xs text-decoration-underline text-nowrap p-0" href="#!" data-real-estate-clear-all>Clear all</a>
             <div class="position-relative ms-auto" style="width: 150px">
               <i class="fi-sort position-absolute top-50 start-0 translate-middle-y z-2"></i>
               <select class="form-select border-0 rounded-0 ps-4 pe-1" data-select='{

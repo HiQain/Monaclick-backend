@@ -30,6 +30,7 @@
 
     <!-- Vendor styles -->
     <link rel="stylesheet" href="/finder/assets/vendor/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="/finder/assets/vendor/glightbox/dist/css/glightbox.min.css">
 
     <!-- Bootstrap + Theme styles -->
     <link rel="preload" href="/finder/assets/css/theme.min.css" as="style">
@@ -899,15 +900,13 @@
               <article class="card h-100 hover-effect-scale bg-body-tertiary border-0">
                 <div class="card-img-top position-relative overflow-hidden">
                   <div class="d-flex flex-column gap-2 align-items-start position-absolute top-0 start-0 z-1 pt-1 pt-sm-0 ps-1 ps-sm-0 mt-2 mt-sm-3 ms-2 ms-sm-3">
-                    <span class="badge text-bg-info d-inline-flex align-items-center">
-                      Verified
-                      <i class="fi-shield ms-1"></i>
-                    </span>
                     <span class="badge text-bg-primary">New</span>
                   </div>
-                  <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(204 / 306 * 100%)">
-                    <img src="/finder/assets/img/listings/cars/grid/03.jpg" alt="Image">
-                  </div>
+                  <a href="assets/img/listings/cars/grid/07.jpg" data-glightbox data-gallery="image-gallery">
+                    <div class="ratio hover-effect-target" style="--fn-aspect-ratio: calc(204 / 306 * 100%)">
+                      <img src="assets/img/listings/cars/grid/07.jpg" alt="Image">
+                    </div>
+                  </a>
                 </div>
                 <div class="card-body pb-3">
                   <div class="d-flex align-items-center justify-content-between mb-2">
@@ -925,7 +924,7 @@
                     </div>
                   </div>
                   <h3 class="h6 mb-2">
-                    <a class="hover-effect-underline stretched-link me-1" href="/entry/cars">Ford Truck Lifted</a>
+                    <a class="hover-effect-underline stretched-link me-1" href="single-entry-cars.html">Ford Truck Lifted</a>
                     <span class="fs-xs fw-normal text-body-secondary">(2024)</span>
                   </h3>
                   <div class="h6 mb-0">$79,000</div>
@@ -1286,10 +1285,17 @@
     <!-- Vendor scripts -->
     <script src="/finder/assets/vendor/swiper/swiper-bundle.min.js"></script>
     <script src="/finder/assets/js/monaclick-global-footer.js?v=20260306-3"></script>
-
+    <script src="/finder/assets/vendor/glightbox/dist/js/glightbox.min.js"></script>
     <script src="/finder/assets/js/monaclick-entry-dynamic.js?v=20260314-1"></script>
     <script src="/finder/assets/js/monaclick-entry-features-patch.js"></script>
     <script src="/finder/assets/js/theme.min.js"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', function () {
+        if (typeof GLightbox === 'function') {
+          GLightbox({ selector: '[data-glightbox]' });
+        }
+      });
+    </script>
   </body>
 </html>
 

@@ -391,14 +391,14 @@
             </a>
           </div>
           <div class="col-md-4 vstack gap-3 gap-lg-4">
-            <a class="hover-effect-scale hover-effect-opacity position-relative d-flex rounded overflow-hidden" href="/finder/assets/img/listings/real-estate/single/02.jpg" data-glightbox data-gallery="image-gallery">
+            <a class="hover-effect-scale hover-effect-opacity position-relative d-flex rounded overflow-hidden" href="/finder/assets/img/listings/real-estate/single/02.jpg" data-glightbox  data-gallery="image-gallery">
               <i class="fi-zoom-in hover-effect-target fs-3 text-white position-absolute top-50 start-50 translate-middle opacity-0 z-2"></i>
               <span class="hover-effect-target position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 opacity-0 z-1"></span>
               <div class="ratio hover-effect-target bg-body-tertiary rounded" style="--fn-aspect-ratio: calc(213 / 416 * 100%)">
                 <img src="/finder/assets/img/listings/real-estate/single/th02.jpg" alt="Image">
               </div>
             </a>
-            <a class="hover-effect-scale hover-effect-opacity position-relative d-flex rounded overflow-hidden" href="/finder/assets/img/listings/real-estate/single/03.jpg" data-glightbox data-gallery="image-gallery">
+            <a class="hover-effect-scale hover-effect-opacity position-relative d-flex rounded overflow-hidden" href="/finder/assets/img/listings/real-estate/single/03.jpg" data-glightbox  data-gallery="image-gallery">
               <i class="fi-zoom-in hover-effect-target fs-3 text-white position-absolute top-50 start-50 translate-middle opacity-0 z-2"></i>
               <span class="hover-effect-target position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 opacity-0 z-1"></span>
               <div class="ratio hover-effect-target bg-body-tertiary rounded" style="--fn-aspect-ratio: calc(213 / 416 * 100%)">
@@ -853,11 +853,50 @@
     <script src="/finder/assets/vendor/glightbox/dist/js/glightbox.min.js"></script>
     <script src="/finder/assets/vendor/flatpickr/dist/flatpickr.min.js"></script>
     <script src="/finder/assets/vendor/cleave.js/dist/cleave.min.js"></script>
-    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260306-3"></script>
+    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260327-1"></script>
 
-    <script src="/finder/assets/js/monaclick-entry-dynamic.js?v=20260314-1"></script>
+    <script src="/finder/assets/js/monaclick-entry-dynamic.js?v=20260327-5"></script>
     <script src="/finder/assets/js/monaclick-entry-features-patch.js"></script>
     <script src="/finder/assets/js/theme.min.js"></script>
+    <script>
+    window.addEventListener('load', function () {
+      console.log('REAL-ESTATE-LIGHTBOX-FIX-LOADED');
+
+      const swapIframeToImage = () => {
+        document.querySelectorAll('.glightbox-container iframe.gvideo, .glightbox-container iframe.vimeo-video').forEach((frame) => {
+          const src = frame.getAttribute('src') || '';
+          const m = src.match(/https?:\/\/images\.unsplash\.com\/photo-[^"&?]+[^"']*/i);
+          if (!m) return;
+
+          const img = document.createElement('img');
+          img.src = m[0];
+          img.alt = 'Image';
+          img.style.maxWidth = '92vw';
+          img.style.maxHeight = '88vh';
+          img.style.width = 'auto';
+          img.style.height = 'auto';
+          img.style.objectFit = 'contain';
+          img.style.display = 'block';
+
+          const wrap = frame.closest('.gslide-media') || frame.parentElement;
+          if (wrap) {
+            wrap.innerHTML = '';
+            wrap.style.overflow = 'hidden';
+            wrap.style.display = 'flex';
+            wrap.style.alignItems = 'center';
+            wrap.style.justifyContent = 'center';
+            wrap.appendChild(img);
+          }
+        });
+      };
+
+      document.addEventListener('click', function () {
+        setTimeout(swapIframeToImage, 120);
+        setTimeout(swapIframeToImage, 300);
+      }, true);
+    });
+    </script>
+
   </body>
 </html>
 

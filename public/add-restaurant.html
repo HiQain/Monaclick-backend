@@ -18,17 +18,139 @@
     <link rel="stylesheet" href="/finder/assets/css/monaclick-finder-colors.css">
     <script src="/finder/assets/js/monaclick-theme-lock.js"></script>
   <style id="mc-opening-hours-style">
-  .mc-opening-hours { max-width: 50%; min-width: 380px; }
-  .mc-opening-hours-row { display: grid !important; grid-template-columns: 130px 1fr auto 1fr; align-items: center; gap: .5rem; }
-  .mc-opening-hours-row .form-check { min-width: 130px; margin: 0; }
-  .mc-opening-hours-row .mc-time-input { width: 100%; min-width: 120px; }
+  .mc-restaurant-page {
+    font-family: var(--fn-body-font-family, Inter, sans-serif);
+    color: var(--fn-body-color, inherit);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .mc-restaurant-page h1,
+  .mc-restaurant-page h2,
+  .mc-restaurant-page h3,
+  .mc-restaurant-page h4,
+  .mc-restaurant-page h5,
+  .mc-restaurant-page h6 {
+    font-family: var(--fn-heading-font-family, var(--fn-body-font-family, Inter, sans-serif));
+  }
+  .mc-restaurant-page .mc-page-title {
+    font-size: clamp(1.75rem, 2.35vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.02em;
+  }
+  .mc-restaurant-page .mc-section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .mc-restaurant-page .form-label,
+  .mc-restaurant-page .form-check-label {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .mc-restaurant-page input[name="services[]"] + .form-check-label {
+    font-weight: 500;
+  }
+  .mc-restaurant-page p,
+  .mc-restaurant-page .text-body-secondary,
+  .mc-restaurant-page .form-control,
+  .mc-restaurant-page .form-select,
+  .mc-restaurant-page .btn {
+    font-size: 1rem;
+  }
+  .mc-restaurant-page .form-control,
+  .mc-restaurant-page .form-select,
+  .mc-restaurant-page .btn,
+  .mc-restaurant-page p,
+  .mc-restaurant-page span,
+  .mc-restaurant-page div {
+    font-family: inherit;
+  }
+  .mc-restaurant-page .form-control,
+  .mc-restaurant-page .form-select {
+    font-size: 1rem;
+  }
+  .mc-restaurant-page .form-control::placeholder,
+  .mc-restaurant-page .form-select,
+  .mc-restaurant-page .text-body-secondary {
+    color: var(--fn-secondary-color, #6c757d);
+  }
+  .mc-restaurant-page .btn.btn-lg {
+    font-size: .975rem;
+    font-weight: 600;
+  }
+  .mc-restaurant-page .text-body-secondary.small,
+  .mc-restaurant-page .small {
+    font-size: .875rem !important;
+  }
+  .mc-opening-hours {
+    max-width: min(820px, 100%);
+    min-width: 380px;
+    gap: 1rem !important;
+  }
+  .mc-opening-hours-row {
+    display: grid !important;
+    grid-template-columns: 164px minmax(180px, 1fr) 28px minmax(180px, 1fr);
+    align-items: center;
+    gap: .75rem;
+  }
+  .mc-opening-hours-row .form-check {
+    min-width: 164px;
+    margin: 0;
+  }
+  .mc-opening-hours-row .mc-time-input { width: 100%; min-width: 160px; }
+  .mc-opening-hours-row .mc-time-select {
+    background-position: right .85rem center;
+    padding-right: 2.25rem;
+    min-height: 3rem;
+    border-radius: .9rem;
+  }
+  .mc-opening-hours-row .mc-time-divider,
+  .mc-opening-hours-row .mc-hours-closed {
+    font-size: 1rem;
+    color: var(--fn-body-color, #1f2b3d);
+  }
+  .mc-opening-hours-row .mc-hours-closed {
+    display: none;
+    grid-column: 2 / 5;
+    padding-left: .125rem;
+  }
+  .mc-opening-hours-row.is-closed .mc-time-select,
+  .mc-opening-hours-row.is-closed .mc-time-divider {
+    display: none;
+  }
+  .mc-opening-hours-row.is-closed .mc-hours-closed {
+    display: block;
+  }
   @media (max-width: 991.98px) {
     .mc-opening-hours { max-width: 100%; min-width: 0; }
-    .mc-opening-hours-row { grid-template-columns: 120px 1fr auto 1fr; }
+    .mc-opening-hours-row { grid-template-columns: 140px minmax(150px, 1fr) 24px minmax(150px, 1fr); }
+    .mc-opening-hours-row .mc-hours-closed {
+      grid-column: 2 / 5;
+    }
+  }
+  @media (max-width: 575.98px) {
+    .mc-opening-hours-row {
+      grid-template-columns: 1fr;
+      gap: .5rem;
+    }
+    .mc-opening-hours-row .form-check,
+    .mc-opening-hours-row .mc-time-select,
+    .mc-opening-hours-row .mc-hours-closed {
+      min-width: 0;
+      width: 100%;
+    }
+    .mc-opening-hours-row .mc-time-divider {
+      display: none;
+    }
+    .mc-opening-hours-row .mc-hours-closed {
+      grid-column: auto;
+      padding-left: 3.1rem;
+    }
   }
 </style>
 </head>
-  <body>
+  <body class="mc-restaurant-page">
     <header class="navbar navbar-expand-lg bg-body navbar-sticky sticky-top z-fixed px-0" data-sticky-element>
       <div class="container">
         <button type="button" class="navbar-toggler me-3 me-lg-0" data-bs-toggle="offcanvas" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-label="Toggle navigation">
@@ -57,7 +179,7 @@
     <main class="container py-5">
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
         <div>
-          <h1 class="display-6 mb-1">Add a Restaurant</h1>
+          <h1 class="mc-page-title mb-1">Add a Restaurant</h1>
           <p class="text-body-secondary mb-0">Fill out your restaurant profile to start receiving bookings.</p>
         </div></div>
 
@@ -66,10 +188,10 @@
         <div class="card-body p-4 p-md-5">
           <div class="row g-4">
             <div class="col-12">
-              <h2 class="h5 mb-0">Basic information</h2>
+              <h2 class="mc-section-title mb-0">Basic information</h2>
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="restaurantName">Restaurant name</label>
+              <label class="form-label" for="restaurantName">Restaurant name *</label>
               <input class="form-control" id="restaurantName" name="restaurant_name" type="text" placeholder="Olive & Thyme Bistro" required>
             </div>
             <div class="col-md-6">
@@ -100,20 +222,20 @@
             </div>
 
             <div class="col-12 pt-2">
-              <h2 class="h5 mb-0">Location</h2>
+              <h2 class="mc-section-title mb-0">Location</h2>
             </div>
             <div class="col-12">
-              <label class="form-label" for="addressLine">Street address</label>
+              <label class="form-label" for="addressLine">Street address *</label>
               <input class="form-control" id="addressLine" name="address" type="text" placeholder="123 Main St" required>
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="state">State</label>
+              <label class="form-label" for="state">State *</label>
               <select class="form-select" id="state" name="state" aria-label="State select" required>
                 <option value="">Select state</option>
               </select>
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="city">City</label>
+              <label class="form-label" for="city">City *</label>
               <select class="form-select" id="city" name="city" aria-label="City select" required>
                 <option value="">Select city</option>
               </select>
@@ -125,66 +247,69 @@
             </div>
 
             <div class="col-12 pt-2">
-              <h2 class="h5 mb-0">Services and hours</h2>
+              <h2 class="mc-section-title mb-0">Services</h2>
             </div>
             <div class="col-md-4">
-              <div class="form-check"><input class="form-check-input" id="dineIn" name="services[]" value="dine-in" type="checkbox" checked><label class="form-check-label" for="dineIn">Dine-in</label></div>
+              <div class="form-check"><input class="form-check-input" id="dineIn" name="services[]" value="dine-in" type="checkbox"><label class="form-check-label" for="dineIn">Dine-in</label></div>
               <div class="form-check mt-2"><input class="form-check-input" id="takeaway" name="services[]" value="takeaway" type="checkbox"><label class="form-check-label" for="takeaway">Takeaway</label></div>
               <div class="form-check mt-2"><input class="form-check-input" id="delivery" name="services[]" value="delivery" type="checkbox"><label class="form-check-label" for="delivery">Delivery</label></div>
             </div>
             <div class="col-md-4">
-              <div class="form-check"><input class="form-check-input" id="reservations" name="services[]" value="reservations" type="checkbox" checked><label class="form-check-label" for="reservations">Reservations</label></div>
+              <div class="form-check"><input class="form-check-input" id="reservations" name="services[]" value="reservations" type="checkbox"><label class="form-check-label" for="reservations">Reservations</label></div>
               <div class="form-check mt-2"><input class="form-check-input" id="outdoor" name="services[]" value="outdoor-seating" type="checkbox"><label class="form-check-label" for="outdoor">Outdoor seating</label></div>
               <div class="form-check mt-2"><input class="form-check-input" id="familyFriendly" name="services[]" value="family-friendly" type="checkbox"><label class="form-check-label" for="familyFriendly">Family friendly</label></div>
             </div>
+            <div class="col-12 pt-2">
+              <h2 class="mc-section-title mb-0">Working hours</h2>
+            </div>
             <div class="col-12">
-              <label class="form-label d-block">Opening hours (day-wise)</label>
+              <label class="form-label d-block fs-4 fw-bold mb-3">Add working hours</label>
               <input type="hidden" id="openingHoursHidden" name="opening_hours">
               <div class="vstack gap-2 mc-opening-hours">
                 <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
                   <div class="form-check form-switch m-0" style="min-width: 130px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="monday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="monday">
                     <label for="monday" class="form-check-label small">Monday</label>
                   </div>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="mondayFrom" value="09:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="mondayFrom">
                   <span class="small">to</span>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="mondayTo" value="17:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="mondayTo">
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
                   <div class="form-check form-switch m-0" style="min-width: 130px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="tuesday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="tuesday">
                     <label for="tuesday" class="form-check-label small">Tuesday</label>
                   </div>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="tuesdayFrom" value="09:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="tuesdayFrom">
                   <span class="small">to</span>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="tuesdayTo" value="17:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="tuesdayTo">
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
                   <div class="form-check form-switch m-0" style="min-width: 130px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="wednesday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="wednesday">
                     <label for="wednesday" class="form-check-label small">Wednesday</label>
                   </div>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="wednesdayFrom" value="09:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="wednesdayFrom">
                   <span class="small">to</span>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="wednesdayTo" value="17:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="wednesdayTo">
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
                   <div class="form-check form-switch m-0" style="min-width: 130px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="thursday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="thursday">
                     <label for="thursday" class="form-check-label small">Thursday</label>
                   </div>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="thursdayFrom" value="11:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="thursdayFrom">
                   <span class="small">to</span>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="thursdayTo" value="16:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="thursdayTo">
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
                   <div class="form-check form-switch m-0" style="min-width: 130px">
-                    <input type="checkbox" class="form-check-input" role="switch" id="friday" checked>
+                    <input type="checkbox" class="form-check-input" role="switch" id="friday">
                     <label for="friday" class="form-check-label small">Friday</label>
                   </div>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="fridayFrom" value="11:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="fridayFrom">
                   <span class="small">to</span>
-                  <input type="time" class="form-control form-control-sm mc-time-input" id="fridayTo" value="16:00">
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="fridayTo">
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
                   <div class="form-check form-switch m-0" style="min-width: 130px">
@@ -208,33 +333,11 @@
             </div>
 
             <div class="col-12 pt-2">
-              <h2 class="h5 mb-0">Media and contact</h2>
+              <h2 class="mc-section-title mb-0">Media</h2>
             </div>
             <div class="col-12">
-              <p class="text-body-secondary small mb-2">Upload photos and videos</p>
+              <p class="text-body-secondary small mb-2">Upload photos and videos *</p>
               <div class="row row-cols-2 row-cols-sm-3 g-2 g-md-3" data-restaurant-upload-grid>
-                <div class="col">
-                  <div class="hover-effect-opacity position-relative overflow-hidden rounded">
-                    <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
-                      <img src="/finder/assets/img/add-item/contractor/01.jpg" alt="Image">
-                    </div>
-                    <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
-                      <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove"><i class="fi-trash fs-base"></i></button>
-                      <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
-                    </div>
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="hover-effect-opacity position-relative overflow-hidden rounded">
-                    <div class="ratio" style="--fn-aspect-ratio: calc(180 / 268 * 100%)">
-                      <img src="/finder/assets/img/add-item/contractor/02.jpg" alt="Image">
-                    </div>
-                    <div class="hover-effect-target position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 opacity-0">
-                      <button type="button" class="btn btn-icon btn-sm btn-light position-relative z-2" aria-label="Remove"><i class="fi-trash fs-base"></i></button>
-                      <span class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-25 z-1"></span>
-                    </div>
-                  </div>
-                </div>
                 <div class="col">
                   <div class="d-flex align-items-center justify-content-center position-relative h-100 cursor-pointer bg-body-tertiary border border-2 border-dotted rounded p-3" data-restaurant-upload-tile>
                     <div class="text-center">
@@ -247,22 +350,26 @@
               <input class="d-none" id="coverPhoto" name="cover_photo" type="file" accept="image/*">
               <input class="d-none" id="galleryPhotos" name="gallery_photos[]" type="file" accept="image/*,video/*" multiple>
             </div>
+            <div class="col-12 pt-2">
+              <h2 class="mc-section-title mb-0">Contact details</h2>
+            </div>
             <div class="col-md-4">
               <label class="form-label" for="contactName">Contact person</label>
               <input class="form-control" id="contactName" name="contact_name" type="text" placeholder="John Doe">
             </div>
             <div class="col-md-4">
               <label class="form-label" for="phone">Phone</label>
-              <input class="form-control" id="phone" name="phone" type="tel" placeholder="+1 555 123 4567">
+              <input class="form-control" id="phone" name="phone" type="tel" data-input-format='{"numericOnly": true, "delimiters": ["(", ")", " ", "-", " "], "blocks": [0, 3, 0, 3, 4]}' placeholder="(___) ___-____" inputmode="numeric" maxlength="14">
             </div>
             <div class="col-md-4">
               <label class="form-label" for="email">Email</label>
               <input class="form-control" id="email" name="email" type="email" placeholder="hello@restaurant.com">
             </div>
 
-            <div class="col-12 d-flex flex-wrap gap-2 justify-content-end pt-2">
-              <button class="btn btn-outline-secondary" type="button">Save draft</button>
-              <button class="btn btn-primary" type="submit">Submit restaurant listing</button>
+            <div class="col-12 d-flex flex-wrap gap-2 justify-content-end align-items-stretch pt-2">
+              <button class="btn btn-lg btn-outline-secondary text-nowrap" type="button">Save draft</button>
+              <button class="btn btn-lg btn-outline-primary text-nowrap" type="submit" data-next="/add-restaurant-promotion">Save and become a pro</button>
+              <button class="btn btn-lg btn-primary text-nowrap" type="submit">Submit restaurant listing</button>
             </div>
           </div>
         </div>
@@ -271,6 +378,25 @@
 
     <script>
       (() => {
+        const phoneInput = document.getElementById('phone');
+        if (phoneInput) {
+          const formatUsPhone = (raw) => {
+            const digits = String(raw || '').replace(/\D/g, '').slice(0, 10);
+            if (!digits) return '';
+            if (digits.length < 4) return `(${digits}`;
+            if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+            return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+          };
+
+          phoneInput.addEventListener('input', () => {
+            phoneInput.value = formatUsPhone(phoneInput.value);
+          });
+
+          phoneInput.addEventListener('blur', () => {
+            phoneInput.value = formatUsPhone(phoneInput.value);
+          });
+        }
+
         const to24Hour = (raw) => {
           const v = String(raw || '').trim();
           if (!v) return '';
@@ -285,25 +411,82 @@
           return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
         };
 
-        const bindTimePicker = (input) => {
-          if (input.dataset.mcTimeBound === '1') return;
-          input.dataset.mcTimeBound = '1';
-          input.type = 'time';
-          input.step = '300';
-
-          const normalized = to24Hour(input.value);
-          if (normalized) input.value = normalized;
-
-          const openPicker = () => {
-            if (typeof input.showPicker === 'function') {
-              try { input.showPicker(); } catch (_) {}
-            }
-          };
-          input.addEventListener('pointerdown', openPicker);
-          input.addEventListener('focus', openPicker);
+        const buildTimeLabel = (value) => {
+          const normalized = to24Hour(value);
+          if (!normalized) return value;
+          let hour = Number(normalized.slice(0, 2));
+          const minute = normalized.slice(3, 5);
+          const suffix = hour >= 12 ? 'PM' : 'AM';
+          hour = hour % 12;
+          if (hour === 0) hour = 12;
+          return `${String(hour).padStart(2, '0')}:${minute} ${suffix}`;
         };
 
-        document.querySelectorAll('input.mc-time-input').forEach(bindTimePicker);
+        const ensureTimeSelect = (input) => {
+          if (!input) return null;
+          if (input.tagName === 'SELECT') return input;
+
+          const select = document.createElement('select');
+          select.className = input.className.replace('form-control', 'form-select') + ' mc-time-select';
+          select.id = input.id;
+          select.name = input.name || input.id;
+          select.dataset.mcTimeBound = '1';
+          select.setAttribute('aria-label', input.getAttribute('aria-label') || input.id || 'Select time');
+
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = 'Select time';
+          select.appendChild(placeholder);
+
+          for (let hour = 0; hour < 24; hour += 1) {
+            for (let minute = 0; minute < 60; minute += 30) {
+              const value = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+              const option = document.createElement('option');
+              option.value = value;
+              option.textContent = buildTimeLabel(value);
+              select.appendChild(option);
+            }
+          }
+
+          const normalized = to24Hour(input.value);
+          if (normalized) select.value = normalized;
+          input.replaceWith(select);
+          return select;
+        };
+
+        const refreshHoursRow = (day) => {
+          const toggle = document.getElementById(day);
+          const fromSelect = document.getElementById(`${day}From`);
+          const toSelect = document.getElementById(`${day}To`);
+          const row = toggle?.closest('.mc-opening-hours-row');
+          if (!toggle || !row || !fromSelect || !toSelect) return;
+
+          row.classList.toggle('is-closed', !toggle.checked);
+          fromSelect.disabled = !toggle.checked;
+          toSelect.disabled = !toggle.checked;
+        };
+
+        document.querySelectorAll('.mc-opening-hours-row').forEach((row) => {
+          const divider = row.querySelector('span.small');
+          if (divider) divider.classList.add('mc-time-divider');
+          if (!row.querySelector('.mc-hours-closed')) {
+            const closed = document.createElement('span');
+            closed.className = 'mc-hours-closed';
+            closed.textContent = 'Closed';
+            row.appendChild(closed);
+          }
+        });
+
+        const dayKeys = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+        document.querySelectorAll('input.mc-time-input').forEach(ensureTimeSelect);
+        dayKeys.forEach((day) => {
+          document.getElementById(day)?.addEventListener('change', () => refreshHoursRow(day));
+          refreshHoursRow(day);
+        });
+
+        window.__MC_RESTAURANT_HOURS_REFRESH__ = () => {
+          dayKeys.forEach((day) => refreshHoursRow(day));
+        };
       })();
     </script>
     <script src="/finder/assets/js/theme.min.js"></script>

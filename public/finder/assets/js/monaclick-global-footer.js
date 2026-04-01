@@ -28,6 +28,265 @@
     window.Choices = NoopChoices;
   }
 
+  const ensurePageLoader = () => {
+    const styleId = 'mc-page-loader-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        .mc-page-loader{
+          position:fixed;
+          inset:0;
+          z-index:200000;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:24px;
+          background:rgba(255,255,255,.42);
+          backdrop-filter:blur(8px);
+          -webkit-backdrop-filter:blur(8px);
+          opacity:0;
+          visibility:hidden;
+          pointer-events:none;
+          transition:opacity .18s ease, visibility .18s ease;
+        }
+        .mc-page-loader.is-visible{
+          opacity:1;
+          visibility:visible;
+          pointer-events:auto;
+        }
+        .mc-page-loader__card{
+          width:72px;
+          height:72px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        }
+        .mc-page-loader__spinner{
+          position:relative;
+          width:52px;
+          height:52px;
+          filter:drop-shadow(0 6px 18px rgba(249, 115, 22, .20));
+        }
+        .mc-inline-loading-text{
+          width:28px;
+          height:28px;
+          display:inline-block;
+          vertical-align:middle;
+          font-size:0 !important;
+          line-height:0 !important;
+          color:transparent !important;
+          position:relative;
+          overflow:hidden;
+        }
+        .mc-page-loader__spinner::before,
+        .mc-page-loader__spinner::after,
+        .mc-inline-loading-text::before,
+        .mc-inline-loading-text::after{
+          content:"";
+          position:absolute;
+          inset:0;
+          border-radius:50%;
+        }
+        .mc-page-loader__spinner::before{
+          border:4px solid rgba(15, 23, 42, .10);
+          border-top-color:#fd7e14;
+          border-right-color:#f59e0b;
+          animation:mc-page-loader-spin .9s linear infinite;
+        }
+        .mc-page-loader__spinner::after{
+          inset:9px;
+          border:4px solid rgba(249, 115, 22, .20);
+          border-bottom-color:#f97316;
+          border-left-color:#fb923c;
+          animation:mc-page-loader-spin-reverse .72s linear infinite;
+        }
+        .mc-inline-loading-text::before{
+          border:3px solid rgba(15, 23, 42, .10);
+          border-top-color:#fd7e14;
+          border-right-color:#f59e0b;
+          animation:mc-page-loader-spin .9s linear infinite;
+        }
+        .mc-inline-loading-text::after{
+          inset:6px;
+          border:3px solid rgba(249, 115, 22, .20);
+          border-bottom-color:#f97316;
+          border-left-color:#fb923c;
+          animation:mc-page-loader-spin-reverse .72s linear infinite;
+        }
+        @keyframes mc-page-loader-spin{
+          to{transform:rotate(360deg)}
+        }
+        @keyframes mc-page-loader-spin-reverse{
+          to{transform:rotate(-360deg)}
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    let overlay = document.getElementById('mcPageLoader');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'mcPageLoader';
+      overlay.className = 'mc-page-loader';
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.innerHTML = `
+        <div class="mc-page-loader__card" role="status" aria-live="polite" aria-busy="true">
+          <div class="mc-page-loader__spinner" aria-hidden="true"></div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    return overlay;
+  };
+
+  const showPageLoader = () => {
+    const overlay = ensurePageLoader();
+    overlay.classList.add('is-visible');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body?.classList.add('mc-page-loading');
+  };
+
+  const hidePageLoader = () => {
+    const overlay = document.getElementById('mcPageLoader');
+    if (!overlay) return;
+    overlay.classList.remove('is-visible');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body?.classList.remove('mc-page-loading');
+  };
+
+  const shouldKeepLoaderVisible = () => {
+    const body = document.body;
+    if (!body) return document.readyState !== 'complete';
+    const waitingForEntry = body.classList.contains('monaclick-entry-shell') && body.getAttribute('data-entry-ready') !== '1';
+    if (waitingForEntry) return true;
+    return document.readyState !== 'complete';
+  };
+
+  const normalizeLoadingPlaceholders = (root = document) => {
+    const scope = root && typeof root.querySelectorAll === 'function' ? root : document;
+    const nodes = [];
+    if (root instanceof Element) nodes.push(root);
+    scope.querySelectorAll?.('*').forEach((node) => nodes.push(node));
+
+    nodes.forEach((node) => {
+      if (!(node instanceof Element)) return;
+      if (node.closest('#mcPageLoader')) return;
+      if (node.dataset.mcLoadingNormalized === '1') return;
+      if (node.children.length) return;
+
+      const text = String(node.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      if (!text) return;
+      const isLoadingText = text === 'loading'
+        || text === 'loading...'
+        || text === 'loading…'
+        || text === 'please wait'
+        || text === 'please wait...'
+        || text === 'please wait…'
+        || text.startsWith('loading ')
+        || text.startsWith('please wait ');
+      if (!isLoadingText) return;
+
+      node.dataset.mcLoadingNormalized = '1';
+      node.setAttribute('aria-hidden', 'true');
+      node.textContent = '';
+      node.classList.add('mc-inline-loading-text');
+    });
+  };
+
+  window.__MC_SHOW_PAGE_LOADER__ = showPageLoader;
+  window.__MC_HIDE_PAGE_LOADER__ = hidePageLoader;
+
+  const isNavigatingAnchor = (anchor) => {
+    if (!(anchor instanceof HTMLAnchorElement)) return false;
+    if (anchor.closest('.glightbox-container, .gslide, .goverlay')) return false;
+    if (document.body?.classList.contains('glightbox-open')) return false;
+    const href = (anchor.getAttribute('href') || '').trim();
+    if (!href || href === '#' || href === '#!') return false;
+    if (anchor.hasAttribute('data-mc-no-loader')) return false;
+    if (anchor.hasAttribute('download')) return false;
+    if ((anchor.getAttribute('target') || '').toLowerCase() === '_blank') return false;
+    if (anchor.hasAttribute('data-bs-toggle') || anchor.getAttribute('role') === 'button') return false;
+    if (/^(mailto:|tel:|javascript:)/i.test(href)) return false;
+
+    let url;
+    try {
+      url = new URL(anchor.href, window.location.href);
+    } catch {
+      return false;
+    }
+
+    if (url.origin !== window.location.origin) return false;
+    if (window.location.pathname.startsWith('/listings') && url.pathname === window.location.pathname) return false;
+    if (url.href === window.location.href) return false;
+    return true;
+  };
+
+  document.addEventListener('click', (event) => {
+    if (event.defaultPrevented) return;
+    if (event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const anchor = event.target.closest('a');
+    if (!isNavigatingAnchor(anchor)) return;
+    showPageLoader();
+  }, true);
+
+  document.addEventListener('submit', (event) => {
+    if (event.defaultPrevented) return;
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    if (form.hasAttribute('data-mc-review-form')) return;
+    if (form.hasAttribute('data-mc-no-loader')) return;
+    const method = String(form.getAttribute('method') || 'get').toLowerCase();
+    if (!['get', 'post'].includes(method)) return;
+    if (window.location.pathname.startsWith('/listings')) {
+      try {
+        const actionUrl = new URL(form.getAttribute('action') || window.location.href, window.location.href);
+        if (actionUrl.origin === window.location.origin && actionUrl.pathname === window.location.pathname) {
+          return;
+        }
+      } catch {
+        // ignore malformed action URLs and fall through
+      }
+    }
+    showPageLoader();
+  }, true);
+
+  window.addEventListener('pageshow', () => {
+    normalizeLoadingPlaceholders();
+    if (shouldKeepLoaderVisible()) {
+      showPageLoader();
+      return;
+    }
+    hidePageLoader();
+  });
+
+  window.addEventListener('load', () => {
+    normalizeLoadingPlaceholders();
+    hidePageLoader();
+  }, { once: true });
+
+  const loadingObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => normalizeLoadingPlaceholders(node));
+      if (mutation.type === 'characterData' && mutation.target?.parentElement) {
+        normalizeLoadingPlaceholders(mutation.target.parentElement);
+      }
+    });
+  });
+
+  if (document.body) {
+    loadingObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+    normalizeLoadingPlaceholders(document.body);
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!document.body) return;
+      loadingObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+      normalizeLoadingPlaceholders(document.body);
+    }, { once: true });
+  }
+
   const footer = document.querySelector('footer.footer');
 
   const currentPath = window.location.pathname.toLowerCase();
@@ -91,7 +350,7 @@
                 <span class="d-sm-none">Subscribe to Monaclick updates</span>
               </h6>
             </div>
-            <button type="button" class="btn btn-primary">Subscribe</button>
+            <a class="btn btn-primary" href="/contact?newsletter=1">Subscribe</a>
           </div>
           <div class="h5 d-none d-sm-block text-center mb-0">
             <span class="text-body-secondary fw-normal me-3">Need help?</span>
@@ -153,7 +412,7 @@
                   <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/blog">Blog</a></li>
                   <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/contact">Contact us</a></li>
                   <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/terms-and-conditions">Terms of use</a></li>
-                  <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/terms-and-conditions">Privacy</a></li>
+                  <li class="pt-1"><a class="nav-link hover-effect-underline d-inline text-body fw-normal p-0" href="/privacy-policy">Privacy</a></li>
                 </ul>
               </div>
               <hr class="d-sm-none my-0">
@@ -177,7 +436,7 @@
             <div><img src="/finder/assets/img/payment-methods/google-pay-dark-mode.svg" alt="Google Pay"></div>
             <div><img src="/finder/assets/img/payment-methods/apple-pay-dark-mode.svg" alt="Apple Pay"></div>
           </div>
-          <p class="text-body-secondary fs-sm text-center text-md-start mb-0 me-md-4 order-md-1">&copy; All rights reserved. Developed by <span class="text-body fw-medium">US Logo and Web</span></p>
+          <p class="text-body-secondary fs-sm text-center text-md-start mb-0 me-md-4 order-md-1">&copy; All rights reserved. Developed by <a class="text-body fw-medium text-decoration-none hover-effect-underline" href="https://uslogoandweb.com" target="_blank" rel="noopener">US Logo and Web</a></p>
         </div>
       </div>
     </footer>
@@ -856,7 +1115,7 @@
         ? Array.from(document.querySelectorAll('a.btn.btn-lg.btn-primary'))
             .find((button) => (button.textContent || '').toLowerCase().includes('publish property listing'))
         : Array.from(document.querySelectorAll('button.btn.btn-lg.btn-primary'))
-            .find((button) => (button.textContent || '').toLowerCase().includes('become a pro'));
+            .find((button) => (button.textContent || '').toLowerCase().includes('publish listing'));
 
       if (publishButton) {
         publishButton.addEventListener('click', (event) => {
@@ -951,4 +1210,63 @@
     if (params.get('status') === 'sent') showNotice('Password reset request received. Please check your email.', 'success');
     if (params.get('status') === 'missing') showNotice('No account found with this email.', 'warning');
   }
+})();
+
+(function () {
+  if (document.getElementById('globalLogoutModal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'globalLogoutModal';
+  modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="width:min(520px,95vw);background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:22px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h5 style="margin:0;">Confirm logout</h5>
+        <button type="button" data-logout-close style="border:0;background:transparent;font-size:28px;line-height:1;cursor:pointer;">×</button>
+      </div>
+      <p style="margin:0 0 18px 0;color:#5b6475;">Are you sure you want to log out?</p>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="btn btn-outline-secondary" data-logout-close>Cancel</button>
+        <a href="/signin" class="btn btn-primary" id="logoutConfirmAction" data-mc-no-loader="1">Yes, log out</a>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const open = () => (modal.style.display = 'flex');
+  const close = () => (modal.style.display = 'none');
+
+  document.addEventListener('click', function (e) {
+    const trigger = e.target.closest('[data-logout-trigger]');
+    if (trigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      const href = trigger.getAttribute('href') || '/signin';
+      document.getElementById('logoutConfirmAction').setAttribute('href', href);
+      open();
+      return;
+    }
+
+    const confirmLink = e.target.closest('#logoutConfirmAction');
+    if (confirmLink) {
+      e.preventDefault();
+      const href = confirmLink.getAttribute('href') || '/signin';
+      close();
+      if (typeof window.__MC_HIDE_PAGE_LOADER__ === 'function') {
+        window.__MC_HIDE_PAGE_LOADER__();
+      }
+      window.location.assign(href);
+      return;
+    }
+
+    if (e.target.closest('[data-logout-close]') || e.target === modal) {
+      e.preventDefault();
+      close();
+    }
+  }, true);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') close();
+  });
 })();
