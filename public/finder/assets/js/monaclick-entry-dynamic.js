@@ -448,6 +448,22 @@
       .join(' ');
   };
 
+  const humanizeListLabel = (value) => {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    if (/[A-Z]/.test(raw) && raw.includes(' ')) return raw;
+    return raw
+      .replaceAll('_', ' ')
+      .split(/\s+/g)
+      .filter(Boolean)
+      .map((word) => word
+        .split('-')
+        .filter(Boolean)
+        .map(titleCaseToken)
+        .join('-'))
+      .join(' ');
+  };
+
   const normalizedFeatures = (item) => {
     const base = Array.isArray(item?.features) ? item.features : [];
     const carWizard =
@@ -843,7 +859,7 @@
     if (!services.length) return '';
 
     const badges = services
-      .map((label) => `<span class="badge bg-body-secondary text-body">${escapeHtml(label)}</span>`)
+      .map((label) => `<span class="badge bg-body-secondary text-body">${escapeHtml(humanizeListLabel(label))}</span>`)
       .join('');
 
     if (!badges) return '';
@@ -865,7 +881,7 @@
     if (!services.length) return '';
 
     const badges = services
-      .map((label) => `<span class="badge bg-body-secondary text-body">${escapeHtml(label)}</span>`)
+      .map((label) => `<span class="badge bg-body-secondary text-body">${escapeHtml(humanizeListLabel(label))}</span>`)
       .join('');
 
     if (!badges) return '';

@@ -5,6 +5,7 @@ use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ListingSubmissionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CarListingSubmissionController;
+use App\Http\Controllers\AccountBillingController;
 use App\Http\Controllers\Api\PublicListingController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\CarCatalogController;
@@ -26,6 +27,32 @@ $serve = static function (string $file) {
     $currentRequestPath = '/' . ltrim(request()->path(), '/');
     abort_unless(file_exists($path), 404);
     $html = file_get_contents($path);
+
+    // Safety net for add-listing templates: if a route accidentally points to a self-redirect stub
+    // (for example a finder shim that redirects back to the same pretty URL), serve the canonical
+    // `*-page.html` template instead so the page doesn't get stuck in a reload loop.
+    if (str_starts_with($file, 'add-') && str_ends_with($file, '.html')) {
+        $fallbackFile = preg_replace('/\.html$/', '-page.html', $file);
+        $fallbackPath = is_string($fallbackFile) ? public_path($fallbackFile) : null;
+        if ($fallbackPath && file_exists($fallbackPath)) {
+            $normalizedHtml = strtolower(preg_replace('/\s+/', ' ', $html) ?? $html);
+            $normalizedRequestPath = strtolower($currentRequestPath);
+            $selfRedirectMarkers = [
+                'content="0;url=' . $normalizedRequestPath . '"',
+                "window.location.replace('" . $normalizedRequestPath . "')",
+                'window.location.replace("' . $normalizedRequestPath . '")',
+            ];
+            foreach ($selfRedirectMarkers as $marker) {
+                if (! str_contains($normalizedHtml, $marker)) {
+                    continue;
+                }
+                $path = $fallbackPath;
+                $html = file_get_contents($path);
+                break;
+            }
+        }
+    }
+
     $html = str_replace('data-pwa="true"', 'data-pwa="false"', $html);
     $html = str_replace('__CSRF_TOKEN__', csrf_token(), $html);
     $html = str_replace(
@@ -124,7 +151,8 @@ HTML;
         $html = str_replace('</head>', $noFlashStyles . '</head>', $html);
     }
 
-    if ($accountAuthPage) {
+    $disableCustomizerThemePage = $accountAuthPage || str_starts_with($file, 'add-');
+    if ($disableCustomizerThemePage) {
         $accountThemeReset = <<<'HTML'
 <script id="mc-account-theme-reset">
 (() => {
@@ -495,7 +523,7 @@ HTML;
         $favoriteCount = $hasFavoritesTable ? DB::table('favorites')->where('user_id', $user?->id)->count() : 0;
         $isNewUser = $listingCount === 0 && $reviewCount === 0 && $favoriteCount === 0;
 
-        if (in_array($file, ['account-profile.html', 'account-listings.html', 'account-payment.html'], true)) {
+        if (in_array($file, ['account-profile.html', 'account-listings.html', 'account-payment.html', 'account-subscriptions.html'], true)) {
             $profileName = trim((string) (($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')));
             if ($profileName === '') {
                 $profileName = (string) ($user?->name ?? 'User');
@@ -3093,12 +3121,26 @@ HTML;
   const updatePlans = () => {
     const planCards = Array.from(document.querySelectorAll('.overflow-x-auto .card .card-body'))
       .filter((card) => card.querySelector('h3.fs-lg.fw-normal'));
+    const buttonThemeClasses = [
+      'btn-primary', 'btn-outline-primary',
+      'btn-secondary', 'btn-outline-secondary',
+      'btn-success', 'btn-outline-success',
+      'btn-danger', 'btn-outline-danger',
+      'btn-warning', 'btn-outline-warning',
+      'btn-info', 'btn-outline-info',
+      'btn-light', 'btn-outline-light',
+      'btn-dark', 'btn-outline-dark',
+    ];
+    const backgroundThemeClasses = [
+      'bg-primary', 'bg-secondary', 'bg-success', 'bg-danger',
+      'bg-warning', 'bg-info', 'bg-light', 'bg-dark',
+    ];
 
     packageConfigs.forEach((pkg, index) => {
       const card = planCards[index];
       if (!card) return;
       const cardShell = card.closest('.card');
-      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.bg-info.rounded-5.ms-n1');
+      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.rounded-5.ms-n1');
 
       const title = card.querySelector('h3.fs-lg.fw-normal');
       const price = card.querySelector('.h1.mb-0');
@@ -3118,8 +3160,12 @@ HTML;
         cta.dataset.packageSlug = pkg.slug;
         cta.setAttribute('type', 'button');
         const isSelected = currentPackage === pkg.slug;
-        cta.classList.toggle('btn-info', isSelected);
-        cta.classList.toggle('btn-outline-info', !isSelected);
+        const baseCtaClasses = String(
+          cta.dataset.baseClasses
+          || Array.from(cta.classList).filter((className) => !buttonThemeClasses.includes(className)).join(' ')
+        ).trim();
+        cta.dataset.baseClasses = baseCtaClasses;
+        cta.className = `${baseCtaClasses} ${isSelected ? 'btn-info' : 'btn-outline-info'}`.trim();
         cta.textContent = isSelected ? `${pkg.name} selected` : pkg.buttonLabel;
         if (!cta.dataset.packageBound) {
           cta.dataset.packageBound = '1';
@@ -3139,6 +3185,8 @@ HTML;
       }
 
       if (featuredWrap) {
+        featuredWrap.classList.remove(...backgroundThemeClasses);
+        featuredWrap.classList.add('bg-info');
         featuredWrap.style.opacity = currentPackage === pkg.slug ? '1' : '.18';
       }
 
@@ -3345,12 +3393,26 @@ HTML;
   const updatePlans = () => {
     const planCards = Array.from(document.querySelectorAll('.overflow-x-auto .card .card-body'))
       .filter((card) => card.querySelector('h3.fs-lg.fw-normal'));
+    const buttonThemeClasses = [
+      'btn-primary', 'btn-outline-primary',
+      'btn-secondary', 'btn-outline-secondary',
+      'btn-success', 'btn-outline-success',
+      'btn-danger', 'btn-outline-danger',
+      'btn-warning', 'btn-outline-warning',
+      'btn-info', 'btn-outline-info',
+      'btn-light', 'btn-outline-light',
+      'btn-dark', 'btn-outline-dark',
+    ];
+    const backgroundThemeClasses = [
+      'bg-primary', 'bg-secondary', 'bg-success', 'bg-danger',
+      'bg-warning', 'bg-info', 'bg-light', 'bg-dark',
+    ];
 
     packageConfigs.forEach((pkg, index) => {
       const card = planCards[index];
       if (!card) return;
       const cardShell = card.closest('.card');
-      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.bg-info.rounded-5.ms-n1');
+      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.rounded-5.ms-n1');
       const title = card.querySelector('h3.fs-lg.fw-normal');
       const price = card.querySelector('.h1.mb-0');
       const period = card.querySelector('.fs-sm.ms-2');
@@ -3368,8 +3430,12 @@ HTML;
         cta.textContent = pkg.buttonLabel;
         cta.setAttribute('type', 'button');
         const isSelected = currentPackage === pkg.slug;
-        cta.classList.toggle('btn-info', isSelected);
-        cta.classList.toggle('btn-outline-info', !isSelected);
+        const baseCtaClasses = String(
+          cta.dataset.baseClasses
+          || Array.from(cta.classList).filter((className) => !buttonThemeClasses.includes(className)).join(' ')
+        ).trim();
+        cta.dataset.baseClasses = baseCtaClasses;
+        cta.className = `${baseCtaClasses} ${isSelected ? 'btn-info' : 'btn-outline-info'}`.trim();
         cta.textContent = isSelected ? `${pkg.name} selected` : pkg.buttonLabel;
         if (!cta.dataset.packageBound) {
           cta.dataset.packageBound = '1';
@@ -3389,6 +3455,8 @@ HTML;
       }
 
       if (featuredWrap) {
+        featuredWrap.classList.remove(...backgroundThemeClasses);
+        featuredWrap.classList.add('bg-info');
         featuredWrap.style.opacity = currentPackage === pkg.slug ? '1' : '.18';
       }
 
@@ -3610,12 +3678,26 @@ HTML;
   const updatePlans = () => {
     const planCards = Array.from(document.querySelectorAll('.overflow-x-auto .card .card-body'))
       .filter((card) => card.querySelector('h3.fs-lg.fw-normal'));
+    const buttonThemeClasses = [
+      'btn-primary', 'btn-outline-primary',
+      'btn-secondary', 'btn-outline-secondary',
+      'btn-success', 'btn-outline-success',
+      'btn-danger', 'btn-outline-danger',
+      'btn-warning', 'btn-outline-warning',
+      'btn-info', 'btn-outline-info',
+      'btn-light', 'btn-outline-light',
+      'btn-dark', 'btn-outline-dark',
+    ];
+    const backgroundThemeClasses = [
+      'bg-primary', 'bg-secondary', 'bg-success', 'bg-danger',
+      'bg-warning', 'bg-info', 'bg-light', 'bg-dark',
+    ];
 
     packageConfigs.forEach((pkg, index) => {
       const card = planCards[index];
       if (!card) return;
       const cardShell = card.closest('.card');
-      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.bg-info.rounded-5.ms-n1');
+      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.rounded-5.ms-n1');
       const title = card.querySelector('h3.fs-lg.fw-normal');
       const price = card.querySelector('.h1.mb-0');
       const period = card.querySelector('.fs-sm.ms-2');
@@ -3633,8 +3715,12 @@ HTML;
         cta.textContent = pkg.buttonLabel;
         cta.setAttribute('type', 'button');
         const isSelected = currentPackage === pkg.slug;
-        cta.classList.toggle('btn-info', isSelected);
-        cta.classList.toggle('btn-outline-info', !isSelected);
+        const baseCtaClasses = String(
+          cta.dataset.baseClasses
+          || Array.from(cta.classList).filter((className) => !buttonThemeClasses.includes(className)).join(' ')
+        ).trim();
+        cta.dataset.baseClasses = baseCtaClasses;
+        cta.className = `${baseCtaClasses} ${isSelected ? 'btn-info' : 'btn-outline-info'}`.trim();
         cta.textContent = isSelected ? `${pkg.name} selected` : pkg.buttonLabel;
         if (!cta.dataset.packageBound) {
           cta.dataset.packageBound = '1';
@@ -3654,6 +3740,8 @@ HTML;
       }
 
       if (featuredWrap) {
+        featuredWrap.classList.remove(...backgroundThemeClasses);
+        featuredWrap.classList.add('bg-info');
         featuredWrap.style.opacity = currentPackage === pkg.slug ? '1' : '.18';
       }
 
@@ -3870,12 +3958,26 @@ HTML;
   const updatePlans = () => {
     const planCards = Array.from(document.querySelectorAll('.overflow-x-auto .card .card-body'))
       .filter((card) => card.querySelector('h3.fs-lg.fw-normal'));
+    const buttonThemeClasses = [
+      'btn-primary', 'btn-outline-primary',
+      'btn-secondary', 'btn-outline-secondary',
+      'btn-success', 'btn-outline-success',
+      'btn-danger', 'btn-outline-danger',
+      'btn-warning', 'btn-outline-warning',
+      'btn-info', 'btn-outline-info',
+      'btn-light', 'btn-outline-light',
+      'btn-dark', 'btn-outline-dark',
+    ];
+    const backgroundThemeClasses = [
+      'bg-primary', 'bg-secondary', 'bg-success', 'bg-danger',
+      'bg-warning', 'bg-info', 'bg-light', 'bg-dark',
+    ];
 
     packageConfigs.forEach((pkg, index) => {
       const card = planCards[index];
       if (!card) return;
       const cardShell = card.closest('.card');
-      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.bg-info.rounded-5.ms-n1');
+      const featuredWrap = card.closest('.w-100')?.querySelector('.position-absolute.top-0.start-0.rounded-5.ms-n1');
       const title = card.querySelector('h3.fs-lg.fw-normal');
       const price = card.querySelector('.h1.mb-0');
       const period = card.querySelector('.fs-sm.ms-2');
@@ -3893,8 +3995,12 @@ HTML;
         cta.textContent = pkg.buttonLabel;
         cta.setAttribute('type', 'button');
         const isSelected = currentPackage === pkg.slug;
-        cta.classList.toggle('btn-info', isSelected);
-        cta.classList.toggle('btn-outline-info', !isSelected);
+        const baseCtaClasses = String(
+          cta.dataset.baseClasses
+          || Array.from(cta.classList).filter((className) => !buttonThemeClasses.includes(className)).join(' ')
+        ).trim();
+        cta.dataset.baseClasses = baseCtaClasses;
+        cta.className = `${baseCtaClasses} ${isSelected ? 'btn-info' : 'btn-outline-info'}`.trim();
         cta.textContent = isSelected ? `${pkg.name} selected` : pkg.buttonLabel;
         if (!cta.dataset.packageBound) {
           cta.dataset.packageBound = '1';
@@ -3914,6 +4020,8 @@ HTML;
       }
 
       if (featuredWrap) {
+        featuredWrap.classList.remove(...backgroundThemeClasses);
+        featuredWrap.classList.add('bg-info');
         featuredWrap.style.opacity = currentPackage === pkg.slug ? '1' : '.18';
       }
 
@@ -4034,7 +4142,7 @@ HTML;
 
   const contentCol = document.querySelector('.col-lg-9');
   const intro = contentCol?.querySelector('p.pb-2.pb-lg-3');
-  const cardsWrap = contentCol?.querySelector('.d-flex.flex-column.flex-sm-row.gap-3.gap-md-4.pb-2.pb-lg-3.mb-3');
+  const cardsWrap = document.getElementById('account-payment-cards');
   const addPaymentModal = document.getElementById('addPayment');
   const cardForm = addPaymentModal?.querySelector('#add-card')?.querySelector('form');
   const paypalForm = addPaymentModal?.querySelector('#add-paypal')?.querySelector('form');
@@ -4075,124 +4183,9 @@ HTML;
     intro.insertAdjacentElement('afterend', summary);
   }
 
-  const promotionListings = Array.isArray(listings)
-    ? listings
-      .filter((item) => item?.module === 'real-estate' || item?.module === 'contractors' || item?.module === 'cars' || item?.module === 'restaurants')
-      .map((item) => ({
-        id: String(item?.id || '').trim(),
-        title: String(item?.title || '').trim(),
-        module: String(item?.module || '').trim(),
-        moduleLabel: String(item?.module_label || '').trim(),
-        status: String(item?.status || '').trim(),
-        packageLabel: String(item?.promotion_package_label || '').trim(),
-        packagePrice: String(item?.promotion_package_price || '').trim(),
-        services: Array.isArray(item?.selected_services_details)
-          ? item.selected_services_details
-            .map((service) => ({
-              label: String(service?.label || '').trim(),
-              price: String(service?.price || '').trim(),
-            }))
-            .filter((service) => service.label)
-          : [],
-      }))
-      .filter((item) => item.packageLabel || item.services.length)
-    : [];
-
-  if (contentCol && promotionListings.length) {
-    const paymentActions = contentCol.querySelector('.d-flex.flex-column.align-items-sm-start');
-    const promotionsSection = document.createElement('section');
-    promotionsSection.className = 'pt-4 mt-2';
-    promotionsSection.innerHTML = `
-      <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-        <div>
-          <h2 class="h4 mb-1">Promotion packages</h2>
-          <p class="text-body-secondary mb-0">Review the promotion package and extra services linked to your paid listings.</p>
-        </div>
-      </div>
-      <div class="vstack gap-3">
-        ${promotionListings.map((item) => `
-          <div class="card border-0 bg-body-tertiary">
-            <div class="card-body p-4">
-              <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-between gap-3">
-                <div>
-                  <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                    <h3 class="h5 mb-0">${item.title ? item.title.replace(/[&<>"']/g, (char) => ({
-                      '&': '&amp;',
-                      '<': '&lt;',
-                      '>': '&gt;',
-                      '"': '&quot;',
-                      "'": '&#39;',
-                    }[char])) : 'Property listing'}</h3>
-                    ${item.moduleLabel ? `<span class="badge text-bg-secondary">${item.moduleLabel.replace(/[&<>"']/g, (char) => ({
-                      '&': '&amp;',
-                      '<': '&lt;',
-                      '>': '&gt;',
-                      '"': '&quot;',
-                      "'": '&#39;',
-                    }[char]))}</span>` : ''}
-                    ${item.status ? `<span class="badge text-bg-light text-capitalize">${item.status.replace(/[&<>"']/g, (char) => ({
-                      '&': '&amp;',
-                      '<': '&lt;',
-                      '>': '&gt;',
-                      '"': '&quot;',
-                      "'": '&#39;',
-                    }[char]))}</span>` : ''}
-                  </div>
-                  ${item.packageLabel ? `
-                    <div class="small text-body-secondary mb-1">Selected package</div>
-                    <div class="fw-semibold">${item.packageLabel.replace(/[&<>"']/g, (char) => ({
-                      '&': '&amp;',
-                      '<': '&lt;',
-                      '>': '&gt;',
-                      '"': '&quot;',
-                      "'": '&#39;',
-                    }[char]))}${item.packagePrice ? ` <span class="text-body-secondary fw-normal">(${item.packagePrice.replace(/[&<>"']/g, (char) => ({
-                      '&': '&amp;',
-                      '<': '&lt;',
-                      '>': '&gt;',
-                      '"': '&quot;',
-                      "'": '&#39;',
-                    }[char]))})</span>` : ''}</div>
-                  ` : ''}
-                </div>
-                ${item.id ? `<a class="btn btn-sm btn-outline-primary" href="${item.module === 'contractors' ? `/add-contractor-promotion?edit=${encodeURIComponent(item.id)}` : item.module === 'cars' ? `/add-car-promotion?edit=${encodeURIComponent(item.id)}` : item.module === 'restaurants' ? `/add-restaurant-promotion?edit=${encodeURIComponent(item.id)}` : `/add-property-promotion?edit=${encodeURIComponent(item.id)}`}">Manage package</a>` : ''}
-              </div>
-              ${item.services.length ? `
-                <div class="border-top mt-3 pt-3">
-                  <div class="small text-body-secondary mb-2">Other services</div>
-                  <div class="vstack gap-2">
-                    ${item.services.map((service) => `
-                      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 small">
-                        <span>${service.label.replace(/[&<>"']/g, (char) => ({
-                          '&': '&amp;',
-                          '<': '&lt;',
-                          '>': '&gt;',
-                          '"': '&quot;',
-                          "'": '&#39;',
-                        }[char]))}</span>
-                        <span class="text-body-secondary">${service.price.replace(/[&<>"']/g, (char) => ({
-                          '&': '&amp;',
-                          '<': '&lt;',
-                          '>': '&gt;',
-                          '"': '&quot;',
-                          "'": '&#39;',
-                        }[char]))}</span>
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-    if (paymentActions) {
-      paymentActions.insertAdjacentElement('afterend', promotionsSection);
-    } else {
-      contentCol.appendChild(promotionsSection);
-    }
-  }
+  // Payment methods are now rendered from the backend bridge below.
+  // Stop here so the legacy localStorage renderer doesn't flash duplicate cards on load.
+  return;
 
   const readStoredMethods = () => {
     try {
@@ -4248,7 +4241,9 @@ HTML;
     if (!cardsWrap || !method || method.type !== 'card') return;
 
     const card = document.createElement('div');
-    card.className = 'card w-100 border-0';
+    card.className = 'card border-0';
+    card.style.width = '100%';
+    card.style.maxWidth = '400px';
     card.setAttribute('data-user-payment-card', '1');
     card.setAttribute('data-method-id', String(method.id || ''));
     card.innerHTML = `
@@ -4465,6 +4460,436 @@ HTML;
 HTML;
         $accountPaymentScript = str_replace('__USER_LISTINGS__', $listingsJson ?: '[]', $accountPaymentScript);
         $html = str_replace('</body>', $accountPaymentScript . '</body>', $html);
+
+        $accountPaymentBackendBridge = <<<'HTML'
+<script>
+(() => {
+  const csrfToken = '__SCRIPT_CSRF__';
+  const apiBase = '/account/api/payment-methods';
+  const cardsWrap = document.getElementById('account-payment-cards');
+  const addPaymentModal = document.getElementById('addPayment');
+  const cardForm = addPaymentModal?.querySelector('#add-card form');
+  const paypalForm = addPaymentModal?.querySelector('#add-paypal form');
+  const cardNumberInput = document.getElementById('card-number');
+  const cardNameInput = document.getElementById('card-name');
+  const cardExpiryInput = document.getElementById('card-expiration');
+  const cardCvcInput = document.getElementById('card-cvc');
+  const paypalEmailInput = document.getElementById('paypal-email');
+  const addCardTabBtn = document.getElementById('add-card-tab');
+  const addPaypalTabBtn = document.getElementById('add-paypal-tab');
+  const addCardPane = document.getElementById('add-card');
+  const addPaypalPane = document.getElementById('add-paypal');
+  const bootstrapModal = window.bootstrap?.Modal && addPaymentModal
+    ? window.bootstrap.Modal.getOrCreateInstance(addPaymentModal)
+    : null;
+  let methods = [];
+  let editingMethodId = null;
+
+  if (!cardsWrap) return;
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[char]));
+  const normalizeExpiry = (value) => {
+    const clean = String(value || '').replace(/\D/g, '').slice(0, 4);
+    return clean.length < 4 ? '' : `${clean.slice(0, 2)}/${clean.slice(2, 4)}`;
+  };
+  const isValidExpiry = (value) => /^(0[1-9]|1[0-2])\/\d{2}$/.test(value);
+  const showFieldError = (input, invalid) => input?.classList.toggle('is-invalid', invalid);
+  const maskCardNumber = (digits) => {
+    const clean = String(digits || '').replace(/\D/g, '');
+    const last4 = clean.slice(-4).padStart(4, '*');
+    return `${clean.slice(0, 4).padEnd(4, '*')} **** **** ${last4}`;
+  };
+  const cardGradient = (brand) => brand === 'mastercard'
+    ? 'background: linear-gradient(90deg, #fcb69f 0%, #ffe8c9 100%)'
+    : 'background: linear-gradient(90deg, #accbee 0%, #dbeafe 100%)';
+  const cardLogo = (brand) => brand === 'mastercard'
+    ? '<svg class="flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="52" height="32" fill="none"><path d="M31.411 25.616H20.594V5.707h10.817v19.909z" fill="#ff5f00"/><path d="M21.28 15.662c0-4.038 1.846-7.636 4.722-9.954C23.825 3.95 21.133 2.996 18.362 3 11.534 3 6 8.669 6 15.662s5.534 12.662 12.362 12.662c2.772.004 5.464-.95 7.64-2.707-2.875-2.318-4.722-5.916-4.722-9.955z" fill="#eb001b"/><path d="M46.003 15.662c0 6.993-5.534 12.662-12.362 12.662A12.13 12.13 0 0 1 26 25.616c2.876-2.318 4.722-5.916 4.722-9.955S28.876 8.026 26 5.707A12.13 12.13 0 0 1 33.641 3c6.827 0 12.362 5.669 12.362 12.662" fill="#f79e1b"/></svg>'
+    : '<svg class="flex-shrink-0 text-dark-emphasis" xmlns="http://www.w3.org/2000/svg" width="52" height="32" fill="currentColor"><path d="M20.224 8.524L13.94 23.516h-4.1L6.748 11.55c-.188-.736-.35-1.006-.922-1.316-.932-.506-2.472-.98-3.826-1.276l.092-.434h6.6a1.81 1.81 0 0 1 1.788 1.528l1.634 8.676L16.15 8.524h4.074zM36.29 18.622c.016-3.958-5.472-4.176-5.434-5.944.012-.538.524-1.11 1.644-1.256a7.32 7.32 0 0 1 3.826.672l.68-3.18c-1.16-.436-2.389-.662-3.628-.666-3.834 0-6.532 2.04-6.556 4.958-.024 2.158 1.926 3.36 3.396 4.08 1.512.734 2.02 1.206 2.012 1.862-.01 1.008-1.204 1.45-2.32 1.468-1.95.03-3.08-.526-3.984-.946l-.702 3.284c.906.416 2.578.78 4.312.796 4.074 0 6.74-2.012 6.754-5.128zm10.122 4.894H50L46.87 8.524h-3.312c-.354-.003-.701.1-.995.296s-.523.476-.657.804l-5.818 13.892h4.072l.81-2.24h4.976l.466 2.24zm-4.326-5.312l2.04-5.63 1.176 5.63h-3.216zm-16.32-9.68L22.56 23.516h-3.88l3.21-14.992h3.876z"/></svg>';
+
+  const requestJson = async (url, options = {}) => {
+    const headers = {
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRF-TOKEN': csrfToken,
+      ...(options.headers || {}),
+    };
+    if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+    const response = await fetch(url, { credentials: 'same-origin', ...options, headers });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.message || 'Request failed.');
+    return payload;
+  };
+
+  const resetCardForm = () => {
+    editingMethodId = null;
+    cardForm?.reset();
+    [cardNumberInput, cardNameInput, cardExpiryInput, cardCvcInput].forEach((input) => input?.classList.remove('is-invalid'));
+    const submitBtn = cardForm?.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Add card';
+    if (addCardTabBtn) addCardTabBtn.textContent = 'Add card';
+  };
+
+  const renderMethods = () => {
+    cardsWrap.querySelectorAll('[data-user-payment-card]').forEach((node) => node.remove());
+    methods.forEach((method) => {
+      const card = document.createElement('div');
+      card.className = 'card border-0';
+      card.style.width = '100%';
+      card.style.maxWidth = '400px';
+      card.setAttribute('data-user-payment-card', '1');
+      card.setAttribute('data-method-id', String(method.id || ''));
+      if (method.type === 'paypal') {
+        card.innerHTML = `
+          <div class="card-body position-relative z-2">
+            <div class="d-flex align-items-center pb-4 mb-2 mb-md-3">
+              <img src="/finder/assets/img/payment-methods/paypal-light-mode.svg" width="52" alt="PayPal">
+              <span class="badge text-bg-light ms-3">${method.is_primary ? 'Primary' : 'Saved'}</span>
+              <div class="dropdown ms-auto">
+                <button type="button" class="btn btn-icon btn-sm fs-xl text-dark-emphasis border-0" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions"><i class="fi-more-vertical"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end" style="--fn-dropdown-min-width: 8rem">
+                  <li><button type="button" class="dropdown-item text-danger" data-payment-action="delete" data-method-id="${escapeHtml(method.id)}"><i class="fi-trash opacity-75 me-2"></i>Delete</button></li>
+                </ul>
+              </div>
+            </div>
+            <div class="h5 pt-md-1 pb-2 pb-md-3">${escapeHtml(method.paypal_email || '')}</div>
+            <div class="fs-sm text-body-secondary">PayPal account</div>
+          </div>
+          <span class="position-absolute top-0 start-0 w-100 h-100 rounded-4 d-none-dark" style="background: linear-gradient(90deg, #d6e4ff 0%, #f2f5ff 100%)"></span>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="card-body position-relative z-2">
+            <div class="d-flex align-items-center pb-4 mb-2 mb-md-3">
+              ${cardLogo(method.brand)}
+              <span class="badge text-bg-light ms-3">${method.is_primary ? 'Primary' : 'Saved'}</span>
+              <div class="dropdown ms-auto">
+                <button type="button" class="btn btn-icon btn-sm fs-xl text-dark-emphasis border-0" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions"><i class="fi-more-vertical"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end" style="--fn-dropdown-min-width: 8rem">
+                  <li><button type="button" class="dropdown-item" data-payment-action="edit" data-method-id="${escapeHtml(method.id)}"><i class="fi-edit opacity-75 me-2"></i>Edit</button></li>
+                  <li><button type="button" class="dropdown-item text-danger" data-payment-action="delete" data-method-id="${escapeHtml(method.id)}"><i class="fi-trash opacity-75 me-2"></i>Delete</button></li>
+                </ul>
+              </div>
+            </div>
+            <div class="h5 pt-md-1 pb-2 pb-md-3" style="letter-spacing:1.25px">${escapeHtml(maskCardNumber(method.number || method.last_four || ''))}</div>
+            <div class="d-flex justify-content-between">
+              <div class="me-3"><div class="fs-xs text-body mb-1">Name</div><div class="h6 fs-sm mb-0">${escapeHtml(method.name || '')}</div></div>
+              <div><div class="fs-xs text-body mb-1">Expiry date</div><div class="h6 fs-sm mb-0">${escapeHtml(method.expiry || '')}</div></div>
+            </div>
+          </div>
+          <span class="position-absolute top-0 start-0 w-100 h-100 rounded-4 d-none-dark" style="${cardGradient(method.brand)}"></span>
+        `;
+      }
+      cardsWrap.appendChild(card);
+    });
+  };
+
+  const loadMethods = async () => {
+    const payload = await requestJson(apiBase, { method: 'GET' });
+    methods = Array.isArray(payload.data) ? payload.data : [];
+    renderMethods();
+  };
+
+  cardForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+    const digits = String(cardNumberInput?.value || '').replace(/\D/g, '');
+    const name = String(cardNameInput?.value || '').trim();
+    const expiry = normalizeExpiry(cardExpiryInput?.value || '');
+    const cvc = String(cardCvcInput?.value || '').replace(/\D/g, '');
+    if (cardExpiryInput) cardExpiryInput.value = expiry;
+    const invalidNumber = digits.length < 13;
+    const invalidName = name.length < 2;
+    const invalidExpiry = !isValidExpiry(expiry);
+    const invalidCvc = cvc.length < 3;
+    showFieldError(cardNumberInput, invalidNumber);
+    showFieldError(cardNameInput, invalidName);
+    showFieldError(cardExpiryInput, invalidExpiry);
+    showFieldError(cardCvcInput, invalidCvc);
+    if (invalidNumber || invalidName || invalidExpiry || invalidCvc) return;
+    try {
+      await requestJson(editingMethodId ? `${apiBase}/${editingMethodId}` : apiBase, {
+        method: editingMethodId ? 'PUT' : 'POST',
+        body: JSON.stringify({ type: 'card', number: digits, name, expiry }),
+      });
+      await loadMethods();
+      resetCardForm();
+      bootstrapModal?.hide();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Unable to save payment method.');
+    }
+  }, true);
+
+  paypalForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+    const email = String(paypalEmailInput?.value || '').trim();
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    showFieldError(paypalEmailInput, !valid);
+    if (!valid) return;
+    try {
+      await requestJson(apiBase, {
+        method: 'POST',
+        body: JSON.stringify({ type: 'paypal', paypal_email: email }),
+      });
+      await loadMethods();
+      paypalForm.reset();
+      paypalEmailInput?.classList.remove('is-invalid');
+      bootstrapModal?.hide();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Unable to save PayPal account.');
+    }
+  }, true);
+
+  cardsWrap.addEventListener('click', async (event) => {
+    const actionBtn = event.target instanceof Element ? event.target.closest('[data-payment-action]') : null;
+    if (!actionBtn) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+    const methodId = actionBtn.getAttribute('data-method-id') || '';
+    const action = actionBtn.getAttribute('data-payment-action') || '';
+    if (action === 'edit') {
+      const method = methods.find((entry) => String(entry?.id || '') === methodId);
+      if (!method || method.type !== 'card') return;
+      editingMethodId = methodId;
+      if (cardNumberInput) cardNumberInput.value = String(method.number || '');
+      if (cardNameInput) cardNameInput.value = String(method.name || '');
+      if (cardExpiryInput) cardExpiryInput.value = normalizeExpiry(method.expiry || '');
+      if (cardCvcInput) cardCvcInput.value = '';
+      if (addPaypalTabBtn && addPaypalPane) {
+        addPaypalTabBtn.classList.remove('active');
+        addPaypalTabBtn.setAttribute('aria-selected', 'false');
+        addPaypalPane.classList.remove('show', 'active');
+      }
+      if (addCardTabBtn && addCardPane) {
+        addCardTabBtn.classList.add('active');
+        addCardTabBtn.setAttribute('aria-selected', 'true');
+        addCardPane.classList.add('show', 'active');
+        addCardTabBtn.textContent = 'Edit card';
+      }
+      const submitBtn = cardForm?.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.textContent = 'Save changes';
+      bootstrapModal?.show();
+      return;
+    }
+    if (action === 'delete') {
+      try {
+        await requestJson(`${apiBase}/${methodId}`, { method: 'DELETE' });
+        await loadMethods();
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : 'Unable to delete payment method.');
+      }
+    }
+  }, true);
+
+  addPaymentModal?.addEventListener('hidden.bs.modal', () => {
+    resetCardForm();
+    paypalForm?.reset();
+    paypalEmailInput?.classList.remove('is-invalid');
+  });
+
+  loadMethods().catch((error) => window.console?.error?.(error));
+})();
+</script>
+HTML;
+        $accountPaymentBackendBridge = str_replace('__SCRIPT_CSRF__', csrf_token(), $accountPaymentBackendBridge);
+        $html = str_replace('</body>', $accountPaymentBackendBridge . '</body>', $html);
+    }
+
+    if ($file === 'account-subscriptions.html') {
+        $accountSubscriptionsScript = <<<'HTML'
+<script>
+(() => {
+  const listings = __USER_LISTINGS__;
+  const root = document.getElementById('subscriptionsList');
+  const summary = document.getElementById('subscriptionsSummary');
+  if (!root) return;
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[char]));
+
+  const editPromotionHref = (item) => {
+    if (!item.id) return '';
+    if (item.module === 'contractors') return `/add-contractor-promotion?edit=${encodeURIComponent(item.id)}`;
+    if (item.module === 'cars') return `/add-car-promotion?edit=${encodeURIComponent(item.id)}`;
+    if (item.module === 'restaurants') return `/add-restaurant-promotion?edit=${encodeURIComponent(item.id)}`;
+    return `/add-property-promotion?edit=${encodeURIComponent(item.id)}`;
+  };
+
+  const promotionListings = Array.isArray(listings)
+    ? listings
+      .filter((item) => item?.module === 'real-estate' || item?.module === 'contractors' || item?.module === 'cars' || item?.module === 'restaurants')
+      .map((item) => ({
+        id: String(item?.id || '').trim(),
+        title: String(item?.title || '').trim(),
+        module: String(item?.module || '').trim(),
+        moduleLabel: String(item?.module_label || '').trim(),
+        status: String(item?.status || '').trim(),
+        packageLabel: String(item?.promotion_package_label || '').trim(),
+        packagePrice: String(item?.promotion_package_price || '').trim(),
+        services: Array.isArray(item?.selected_services_details)
+          ? item.selected_services_details
+            .map((service) => ({
+              label: String(service?.label || '').trim(),
+              price: String(service?.price || '').trim(),
+            }))
+            .filter((service) => service.label)
+          : [],
+      }))
+      .filter((item) => item.packageLabel || item.services.length)
+    : [];
+
+  if (summary) {
+    summary.textContent = promotionListings.length
+      ? `${promotionListings.length} subscription${promotionListings.length === 1 ? '' : 's'} currently available to manage.`
+      : 'No active or previous subscriptions found yet.';
+  }
+
+  if (!promotionListings.length) {
+    root.innerHTML = `
+      <div class="card border-0 bg-body-tertiary">
+        <div class="card-body py-5 text-center">
+          <h2 class="h4 mb-2">No subscriptions yet</h2>
+          <p class="text-body-secondary mb-4">Packages and extra promotion services will appear here once they are attached to your listings.</p>
+          <a class="btn btn-primary" href="/account/listings">View my listings</a>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  root.innerHTML = promotionListings.map((item) => `
+    <div class="card border-0 bg-body-tertiary shadow-sm">
+      <div class="card-body p-4 p-lg-5">
+        <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-between gap-3">
+          <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+              <h2 class="h4 mb-0">${item.title ? escapeHtml(item.title) : 'Property listing'}</h2>
+              ${item.moduleLabel ? `<span class="badge text-bg-secondary">${escapeHtml(item.moduleLabel)}</span>` : ''}
+              ${item.status ? `<span class="badge text-bg-light text-capitalize">${escapeHtml(item.status)}</span>` : ''}
+            </div>
+            ${item.packageLabel ? `
+              <div class="small text-body-secondary mb-1">Selected package</div>
+              <div class="fw-semibold">${escapeHtml(item.packageLabel)}${item.packagePrice ? ` <span class="text-body-secondary fw-normal">(${escapeHtml(item.packagePrice)})</span>` : ''}</div>
+            ` : ''}
+          </div>
+          ${item.id ? `<a class="btn btn-sm btn-outline-primary" href="${editPromotionHref(item)}">Manage package</a>` : ''}
+        </div>
+        ${item.services.length ? `
+          <div class="border-top mt-4 pt-4">
+            <div class="small text-body-secondary mb-2">Other services</div>
+            <div class="vstack gap-2">
+              ${item.services.map((service) => `
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 small">
+                  <span>${escapeHtml(service.label)}</span>
+                  <span class="text-body-secondary">${escapeHtml(service.price)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+})();
+</script>
+HTML;
+        $accountSubscriptionsScript = str_replace('__USER_LISTINGS__', $listingsJson ?: '[]', $accountSubscriptionsScript);
+        $html = str_replace('</body>', $accountSubscriptionsScript . '</body>', $html);
+
+        $accountSubscriptionsBackendBridge = <<<'HTML'
+<script>
+(() => {
+  const root = document.getElementById('subscriptionsList');
+  const summary = document.getElementById('subscriptionsSummary');
+  if (!root) return;
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[char]));
+
+  const renderEmpty = () => {
+    root.innerHTML = `
+      <div class="card border-0 bg-body-tertiary">
+        <div class="card-body py-5 text-center">
+          <h2 class="h4 mb-2">No subscriptions yet</h2>
+          <p class="text-body-secondary mb-4">Packages and extra promotion services will appear here once they are attached to your listings.</p>
+          <a class="btn btn-primary" href="/account/listings">View my listings</a>
+        </div>
+      </div>
+    `;
+  };
+
+  fetch('/account/api/subscriptions', {
+    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    credentials: 'same-origin',
+  })
+    .then(async (response) => {
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || 'Unable to load subscriptions.');
+      return Array.isArray(payload.data) ? payload.data : [];
+    })
+    .then((subscriptions) => {
+      if (summary) {
+        summary.textContent = subscriptions.length
+          ? `${subscriptions.length} subscription${subscriptions.length === 1 ? '' : 's'} available across current and previous orders.`
+          : 'No active or previous subscriptions found yet.';
+      }
+      if (!subscriptions.length) {
+        renderEmpty();
+        return;
+      }
+      root.innerHTML = subscriptions.map((item) => `
+        <div class="card border-0 bg-body-tertiary shadow-sm">
+          <div class="card-body p-4 p-lg-5">
+            <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-between gap-3">
+              <div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                  <h2 class="h4 mb-0">${escapeHtml(item.title || 'Listing subscription')}</h2>
+                  ${item.module_label ? `<span class="badge text-bg-secondary">${escapeHtml(item.module_label)}</span>` : ''}
+                  ${item.listing_status ? `<span class="badge text-bg-light text-capitalize">${escapeHtml(item.listing_status)}</span>` : ''}
+                  ${item.status ? `<span class="badge ${item.status === 'active' ? 'text-bg-success' : 'text-bg-secondary'} text-capitalize">${escapeHtml(item.status)}</span>` : ''}
+                </div>
+                <div class="small text-body-secondary mb-1">Order #${escapeHtml(item.order_number || '')}</div>
+                ${item.package_label ? `<div class="fw-semibold">${escapeHtml(item.package_label)}${item.package_price ? ` <span class="text-body-secondary fw-normal">(${escapeHtml(item.package_price)})</span>` : ''}</div>` : '<div class="fw-semibold">Promotion services only</div>'}
+                ${item.admin_status ? `<div class="small text-body-secondary mt-2">Admin status: <span class="text-capitalize">${escapeHtml(item.admin_status)}</span></div>` : ''}
+              </div>
+              ${item.manage_url ? `<a class="btn btn-sm btn-outline-primary" href="${escapeHtml(item.manage_url)}">Manage package</a>` : ''}
+            </div>
+            ${Array.isArray(item.selected_services_details) && item.selected_services_details.length ? `
+              <div class="border-top mt-4 pt-4">
+                <div class="small text-body-secondary mb-2">Other services</div>
+                <div class="vstack gap-2">
+                  ${item.selected_services_details.map((service) => `
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 small">
+                      <span>${escapeHtml(service.label || '')}</span>
+                      <span class="text-body-secondary">${escapeHtml(service.price || '')}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    })
+    .catch((error) => {
+      if (summary) summary.textContent = error instanceof Error ? error.message : 'Unable to load subscriptions.';
+      renderEmpty();
+    });
+})();
+</script>
+HTML;
+        $html = str_replace('</body>', $accountSubscriptionsBackendBridge . '</body>', $html);
     }
 
     if ($file === 'add-contractor-location.html') {
@@ -4660,7 +5085,7 @@ HTML;
         $html = str_replace('</body>', $contractorScript . '</body>', $html);
     }
 
-    if ($file === 'add-restaurant.html') {
+    if ($file === 'add-restaurant.html' || $file === 'add-restaurant-page.html') {
         $restaurantEditPayload = null;
         $editId = (int) request()->query('edit', 0);
         if ($editId > 0) {
@@ -4711,6 +5136,8 @@ HTML;
 (() => {
   const form = document.querySelector('form.card');
   if (!form) return;
+  if (form.dataset.mcRestaurantPageBound === '1') return;
+  form.dataset.mcRestaurantPageBound = '1';
   const editData = __RESTAURANT_EDIT_DATA__;
   const isEdit = !!(editData && editData.id);
   let activeSubmitter = null;
@@ -4754,6 +5181,7 @@ HTML;
   const saveDraftBtn = Array.from(form.querySelectorAll('button')).find((btn) => (btn.textContent || '').toLowerCase().includes('save draft'));
   if (saveDraftBtn) {
     saveDraftBtn.type = 'submit';
+    saveDraftBtn.setAttribute('formnovalidate', 'formnovalidate');
   }
 
   form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach((btn) => {
@@ -6005,7 +6433,7 @@ Route::match(['get', 'post'], '/submit/car', CarListingSubmissionController::cla
 Route::match(['get', 'post'], '/submit/property', [ListingSubmissionController::class, 'property']);
 Route::match(['get', 'post'], '/submit/contractor', [ListingSubmissionController::class, 'contractor']);
 Route::match(['get', 'post'], '/submit/restaurant', [ListingSubmissionController::class, 'restaurant']);
-Route::get('/add-restaurant', fn () => $serve('add-restaurant.html'));
+Route::get('/add-restaurant', fn () => $serve('add-restaurant-page.html'));
 Route::get('/add-contractor-location', fn () => $serve('add-contractor-location.html'));
 Route::get('/about', fn () => $serve('about-v2.html'));
 Route::get('/blog', fn () => $serve('blog-layout-v1.html'));
@@ -6108,6 +6536,12 @@ Route::middleware('auth')->group(function () use ($serve) {
     Route::get('/account/reviews', fn () => $serve('account-reviews.html'));
     Route::get('/account/favorites', fn () => $serve('account-favorites.html'));
     Route::get('/account/payment', fn () => $serve('account-payment.html'));
+    Route::get('/account/subscriptions', fn () => $serve('account-subscriptions.html'));
+    Route::get('/account/api/payment-methods', [AccountBillingController::class, 'paymentMethods']);
+    Route::post('/account/api/payment-methods', [AccountBillingController::class, 'storePaymentMethod']);
+    Route::match(['put', 'patch'], '/account/api/payment-methods/{paymentMethod}', [AccountBillingController::class, 'updatePaymentMethod']);
+    Route::delete('/account/api/payment-methods/{paymentMethod}', [AccountBillingController::class, 'destroyPaymentMethod']);
+    Route::get('/account/api/subscriptions', [AccountBillingController::class, 'subscriptions']);
     Route::get('/account/help-topics-v1.html', fn () => $serve('help-topics-v1.html'));
     Route::get('/account/help-topics-v2.html', fn () => $serve('help-topics-v2.html'));
     Route::get('/account/help-topics-v3.html', fn () => $serve('help-topics-v3.html'));

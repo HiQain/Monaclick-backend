@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" data-pwa="false">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+    <title>Monaclick | Add a Restaurant</title>
+    <meta name="description" content="Submit your restaurant to Monaclick.">
+
+    <!-- PWA manifest disabled for stability on submission flow -->
+    <link rel="icon" type="image/png" href="/finder/assets/app-icons/icon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/finder/assets/app-icons/icon-180x180.png">
+
+    <script src="/finder/assets/js/theme-switcher.js"></script>
+    <link rel="preload" href="/finder/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/finder/assets/icons/finder-icons.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/finder/assets/icons/finder-icons.min.css">
+    <link rel="stylesheet" href="/finder/assets/css/theme.min.css" id="theme-styles">
+    <link rel="stylesheet" href="/finder/assets/css/monaclick-finder-colors.css">
+    <script src="/finder/assets/js/monaclick-theme-lock.js"></script>
+  <style id="mc-opening-hours-style">
+  .mc-restaurant-page {
+    font-family: var(--fn-body-font-family, Inter, sans-serif);
+    color: var(--fn-body-color, inherit);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .mc-restaurant-page h1,
+  .mc-restaurant-page h2,
+  .mc-restaurant-page h3,
+  .mc-restaurant-page h4,
+  .mc-restaurant-page h5,
+  .mc-restaurant-page h6 {
+    font-family: var(--fn-heading-font-family, var(--fn-body-font-family, Inter, sans-serif));
+  }
+  .mc-restaurant-page .mc-page-title {
+    font-size: clamp(1.75rem, 2.35vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.02em;
+  }
+  .mc-restaurant-page .mc-section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .mc-restaurant-page .form-label,
+  .mc-restaurant-page .form-check-label {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .mc-restaurant-page input[name="services[]"] + .form-check-label {
+    font-weight: 500;
+  }
+  .mc-restaurant-page p,
+  .mc-restaurant-page .text-body-secondary,
+  .mc-restaurant-page .form-control,
+  .mc-restaurant-page .form-select,
+  .mc-restaurant-page .btn {
+    font-size: 1rem;
+  }
+  .mc-restaurant-page .form-control,
+  .mc-restaurant-page .form-select,
+  .mc-restaurant-page .btn,
+  .mc-restaurant-page p,
+  .mc-restaurant-page span,
+  .mc-restaurant-page div {
+    font-family: inherit;
+  }
+  .mc-restaurant-page .form-control,
+  .mc-restaurant-page .form-select {
+    font-size: 1rem;
+  }
+  .mc-restaurant-page .form-control::placeholder,
+  .mc-restaurant-page .form-select,
+  .mc-restaurant-page .text-body-secondary {
+    color: var(--fn-secondary-color, #6c757d);
+  }
+  .mc-restaurant-page .btn.btn-lg {
+    font-size: .975rem;
+    font-weight: 600;
+  }
+  .mc-restaurant-page .text-body-secondary.small,
+  .mc-restaurant-page .small {
+    font-size: .875rem !important;
+  }
+  .mc-opening-hours {
+    max-width: min(820px, 100%);
+    min-width: 380px;
+    gap: 1rem !important;
+  }
+  .mc-opening-hours-row {
+    display: grid !important;
+    grid-template-columns: 164px minmax(180px, 1fr) 28px minmax(180px, 1fr);
+    align-items: center;
+    gap: .75rem;
+  }
+  .mc-opening-hours-row .form-check {
+    min-width: 164px;
+    margin: 0;
+  }
+  .mc-opening-hours-row .mc-time-input { width: 100%; min-width: 160px; }
+  .mc-opening-hours-row .mc-time-select {
+    background-position: right .85rem center;
+    padding-right: 2.25rem;
+    min-height: 3rem;
+    border-radius: .9rem;
+  }
+  .mc-opening-hours-row .mc-time-divider,
+  .mc-opening-hours-row .mc-hours-closed {
+    font-size: 1rem;
+    color: var(--fn-body-color, #1f2b3d);
+  }
+  .mc-opening-hours-row .mc-hours-closed {
+    display: none;
+    grid-column: 2 / 5;
+    padding-left: .125rem;
+  }
+  .mc-opening-hours-row.is-closed .mc-time-select,
+  .mc-opening-hours-row.is-closed .mc-time-divider {
+    display: none;
+  }
+  .mc-opening-hours-row.is-closed .mc-hours-closed {
+    display: block;
+  }
+  @media (max-width: 991.98px) {
+    .mc-opening-hours { max-width: 100%; min-width: 0; }
+    .mc-opening-hours-row { grid-template-columns: 140px minmax(150px, 1fr) 24px minmax(150px, 1fr); }
+    .mc-opening-hours-row .mc-hours-closed {
+      grid-column: 2 / 5;
+    }
+  }
+  @media (max-width: 575.98px) {
+    .mc-opening-hours-row {
+      grid-template-columns: 1fr;
+      gap: .5rem;
+    }
+    .mc-opening-hours-row .form-check,
+    .mc-opening-hours-row .mc-time-select,
+    .mc-opening-hours-row .mc-hours-closed {
+      min-width: 0;
+      width: 100%;
+    }
+    .mc-opening-hours-row .mc-time-divider {
+      display: none;
+    }
+    .mc-opening-hours-row .mc-hours-closed {
+      grid-column: auto;
+      padding-left: 3.1rem;
+    }
+  }
+</style>
+</head>
+  <body class="mc-restaurant-page">
+    <header class="navbar navbar-expand-lg bg-body navbar-sticky sticky-top z-fixed px-0" data-sticky-element>
+      <div class="container">
+        <button type="button" class="navbar-toggler me-3 me-lg-0" data-bs-toggle="offcanvas" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <a class="navbar-brand py-1 py-md-2 py-xl-1 me-2 me-sm-n4 me-md-n5 me-lg-0" href="/combined">
+          <span class="d-none d-sm-flex flex-shrink-0 text-primary rtl-flip me-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="35" height="34"><path d="M34.5 16.894v10.731c0 3.506-2.869 6.375-6.375 6.375H17.5h-.85C7.725 33.575.5 26.138.5 17c0-9.35 7.65-17 17-17s17 7.544 17 16.894z" fill="currentColor"/><g fill-rule="evenodd"><path d="M17.5 13.258c-3.101 0-5.655 2.554-5.655 5.655s2.554 5.655 5.655 5.655 5.655-2.554 5.655-5.655-2.554-5.655-5.655-5.655zm-9.433 5.655c0-5.187 4.246-9.433 9.433-9.433s9.433 4.246 9.433 9.433a9.36 9.36 0 0 1-1.569 5.192l2.397 2.397a1.89 1.89 0 0 1 0 2.671 1.89 1.89 0 0 1-2.671 0l-2.397-2.397a9.36 9.36 0 0 1-5.192 1.569c-5.187 0-9.433-4.246-9.433-9.433z" fill="#000" fill-opacity=".05"/><g fill="#fff"><path d="M17.394 10.153c-3.723 0-6.741 3.018-6.741 6.741s3.018 6.741 6.741 6.741 6.741-3.018 6.741-6.741-3.018-6.741-6.741-6.741zM7.347 16.894A10.05 10.05 0 0 1 17.394 6.847 10.05 10.05 0 0 1 27.44 16.894 10.05 10.05 0 0 1 17.394 26.94 10.05 10.05 0 0 1 7.347 16.894z"/><path d="M23.025 22.525c.645-.645 1.692-.645 2.337 0l3.188 3.188c.645.645.645 1.692 0 2.337s-1.692.645-2.337 0l-3.187-3.187c-.645-.646-.645-1.692 0-2.337z"/></g></g><path d="M23.662 14.663c2.112 0 3.825-1.713 3.825-3.825s-1.713-3.825-3.825-3.825-3.825 1.713-3.825 3.825 1.713 3.825 3.825 3.825z" fill="#fff"/><path fill-rule="evenodd" d="M23.663 8.429a2.41 2.41 0 0 0-2.408 2.408 2.41 2.41 0 0 0 2.408 2.408 2.41 2.41 0 0 0 2.408-2.408 2.41 2.41 0 0 0-2.408-2.408zm-5.242 2.408c0-2.895 2.347-5.242 5.242-5.242s5.242 2.347 5.242 5.242-2.347 5.242-5.242 5.242-5.242-2.347-5.242-5.242z" fill="currentColor"/></svg>
+          </span>
+          Monaclick
+        </a>
+
+        <nav class="offcanvas offcanvas-start" id="navbarNav" tabindex="-1" aria-labelledby="navbarNavLabel">
+          <div class="offcanvas-header py-3">
+            <h5 class="offcanvas-title" id="navbarNavLabel">Browse Monaclick</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body pt-2 pb-4 py-lg-0 mx-lg-auto">
+            <ul class="navbar-nav position-relative">
+              <li class="nav-item py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link active" aria-current="page" href="/combined">Home</a>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="/listings/contractors" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Listings</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="/listings/contractors">Contractors</a></li>
+                  <li><a class="dropdown-item" href="/listings/real-estate">Real Estate</a></li>
+                  <li><a class="dropdown-item" href="/listings/cars">Cars</a></li>
+                  <li><a class="dropdown-item" href="/listings/restaurants">Restaurants</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" data-bs-auto-close="outside" aria-expanded="false">Account</a>
+                <ul class="dropdown-menu">
+                  <li class="dropend">
+                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">Auth Pages</a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="/signin">Sign In</a></li>
+                      <li><a class="dropdown-item" href="/signup">Sign Up</a></li>
+                      <li><a class="dropdown-item" href="/password-recovery">Password Recovery</a></li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item" href="/account/profile">My Profile</a></li>
+                  <li><a class="dropdown-item" href="/account/settings">Account Settings</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown py-lg-2 me-lg-n1 me-xl-0">
+                <a class="nav-link dropdown-toggle" href="/about" role="button" data-bs-toggle="dropdown" data-bs-trigger="hover" aria-expanded="false">About</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="/about">About</a></li>
+                  <li><a class="dropdown-item" href="/blog">Blog</a></li>
+                  <li><a class="dropdown-item" href="/contact">Contact</a></li>
+                  <li><a class="dropdown-item" href="/terms-and-conditions">Terms &amp; Conditions</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <div class="d-flex gap-sm-1">
+          <a class="btn btn-icon btn-outline-secondary fs-lg border-0 animate-shake me-2" href="/signin" aria-label="Sign in to account">
+            <i class="fi-user animate-target"></i>
+          </a>
+          <a class="btn btn-primary animate-scale" href="/add-listing">
+            <i class="fi-plus fs-lg animate-target ms-n2 me-1 me-sm-2"></i>
+            Join<span class="d-none d-xl-inline ms-1">Pro Network</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container py-5">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+        <div>
+          <h1 class="mc-page-title mb-1">Add a Restaurant</h1>
+          <p class="text-body-secondary mb-0">Fill out your restaurant profile to start receiving bookings.</p>
+        </div></div>
+
+      <form class="card border-0 shadow-sm" action="/submit/restaurant" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_token" value="__CSRF_TOKEN__">
+        <div class="card-body p-4 p-md-5">
+          <div class="row g-4">
+            <div class="col-12">
+              <h2 class="mc-section-title mb-0">Basic information</h2>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="restaurantName">Restaurant name *</label>
+              <input class="form-control" id="restaurantName" name="restaurant_name" type="text" placeholder="Olive & Thyme Bistro" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="cuisineType">Cuisine type</label>
+              <select class="form-select" id="cuisineType" name="cuisine_type" required>
+                <option value="">Select cuisine</option>
+                <option>Italian</option>
+                <option>Steakhouse</option>
+                <option>Sushi</option>
+                <option>Mediterranean</option>
+                <option>BBQ</option>
+                <option>Family dining</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="priceRange">Price range</label>
+              <select class="form-select" id="priceRange" name="price_range">
+                <option value="">Select range</option>
+                <option value="500">$500</option>
+                <option value="1000">$1,000</option>
+                <option value="1500">$1,500</option>
+                <option value="2000">$2,000</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="seatingCapacity">Seating capacity</label>
+              <input class="form-control" id="seatingCapacity" name="seating_capacity" type="number" min="1" placeholder="80">
+            </div>
+
+            <div class="col-12 pt-2">
+              <h2 class="mc-section-title mb-0">Location</h2>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="addressLine">Street address *</label>
+              <input class="form-control" id="addressLine" name="address" type="text" placeholder="123 Main St" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="state">State *</label>
+              <select class="form-select" id="state" name="state" aria-label="State select" required>
+                <option value="">Select state</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="city">City *</label>
+              <select class="form-select" id="city" name="city" aria-label="City select" required>
+                <option value="">Select city</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="zipCode">Zip code</label>
+              <input class="form-control" id="zipCode" name="zip_code" type="text" placeholder="75201" required>
+              <input type="hidden" id="country" name="country" value="United States">
+            </div>
+
+            <div class="col-12 pt-2">
+              <h2 class="mc-section-title mb-0">Services</h2>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check"><input class="form-check-input" id="dineIn" name="services[]" value="dine-in" type="checkbox"><label class="form-check-label" for="dineIn">Dine-in</label></div>
+              <div class="form-check mt-2"><input class="form-check-input" id="takeaway" name="services[]" value="takeaway" type="checkbox"><label class="form-check-label" for="takeaway">Takeaway</label></div>
+              <div class="form-check mt-2"><input class="form-check-input" id="delivery" name="services[]" value="delivery" type="checkbox"><label class="form-check-label" for="delivery">Delivery</label></div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check"><input class="form-check-input" id="reservations" name="services[]" value="reservations" type="checkbox"><label class="form-check-label" for="reservations">Reservations</label></div>
+              <div class="form-check mt-2"><input class="form-check-input" id="outdoor" name="services[]" value="outdoor-seating" type="checkbox"><label class="form-check-label" for="outdoor">Outdoor seating</label></div>
+              <div class="form-check mt-2"><input class="form-check-input" id="familyFriendly" name="services[]" value="family-friendly" type="checkbox"><label class="form-check-label" for="familyFriendly">Family friendly</label></div>
+            </div>
+            <div class="col-12 pt-2">
+              <h2 class="mc-section-title mb-0">Working hours</h2>
+            </div>
+            <div class="col-12">
+              <label class="form-label d-block fs-4 fw-bold mb-3">Add working hours</label>
+              <input type="hidden" id="openingHoursHidden" name="opening_hours">
+              <div class="vstack gap-2 mc-opening-hours">
+                <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="monday">
+                    <label for="monday" class="form-check-label small">Monday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="mondayFrom">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="mondayTo">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="tuesday">
+                    <label for="tuesday" class="form-check-label small">Tuesday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="tuesdayFrom">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="tuesdayTo">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="wednesday">
+                    <label for="wednesday" class="form-check-label small">Wednesday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="wednesdayFrom">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="wednesdayTo">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="thursday">
+                    <label for="thursday" class="form-check-label small">Thursday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="thursdayFrom">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="thursdayTo">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="friday">
+                    <label for="friday" class="form-check-label small">Friday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="fridayFrom">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="fridayTo">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="saturday">
+                    <label for="saturday" class="form-check-label small">Saturday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="saturdayFrom">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="saturdayTo">
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mc-opening-hours-row">
+                  <div class="form-check form-switch m-0" style="min-width: 130px">
+                    <input type="checkbox" class="form-check-input" role="switch" id="sunday">
+                    <label for="sunday" class="form-check-label small">Sunday</label>
+                  </div>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="sundayFrom">
+                  <span class="small">to</span>
+                  <input type="time" class="form-control form-control-sm mc-time-input" id="sundayTo">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 pt-2">
+              <h2 class="mc-section-title mb-0">Media</h2>
+            </div>
+            <div class="col-12">
+              <p class="text-body-secondary small mb-2">Upload photos and videos *</p>
+              <div class="row row-cols-2 row-cols-sm-3 g-2 g-md-3" data-restaurant-upload-grid>
+                <div class="col">
+                  <div class="d-flex align-items-center justify-content-center position-relative h-100 cursor-pointer bg-body-tertiary border border-2 border-dotted rounded p-3" data-restaurant-upload-tile>
+                    <div class="text-center">
+                      <i class="fi-plus-circle fs-4 text-secondary-emphasis mb-2"></i>
+                      <div class="hover-effect-underline fs-sm fw-medium">Upload photos / videos</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <input class="d-none" id="coverPhoto" name="cover_photo" type="file" accept="image/*">
+              <input class="d-none" id="galleryPhotos" name="gallery_photos[]" type="file" accept="image/*,video/*" multiple>
+            </div>
+            <div class="col-12 pt-2">
+              <h2 class="mc-section-title mb-0">Contact details</h2>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="contactName">Contact person</label>
+              <input class="form-control" id="contactName" name="contact_name" type="text" placeholder="John Doe">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="phone">Phone</label>
+              <input class="form-control" id="phone" name="phone" type="tel" data-input-format='{"numericOnly": true, "delimiters": ["(", ")", " ", "-", " "], "blocks": [0, 3, 0, 3, 4]}' placeholder="(___) ___-____" inputmode="numeric" maxlength="14">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="email">Email</label>
+              <input class="form-control" id="email" name="email" type="email" placeholder="hello@restaurant.com">
+            </div>
+
+            <div class="col-12 d-flex flex-wrap gap-2 justify-content-end align-items-stretch pt-2">
+              <button class="btn btn-lg btn-outline-secondary text-nowrap" type="button">Save draft</button>
+              <button class="btn btn-lg btn-outline-primary text-nowrap" type="submit" data-next="/add-restaurant-promotion">Save and become a pro</button>
+              <button class="btn btn-lg btn-primary text-nowrap" type="submit">Submit restaurant listing</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      (() => {
+        const phoneInput = document.getElementById('phone');
+        if (phoneInput) {
+          const formatUsPhone = (raw) => {
+            const digits = String(raw || '').replace(/\D/g, '').slice(0, 10);
+            if (!digits) return '';
+            if (digits.length < 4) return `(${digits}`;
+            if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+            return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+          };
+
+          phoneInput.addEventListener('input', () => {
+            phoneInput.value = formatUsPhone(phoneInput.value);
+          });
+
+          phoneInput.addEventListener('blur', () => {
+            phoneInput.value = formatUsPhone(phoneInput.value);
+          });
+        }
+
+        const to24Hour = (raw) => {
+          const v = String(raw || '').trim();
+          if (!v) return '';
+          const m = v.match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?$/i);
+          if (!m) return '';
+          let hh = Number(m[1]);
+          const mm = Number(m[2]);
+          const ap = String(m[3] || '').toUpperCase();
+          if (Number.isNaN(hh) || Number.isNaN(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) return '';
+          if (ap === 'PM' && hh < 12) hh += 12;
+          if (ap === 'AM' && hh === 12) hh = 0;
+          return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+        };
+
+        const buildTimeLabel = (value) => {
+          const normalized = to24Hour(value);
+          if (!normalized) return value;
+          let hour = Number(normalized.slice(0, 2));
+          const minute = normalized.slice(3, 5);
+          const suffix = hour >= 12 ? 'PM' : 'AM';
+          hour = hour % 12;
+          if (hour === 0) hour = 12;
+          return `${String(hour).padStart(2, '0')}:${minute} ${suffix}`;
+        };
+
+        const ensureTimeSelect = (input) => {
+          if (!input) return null;
+          if (input.tagName === 'SELECT') return input;
+
+          const select = document.createElement('select');
+          select.className = input.className.replace('form-control', 'form-select') + ' mc-time-select';
+          select.id = input.id;
+          select.name = input.name || input.id;
+          select.dataset.mcTimeBound = '1';
+          select.setAttribute('aria-label', input.getAttribute('aria-label') || input.id || 'Select time');
+
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = 'Select time';
+          select.appendChild(placeholder);
+
+          for (let hour = 0; hour < 24; hour += 1) {
+            for (let minute = 0; minute < 60; minute += 30) {
+              const value = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+              const option = document.createElement('option');
+              option.value = value;
+              option.textContent = buildTimeLabel(value);
+              select.appendChild(option);
+            }
+          }
+
+          const normalized = to24Hour(input.value);
+          if (normalized) select.value = normalized;
+          input.replaceWith(select);
+          return select;
+        };
+
+        const refreshHoursRow = (day) => {
+          const toggle = document.getElementById(day);
+          const fromSelect = document.getElementById(`${day}From`);
+          const toSelect = document.getElementById(`${day}To`);
+          const row = toggle?.closest('.mc-opening-hours-row');
+          if (!toggle || !row || !fromSelect || !toSelect) return;
+
+          row.classList.toggle('is-closed', !toggle.checked);
+          fromSelect.disabled = !toggle.checked;
+          toSelect.disabled = !toggle.checked;
+        };
+
+        document.querySelectorAll('.mc-opening-hours-row').forEach((row) => {
+          const divider = row.querySelector('span.small');
+          if (divider) divider.classList.add('mc-time-divider');
+          if (!row.querySelector('.mc-hours-closed')) {
+            const closed = document.createElement('span');
+            closed.className = 'mc-hours-closed';
+            closed.textContent = 'Closed';
+            row.appendChild(closed);
+          }
+        });
+
+        const dayKeys = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+        document.querySelectorAll('input.mc-time-input').forEach(ensureTimeSelect);
+        dayKeys.forEach((day) => {
+          document.getElementById(day)?.addEventListener('change', () => refreshHoursRow(day));
+          refreshHoursRow(day);
+        });
+
+        window.__MC_RESTAURANT_HOURS_REFRESH__ = () => {
+          dayKeys.forEach((day) => refreshHoursRow(day));
+        };
+      })();
+    </script>
+    <script src="/finder/assets/js/theme.min.js"></script>
+    <script src="/finder/assets/js/monaclick-global-footer.js?v=20260306-3"></script>
+  </body>
+</html>
+
+
